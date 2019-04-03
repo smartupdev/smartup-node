@@ -21,7 +21,7 @@ do
     	c)
             cmd=$OPTARG
             ;;
-    	p)
+    	b)
 			branch=$OPTARG
 			;;
         e)
