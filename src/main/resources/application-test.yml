@@ -47,6 +47,9 @@ pagehelper:
     supportMethodsArguments: true
     params: count=countSql
 
+server:
+  port: 8085
+
 logging:
   level:
     org.springframework: info
