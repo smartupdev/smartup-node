@@ -2,6 +2,7 @@ package global.smartup.node.service;
 
 import com.alibaba.fastjson.JSON;
 import global.smartup.node.Starter;
+import global.smartup.node.compoment.IdGenerator;
 import global.smartup.node.po.User;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
@@ -20,10 +21,13 @@ public class UserServiceTest {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private IdGenerator idGenerator;
+
     @Test
     public void add() {
         User user = new User();
-        user.setUserAddress("789");
+        user.setUserAddress(String.valueOf(idGenerator.getId()));
         user.setAvatarIpfsHash("hash..");
         user.setName("test");
         user.setCreateTime(new Date());
