@@ -2,6 +2,7 @@ app:
 
   protocol: http
   domain: 39.105.101.248
+  port: 86
 
 spring:
 

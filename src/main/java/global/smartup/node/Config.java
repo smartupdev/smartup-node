@@ -1,5 +1,6 @@
 package global.smartup.node;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,6 +24,18 @@ import java.util.Locale;
 
 @Configuration
 public class Config {
+
+    @Value("${spring.profiles.active}")
+    public String profilesActive;
+
+    @Value("${app.protocol}")
+    public String appProtocol;
+
+    @Value("${app.domain}")
+    public String appDomain;
+
+    @Value("${app.port}")
+    public String appPort;
 
     @Bean
     public MessageSource messageSource() {
@@ -68,12 +81,16 @@ public class Config {
                 .description("Smartup node api doc")
                 .version("1.0.0")
                 .build();
-        return new Docket(DocumentationType.SWAGGER_2)
+        Docket docket = new Docket(DocumentationType.SWAGGER_2)
                 .apiInfo(apiInfo)
                 .select()
                 .apis(RequestHandlerSelectors.basePackage("global.smartup.node.controller"))
                 .paths(PathSelectors.any())
-                .build().pathMapping("/");
+                .build()
+                .pathMapping("/");
+        // 不同环境配置
+        docket.host(appDomain + ":" + appPort);
+        return docket;
     }
 
 

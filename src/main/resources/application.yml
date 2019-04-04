@@ -1,7 +1,8 @@
 app:
 
   protocol: http
-  domain: 127.0.0.1:8085
+  domain: 127.0.0.1
+  port: 8080
 
 spring:
 
