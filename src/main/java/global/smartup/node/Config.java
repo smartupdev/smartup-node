@@ -14,12 +14,17 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import springfox.documentation.builders.ApiInfoBuilder;
+import springfox.documentation.builders.ParameterBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.schema.ModelRef;
 import springfox.documentation.service.ApiInfo;
+import springfox.documentation.service.Parameter;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 @Configuration
@@ -36,6 +41,15 @@ public class Config {
 
     @Value("${app.port}")
     public String appPort;
+
+    @Value("${eth.protocol}")
+    public String ethProtocol;
+
+    @Value("${eth.domain}")
+    public String  ethDomain;
+
+    @Value("${eth.port}")
+    public String ethPort;
 
     @Bean
     public MessageSource messageSource() {
@@ -76,6 +90,16 @@ public class Config {
 
     @Bean
     public Docket customDocket() {
+        ParameterBuilder parameterBuilder = new ParameterBuilder();
+        List<Parameter> parameters = new ArrayList<>();
+        parameterBuilder.name("token")
+                .description("[Header token]")
+                .modelRef(new ModelRef("string"))
+                .parameterType("header")
+                .required(false)
+                .build();
+        parameters.add(parameterBuilder.build());
+
         ApiInfo apiInfo = new ApiInfoBuilder()
                 .title("Swagger doc")
                 .description("Smartup node api doc")
@@ -87,7 +111,9 @@ public class Config {
                 .apis(RequestHandlerSelectors.basePackage("global.smartup.node.controller"))
                 .paths(PathSelectors.any())
                 .build()
+                .globalOperationParameters(parameters)
                 .pathMapping("/");
+
         // 不同环境配置
         docket.host(appDomain + ":" + appPort);
         return docket;

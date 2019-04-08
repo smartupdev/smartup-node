@@ -24,16 +24,13 @@ import javax.servlet.http.HttpServletRequest;
 
 @Api(description = "讨论区")
 @RestController
-@RequestMapping("/api/post")
+@RequestMapping("/api")
 public class PostController extends BaseController {
 
     private static final Logger log = LoggerFactory.getLogger(PostController.class);
 
     @Autowired
     private Validator validator;
-
-    @Autowired
-    private MarketService marketService;
 
     @Autowired
     private UserService userService;
@@ -45,11 +42,13 @@ public class PostController extends BaseController {
     private ReplyService replyService;
 
     @ApiOperation(value = "发布主题", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：type(root=系统讨论区, market=市场讨论区), marketAddress(如果type=root marketAddress为空), userAddress, title, description\n" +
+                notes = "参数：type(root=系统讨论区, market=市场讨论区), marketAddress(如果type=root marketAddress为空), title, description\n" +
                         "返回：是否成功")
-    @RequestMapping("/add")
+    @RequestMapping("/user/post/add")
     public Object add(HttpServletRequest request, Post post) {
         try {
+            String userAddress = getLoginUserAddress(request);
+            post.setUserAddress(userAddress);
             String err = validator.validate(post, Post.Add.class);
             if (err != null) {
                 return Wrapper.alert(err);
@@ -77,7 +76,7 @@ public class PostController extends BaseController {
                         "返回：obj = {\n" +
                         "　postId, type, marketAddress, userAddress, title, description, createTime\n" +
                         "}")
-    @RequestMapping("/one")
+    @RequestMapping("/post/one")
     public Object one(HttpServletRequest request, Long postId) {
         try {
             if (!postService.isExist(postId)) {
@@ -96,7 +95,7 @@ public class PostController extends BaseController {
                     "返回： obj = {\n" +
                     "list = [ {见/api/post/one}, {} ... ]\n" +
                     "}\n")
-    @RequestMapping("/list")
+    @RequestMapping("/post/list")
     public Object list(HttpServletRequest request, String type, String marketAddress, Integer pageNumb, Integer pageSize) {
         try {
             Pagination page = postService.queryPage(type, marketAddress, pageNumb, pageSize);
@@ -108,11 +107,13 @@ public class PostController extends BaseController {
     }
 
     @ApiOperation(value = "发布回复", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：postId, fatherId(可以空, 如果对个一个回复进行回复则需填写, 且只能回复一级), userAddress, content\n" +
+                notes = "参数：postId, fatherId(可以空, 如果对个一个回复进行回复则需填写, 且只能回复一级), content\n" +
                         "返回：是否成功")
-    @RequestMapping("/reply/add")
+    @RequestMapping("/user/post/reply/add")
     public Object replyAdd(HttpServletRequest request, Reply reply) {
         try {
+            String userAddress = getLoginUserAddress(request);
+            reply.setUserAddress(userAddress);
             String err = validator.validate(reply, Reply.Add.class);
             if (err != null) {
                 return Wrapper.alert(err);
@@ -147,7 +148,7 @@ public class PostController extends BaseController {
                         "　　list = [ {见此obj}, ... ]\n" +
                         "　}\n" +
                         "}")
-    @RequestMapping("/reply/one")
+    @RequestMapping("/post/reply/one")
     public Object replyOne(HttpServletRequest request, Long replyId) {
         try {
             if (!replyService.isExist(replyId)) {
@@ -163,7 +164,7 @@ public class PostController extends BaseController {
     @ApiOperation(value = "主题下回复列表", httpMethod = "POST", response = Wrapper.class,
             notes = "参数：postId, pageNumb, pageSize\n" +
                     "返回：obj = { list = [ {见/api/post/reply/one}, {} ... ] }")
-    @RequestMapping("/reply/list")
+    @RequestMapping("/post/reply/list")
     public Object replyList(HttpServletRequest request, Long postId, Integer pageNumb, Integer pageSize) {
         try {
             if (!postService.isExist(postId)) {
@@ -180,7 +181,7 @@ public class PostController extends BaseController {
     @ApiOperation(value = "回复下回复列表", httpMethod = "POST", response = Wrapper.class,
                 notes = "参数：fatherId, pageNumb, pageSize\n" +
                         "返回：obj = { list = [ {见/api/post/reply/one}, {} ... ] }")
-    @RequestMapping("/reply/children/list")
+    @RequestMapping("/post/reply/children/list")
     public Object replyChildrenList(HttpServletRequest request, Long fatherId, Integer pageNumb, Integer pageSize) {
         try {
             if (!replyService.isExist(fatherId)) {

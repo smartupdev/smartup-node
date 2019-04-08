@@ -3,6 +3,7 @@ package global.smartup.node.service;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import global.smartup.node.constant.PoConstant;
+import global.smartup.node.eth.SmartupClient;
 import global.smartup.node.mapper.MarketMapper;
 import global.smartup.node.po.Market;
 import global.smartup.node.util.Pagination;
@@ -25,12 +26,30 @@ public class MarketService {
     private MarketMapper marketMapper;
 
     @Autowired
+    private SmartupClient smartupClient;
+
+    @Autowired
     private RedisTemplate redisTemplate;
 
     public void create(Market market) {
         market.setStage(PoConstant.Market.Stage.Creating);
         market.setCreateTime(new Date());
         marketMapper.insert(market);
+    }
+
+    public void updateCreatingToBuilt() {
+        Example example = new Example(Market.class);
+        example.createCriteria().andEqualTo("stage", PoConstant.Market.Stage.Creating);
+        example.orderBy("createTime").asc();
+        List<Market> list = marketMapper.selectByExample(example);
+        for (Market market : list) {
+            String ctAddress = smartupClient.getCtMarketAddress(market.getTxHash());
+            if (ctAddress != null) {
+                market.setMarketAddress(ctAddress);
+                market.setStage(PoConstant.Market.Stage.Built);
+                marketMapper.updateByPrimaryKey(market);
+            }
+        }
     }
 
     public void updateBuilt(String txHash, String address) {

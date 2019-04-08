@@ -11,12 +11,13 @@ create table user (
   user_address varchar(42) primary key ,
   name varchar(32),
   avatar_ipfs_hash varchar(64),
+  code varchar(32),
   create_time datetime
 );
 
 drop table if exists market;
 create table market (
-  tx_hash varchar(64) primary key,
+  tx_hash varchar(66) primary key,
   creator_address varchar(42) not null,
   market_address varchar(42),
   name varchar(32) not null ,

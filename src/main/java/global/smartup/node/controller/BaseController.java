@@ -1,5 +1,7 @@
 package global.smartup.node.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.context.MessageSource;
@@ -8,12 +10,21 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.context.request.WebRequest;
 
+import javax.servlet.http.HttpServletRequest;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
 public class BaseController {
+
+    private static final Logger log = LoggerFactory.getLogger(BaseController.class);
+
+    public static final String LoginUserAddressRequestMark = "login_user_address";
+
+    public static final Integer TokenExpire = 7 * 24 * 60 * 60 * 1000;
+
+    public static final String TokenName = "token";
 
     @Autowired
     MessageSource messageSource;
@@ -36,6 +47,14 @@ public class BaseController {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public String getLoginUserAddress(HttpServletRequest request) {
+        Object address = request.getAttribute(LoginUserAddressRequestMark);
+        if (address == null) {
+            return null;
+        }
+        return address.toString();
     }
 
 }

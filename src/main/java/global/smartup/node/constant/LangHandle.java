@@ -23,6 +23,8 @@ public class LangHandle {
 
 	public static final String ReplyContentEmptyError = "reply_content_empty_error";
 
+	public static final String UserSignatureError = "user_signature_error";
+
 	public static final String MarketNameEmptyError = "market_name_empty_error";
 
 	public static final String AddressFormatError = "address_format_error";
@@ -35,7 +37,7 @@ public class LangHandle {
 
 	public static final String UserAvatarIpfsHashMaxSizeError = "user_avatar_ipfs_hash_max_size_error";
 
-	public static final String Languge = "languge";
+	public static final String Language = "language";
 
 	public static final String ReplyContentLengthError = "reply_content_length_error";
 

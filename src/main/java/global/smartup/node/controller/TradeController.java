@@ -13,16 +13,15 @@ import javax.servlet.http.HttpServletRequest;
 
 @Api(description = "交易")
 @RestController
-@RequestMapping("/api/trade")
+@RequestMapping("/api")
 public class TradeController extends BaseController {
 
     private static final Logger log = LoggerFactory.getLogger(TradeController.class);
 
-
     @ApiOperation(value = "买入CT", httpMethod = "POST", response = Wrapper.class,
                 notes = "参数：userAddress, txHash\n" +
                         "返回：是否成功")
-    @RequestMapping("/buy/ct")
+    @RequestMapping("/user/trade/buy/ct")
     public Object buyCT(HttpServletRequest request) {
         try {
 
@@ -33,11 +32,10 @@ public class TradeController extends BaseController {
         }
     }
 
-
     @ApiOperation(value = "卖入CT", httpMethod = "POST", response = Wrapper.class,
                 notes = "参数：userAddress, txHash\n" +
                         "返回：是否成功")
-    @RequestMapping("/sell/ct")
+    @RequestMapping("/user/trade/sell/ct")
     public Object sellCT(HttpServletRequest request) {
         try {
 

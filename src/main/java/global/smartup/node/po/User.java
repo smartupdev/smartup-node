@@ -29,8 +29,19 @@ public class User {
     @Size(max = 64, message = "{user_avatar_ipfs_hash_max_size_error}", groups = User.Add.class)
     private String avatarIpfsHash;
 
+    @Column(name = "code")
+    private String code;
+
     @Column(name = "create_time")
     private Date createTime;
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
 
     public String getUserAddress() {
         return userAddress;

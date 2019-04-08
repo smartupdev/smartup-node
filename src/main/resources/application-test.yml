@@ -4,6 +4,11 @@ app:
   domain: 39.105.101.248
   port: 86
 
+eth:
+  protocol: http
+  domain: 54.255.204.122
+  port: 80
+
 spring:
 
   profiles:
@@ -54,4 +59,4 @@ server:
 logging:
   level:
     org.springframework: info
-    global.smartup.node: debug
+    global.smartup.node: info

@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import global.smartup.node.Starter;
 import global.smartup.node.compoment.IdGenerator;
 import global.smartup.node.po.User;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.junit.Test;
@@ -41,4 +42,11 @@ public class UserServiceTest {
         System.out.println(JSON.toJSONString(user));
     }
 
+
+    @Test
+    public void code() {
+        long numb = idGenerator.getId();
+        String hex = Long.toHexString(numb);
+        System.out.println(hex);
+    }
 }

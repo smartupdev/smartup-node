@@ -19,7 +19,7 @@ import java.util.List;
  */
 @Aspect
 @Component
-public class PageParamFilter {
+public class PageInterceptor {
 
     @Around("execution (* global.smartup.node.service.*.*(..))")
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {

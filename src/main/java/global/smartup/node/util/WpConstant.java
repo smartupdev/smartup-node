@@ -15,7 +15,7 @@ public final class WpConstant {
         // 自定义系统提示
         public static final String Alert = "2";
         // 未登陆
-        public static final String NoLogin = "3";
+        public static final String NoTLogin = "3";
         // 参数错误
         // 返回 obj = {"username": "长度超过10个"}
         public static final String ParamError = "4";
@@ -27,7 +27,7 @@ public final class WpConstant {
 
         public static final String Success = "success";
         public static final String SystemError = "system error";
-        public static final String NoLogin = "no login";
+        public static final String NotLogin = "not login";
         public static final String ParamError = "param error";
 
 

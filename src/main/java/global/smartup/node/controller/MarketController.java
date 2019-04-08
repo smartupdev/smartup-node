@@ -20,7 +20,7 @@ import java.util.List;
 
 @Api(description = "市场")
 @RestController
-@RequestMapping("/api/market")
+@RequestMapping("/api")
 public class MarketController extends BaseController {
 
     private static final Logger log = LoggerFactory.getLogger(MarketController.class);
@@ -32,11 +32,13 @@ public class MarketController extends BaseController {
     private Validator validator;
 
     @ApiOperation(value = "创建市场", httpMethod = "POST", response = Wrapper.class,
-            notes = "参数：txHash, creatorAddress, name, description\n" +
+            notes = "参数：txHash, name, description\n" +
                     "返回：是否成功")
-    @RequestMapping("/create")
+    @RequestMapping("/user/market/create")
     public Object create(HttpServletRequest request, Market market) {
         try {
+            String userAddress = getLoginUserAddress(request);
+            market.setCreatorAddress(userAddress);
             String err = validator.validate(market, Market.Add.class);
             if (err != null) {
                 return Wrapper.alert(err);
@@ -61,7 +63,7 @@ public class MarketController extends BaseController {
                     "　txHash, creatorAddress, marketAddress, name, description, \n" +
                     "　stage(creating=创建中, built=创建完成), createTime \n" +
                     "}")
-    @RequestMapping("/one")
+    @RequestMapping("/market/one")
     public Object one(HttpServletRequest request, String marketAddress) {
         try {
             if (!Checker.isAddress(marketAddress)) {
@@ -77,7 +79,7 @@ public class MarketController extends BaseController {
     @ApiOperation(value = "市场详情", httpMethod = "POST", response = Wrapper.class,
             notes = "参数：txHash\n" +
                     "返回：见/api/market/one")
-    @RequestMapping("/query/by/tx/hash")
+    @RequestMapping("/market/query/by/tx/hash")
     public Object queryByTxHash(HttpServletRequest request, String txHash) {
         try {
             if (!Checker.isTxHash(txHash)) {
@@ -91,6 +93,7 @@ public class MarketController extends BaseController {
     }
 
 
+    @Deprecated
     @ApiOperation(value = "更新市场address<暂用，后续由服务端处理>", httpMethod = "POST", response = Wrapper.class,
                 notes = "参数：txHash, marketAddress\n" +
                         "返回：是否成功")
@@ -125,17 +128,15 @@ public class MarketController extends BaseController {
         }
     }
 
-    @ApiOperation(value = "创建者创建的市场列表", httpMethod = "POST", response = Wrapper.class,
+    @ApiOperation(value = "用户创建的市场", httpMethod = "POST", response = Wrapper.class,
             notes = "参数：creatorAddress, pageNumb, pageSize\n" +
                     "返回：obj = {\n" +
                     "　list = [ {见/api/market/one}, {}, ...]\n" +
                     "}")
-    @RequestMapping("/creator/created")
-    public Object creatorCreated(HttpServletRequest request, String creatorAddress, Integer pageNumb, Integer pageSize) {
+    @RequestMapping("/user/market/created")
+    public Object creatorCreated(HttpServletRequest request, Integer pageNumb, Integer pageSize) {
         try {
-            if (!Checker.isAddress(creatorAddress)) {
-                return Wrapper.alert(getLocaleMsg(LangHandle.MarketCreatorAddressFormatError));
-            }
+            String creatorAddress = getLoginUserAddress(request);
             Pagination page = marketService.queryByCreator(creatorAddress, pageNumb, pageSize);
             return Wrapper.success(page);
         } catch (Exception e) {

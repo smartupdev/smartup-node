@@ -2,7 +2,12 @@ app:
 
   protocol: http
   domain: 127.0.0.1
-  port: 8080
+  port: 8086
+
+eth:
+  protocol: http
+  domain: 54.255.204.122
+  port: 80
 
 spring:
 
@@ -49,9 +54,9 @@ pagehelper:
     params: count=countSql
 
 server:
-  port: 8080
+  port: 8086
 
 logging:
   level:
     org.springframework: info
-    global.smartup.node: debug
+    global.smartup.node: info

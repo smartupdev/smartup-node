@@ -43,6 +43,10 @@ public class Wrapper implements Serializable {
         return new Wrapper(WpConstant.Code.SystemError, null, WpConstant.Message.SystemError);
     }
 
+    public static Wrapper notLogin() {
+        return new Wrapper(WpConstant.Code.NoTLogin, null, WpConstant.Message.NotLogin);
+    }
+
     public static Wrapper paramError(Object o) {
         return new Wrapper(WpConstant.Code.ParamError, o, WpConstant.Message.ParamError);
     }
