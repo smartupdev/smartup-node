@@ -21,7 +21,7 @@ public class Checker {
         if (StringUtils.isBlank(txHash)) {
             return false;
         }
-        if (txHash.length() != 64) {
+        if (txHash.length() != 66) {
             return false;
         }
         return true;

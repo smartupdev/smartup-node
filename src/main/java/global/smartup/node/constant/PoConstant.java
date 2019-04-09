@@ -28,4 +28,26 @@ public class PoConstant {
 
     }
 
+    public class Trade {
+
+        public class Stage {
+
+            public static final String Padding = "pending";
+
+            public static final String Success = "success";
+
+            public static final String Fail = "fail";
+
+        }
+
+        public class Type {
+
+            public static final String Buy = "buy";
+
+            public static final String Sell = "sell";
+
+        }
+
+    }
+
 }

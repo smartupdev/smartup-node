@@ -29,14 +29,15 @@ create table market (
 
 drop table if exists trade;
 create table trade (
-  tx_hash varchar(64) primary key ,
+  tx_hash varchar(66) primary key ,
   stage varchar(16),
   user_address varchar(42),
   market_address varchar(42),
   type varchar(16),
+  sut_offer decimal(40,20),
   sut_amount decimal(40,20),
   ct_amount decimal(40,20),
-  time datetime
+  create_time datetime
 );
 
 drop table if exists post;

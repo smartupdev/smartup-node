@@ -17,6 +17,8 @@ public class LangHandle {
 
 	public static final String PostDescriptionEmptyError = "post_description_empty_error";
 
+	public static final String TradeTxHashFormatError = "trade_tx_hash_format_error";
+
 	public static final String UserAddressNotExist = "user_address_not_exist";
 
 	public static final String MarketTxHashEmptyError = "market_tx_hash_empty_error";
@@ -33,9 +35,9 @@ public class LangHandle {
 
 	public static final String MarketNameLengthError = "market_name_length_error";
 
-	public static final String PostTitleLengthError = "post_title_length_error";
-
 	public static final String UserAvatarIpfsHashMaxSizeError = "user_avatar_ipfs_hash_max_size_error";
+
+	public static final String PostTitleLengthError = "post_title_length_error";
 
 	public static final String Language = "language";
 
@@ -52,5 +54,7 @@ public class LangHandle {
 	public static final String UserAddressAlreadyExist = "user_address_already_exist";
 
 	public static final String PostUserAddressFormatError = "post_user_address_format_error";
+
+	public static final String TradeMarketAddressFormatError = "trade_market_address_format_error";
 
 }
