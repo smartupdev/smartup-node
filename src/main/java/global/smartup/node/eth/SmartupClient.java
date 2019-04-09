@@ -24,10 +24,27 @@ public class SmartupClient {
     @Autowired
     private EthClient ethClient;
 
-    public String getCtMarketAddress(String txHash) {
+
+    public TransactionReceipt queryReceipt(String txHash) {
+        return ethClient.getTxReceipt(txHash);
+    }
+
+    public boolean isTxFail(TransactionReceipt receipt) {
+        if (receipt != null) {
+            if (receipt.getStatus().equals("0x0")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public String getCtMarketAddress(TransactionReceipt receipt) {
         try {
-            TransactionReceipt receipt = ethClient.getTxReceipt(txHash);
             if (receipt == null) {
+                return null;
+            }
+            String status = receipt.getStatus();
+            if (status.equals("0x0")) {
                 return null;
             }
             List<Log> list = receipt.getLogs();

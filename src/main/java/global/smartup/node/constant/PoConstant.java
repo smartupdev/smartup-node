@@ -10,6 +10,8 @@ public class PoConstant {
 
             public static final String Built = "built";
 
+            public static final String Fail = "fail";
+
         }
 
     }

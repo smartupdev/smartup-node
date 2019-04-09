@@ -44,7 +44,7 @@ public class Wrapper implements Serializable {
     }
 
     public static Wrapper notLogin() {
-        return new Wrapper(WpConstant.Code.NoTLogin, null, WpConstant.Message.NotLogin);
+        return new Wrapper(WpConstant.Code.NotLogin, null, WpConstant.Message.NotLogin);
     }
 
     public static Wrapper paramError(Object o) {

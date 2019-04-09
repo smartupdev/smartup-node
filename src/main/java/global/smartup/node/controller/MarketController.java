@@ -61,7 +61,7 @@ public class MarketController extends BaseController {
             notes = "参数：marketAddress\n" +
                     "返回：obj = {\n" +
                     "　txHash, creatorAddress, marketAddress, name, description, \n" +
-                    "　stage(creating=创建中, built=创建完成), createTime \n" +
+                    "　stage(creating=创建中, built=创建完成, fail=创建失败), createTime \n" +
                     "}")
     @RequestMapping("/market/one")
     public Object one(HttpServletRequest request, String marketAddress) {
@@ -117,7 +117,7 @@ public class MarketController extends BaseController {
     @ApiOperation(value = "全部市场列表<暂用,后续会有各种排序>", httpMethod = "POST", response = Wrapper.class,
             notes = "参数：无\n" +
                     "返回：obj = [ {见/api/market/one}, {}, ...]")
-    @RequestMapping("/list")
+    @RequestMapping("/market/list")
     public Object list(HttpServletRequest request) {
         try {
             List list = marketService.queryAll();

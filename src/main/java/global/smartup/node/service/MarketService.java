@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.Date;
@@ -43,12 +44,21 @@ public class MarketService {
         example.orderBy("createTime").asc();
         List<Market> list = marketMapper.selectByExample(example);
         for (Market market : list) {
-            String ctAddress = smartupClient.getCtMarketAddress(market.getTxHash());
-            if (ctAddress != null) {
-                market.setMarketAddress(ctAddress);
-                market.setStage(PoConstant.Market.Stage.Built);
-                marketMapper.updateByPrimaryKey(market);
+            TransactionReceipt receipt = smartupClient.queryReceipt(market.getTxHash());
+            if (receipt != null) {
+                if (smartupClient.isTxFail(receipt)) {
+                    market.setStage(PoConstant.Market.Stage.Fail);
+                    marketMapper.updateByPrimaryKey(market);
+                } else {
+                    String ctAddress = smartupClient.getCtMarketAddress(receipt);
+                    if (ctAddress != null) {
+                        market.setMarketAddress(ctAddress);
+                        market.setStage(PoConstant.Market.Stage.Built);
+                        marketMapper.updateByPrimaryKey(market);
+                    }
+                }
             }
+
         }
     }
 
