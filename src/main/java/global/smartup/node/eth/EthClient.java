@@ -1,6 +1,7 @@
 package global.smartup.node.eth;
 
 import global.smartup.node.Config;
+import global.smartup.node.util.Checker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,12 +95,12 @@ public class EthClient {
 
     public boolean recoverSignature (String address, String message, String signature) {
         try {
+            if (!Checker.isAddress(address) || signature.length() != 132) {
+                return false;
+            }
             String prefix = PERSONAL_MESSAGE_PREFIX + message.length();
             byte[] msgHash = Hash.sha3((prefix + message).getBytes());
             byte[] signatureBytes = Numeric.hexStringToByteArray(signature);
-
-            // TODO
-            // signature.length()
 
             byte v = signatureBytes[64];
             if (v < 27) {
