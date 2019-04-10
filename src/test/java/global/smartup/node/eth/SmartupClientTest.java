@@ -1,14 +1,18 @@
 package global.smartup.node.eth;
 
 import com.alibaba.fastjson.JSON;
+
 import global.smartup.node.Starter;
 import global.smartup.node.po.Trade;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
+
+import java.util.Date;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Starter.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -52,6 +56,16 @@ public class SmartupClientTest {
         if (receipt != null) {
             Trade trade = smartupClient.getSellPrice(receipt);
             System.out.println(JSON.toJSONString(trade));
+        }
+    }
+
+    @Test
+    public void getBlockTime() {
+        String txHash = "0x9176544ade43a7ab7ebd9b5fc8a912108b48c56e1312f9456ecb88b5f00d944e";
+        TransactionReceipt receipt = smartupClient.queryReceipt(txHash);
+        if (receipt != null) {
+            Date date = smartupClient.getBlockTime(receipt);
+            System.out.println(DateFormatUtils.ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT.format(date));
         }
     }
 

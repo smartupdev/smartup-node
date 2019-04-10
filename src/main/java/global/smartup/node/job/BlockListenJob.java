@@ -1,19 +1,19 @@
 package global.smartup.node.job;
 
-import global.smartup.node.service.MarketService;
+import global.smartup.node.eth.BlockListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
-public class FindCtAddressJob {
+public class BlockListenJob {
 
     @Autowired
-    private MarketService marketService;
+    private BlockListener blockListener;
 
-    @Scheduled(fixedDelay = 1 * 1000)
-    public void findCtAddress() {
-        marketService.updateCreatingToBuilt();
+    @Scheduled(fixedDelay = 500)
+    public void blockListen () {
+        blockListener.start();
     }
 
 }

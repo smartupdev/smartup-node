@@ -1,25 +1,35 @@
 package global.smartup.node.eth;
 
-
 import global.smartup.node.Starter;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.web3j.protocol.core.methods.response.EthBlock;
+
+import java.math.BigInteger;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Starter.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class Erc20ClientTest {
-
+public class BlockListenerTest {
 
     @Autowired
-    private Erc20Client erc20Client;
+    private BlockListener blockListener;
+
+    @Autowired
+    private EthClient ethClient;
 
     @Test
-    public void getSymbol() {
-        String s = erc20Client.getSymbol("0xf1899c6eb6940021c1ae4e9c3a8e29ee93704b03");
-        System.out.println(s);
+    public void parseBlock() {
+
+        EthBlock.Block block = ethClient.getBlockByNumber(BigInteger.valueOf(5408855L), true);
+        blockListener.parseBlock(block);
+
     }
+
+
+
 
 }

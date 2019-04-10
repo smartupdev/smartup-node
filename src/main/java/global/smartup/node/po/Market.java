@@ -14,25 +14,26 @@ public class Market {
 
     public interface Add {}
 
+    public interface CheckName {}
+
     @Id
+    private String marketId;
+
     @Column(name="tx_hash")
-    @NotNull(message = "{market_tx_hash_empty_error}", groups = Market.Add.class)
-    @NotEmpty(message = "{market_tx_hash_empty_error}", groups = Market.Add.class)
-    @Size(max = 64, min = 64, message = "{market_tx_hash_format_error}", groups = Market.Add.class)
     private String txHash;
 
-    @NotNull(message = "{market_creator_address_format_error}", groups = Market.Add.class)
-    @NotEmpty(message = "{market_creator_address_format_error}", groups = Market.Add.class)
-    @Size(max = 42, min = 42, message = "{market_creator_address_format_error}", groups = Market.Add.class)
+    // @NotNull(message = "{market_creator_address_format_error}", groups = Market.Add.class)
+    // @NotEmpty(message = "{market_creator_address_format_error}", groups = Market.Add.class)
+    // @Size(max = 42, min = 42, message = "{market_creator_address_format_error}", groups = Market.Add.class)
     @Column(name="creator_address")
     private String creatorAddress;
 
     @Column(name="market_address")
     private String marketAddress;
 
-    @NotNull(message = "{market_name_empty_error}", groups = Market.Add.class)
-    @NotEmpty(message = "{market_name_empty_error}", groups = Market.Add.class)
-    @Size(max = 30, min = 2, message = "{market_name_length_error}", groups = Market.Add.class)
+    @NotNull(message = "{market_name_empty_error}", groups = {Market.Add.class, Market.CheckName.class})
+    @NotEmpty(message = "{market_name_empty_error}", groups = {Market.Add.class, Market.CheckName.class})
+    @Size(max = 30, min = 2, message = "{market_name_length_error}", groups = {Market.Add.class, Market.CheckName.class})
     @Column(name="name")
     private String name;
 
@@ -43,13 +44,25 @@ public class Market {
     @Column(name="type")
     private String type;
 
-    // 状态
-    // 创建中，已建成
+    /**
+     * {@link global.smartup.node.constant.PoConstant.Market.Stage}
+     */
     @Column(name="stage")
     private String stage;
 
     @Column(name="create_time")
     private Date createTime;
+
+
+
+
+    public String getMarketId() {
+        return marketId;
+    }
+
+    public void setMarketId(String marketId) {
+        this.marketId = marketId;
+    }
 
     public String getTxHash() {
         return txHash;

@@ -31,25 +31,56 @@ public class MarketController extends BaseController {
     @Autowired
     private Validator validator;
 
-    @ApiOperation(value = "创建市场", httpMethod = "POST", response = Wrapper.class,
-            notes = "参数：txHash, name, description\n" +
+    @ApiOperation(value = "保存市场", httpMethod = "POST", response = Wrapper.class,
+            notes = "参数：name, description\n" +
                     "返回：是否成功")
-    @RequestMapping("/user/market/create")
-    public Object create(HttpServletRequest request, Market market) {
+    @RequestMapping("/user/market/save")
+    public Object save(HttpServletRequest request, Market market) {
         try {
-            String userAddress = getLoginUserAddress(request);
-            market.setCreatorAddress(userAddress);
             String err = validator.validate(market, Market.Add.class);
             if (err != null) {
                 return Wrapper.alert(err);
             }
-            if (!Checker.isAddress(market.getCreatorAddress())) {
-                return Wrapper.alert(getLocaleMsg(LangHandle.MarketCreatorAddressFormatError));
+            String userAddress = getLoginUserAddress(request);
+            market.setCreatorAddress(userAddress);
+            marketService.save(market);
+            return Wrapper.success();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return Wrapper.sysError();
+        }
+    }
+
+    @ApiOperation(value = "正在创建的市场", httpMethod = "POST", response = Wrapper.class,
+                notes = "参数：无 \n" +
+                        "返回：obj = { 见/api/market/one }")
+    @RequestMapping("/user/market/creating")
+    public Object creating(HttpServletRequest request) {
+        try {
+            Market market = marketService.queryCurrentCreating(getLoginUserAddress(request));
+            return Wrapper.success(market);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return Wrapper.sysError();
+        }
+    }
+
+    @ApiOperation(value = "判断市场名字正确", httpMethod = "POST", response = Wrapper.class,
+                notes = "参数：marketName\n" +
+                        "返回：是否正确")
+    @RequestMapping("/market/is/name/right")
+    public Object isNameRight(HttpServletRequest request, String marketName) {
+        try {
+            Market market = new Market();
+            market.setName(marketName);
+            String err = validator.validate(market, Market.CheckName.class);
+            if (err != null) {
+                return Wrapper.alert(err);
             }
-            if (marketService.isTxHashExist(market.getTxHash())) {
-                return Wrapper.alert(getLocaleMsg(LangHandle.MarketTxHashRepeatError));
+            boolean isRepeat = marketService.isNameRepeat(marketName);
+            if (isRepeat) {
+                return Wrapper.alert(getLocaleMsg(LangHandle.MarketNameRepeat));
             }
-            marketService.create(market);
             return Wrapper.success();
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -60,8 +91,8 @@ public class MarketController extends BaseController {
     @ApiOperation(value = "市场详情", httpMethod = "POST", response = Wrapper.class,
             notes = "参数：marketAddress\n" +
                     "返回：obj = {\n" +
-                    "　txHash, creatorAddress, marketAddress, name, description, \n" +
-                    "　stage(creating=创建中, built=创建完成, fail=创建失败), createTime \n" +
+                    "　marketId, txHash, creatorAddress, marketAddress, name, description, \n" +
+                    "　stage(creating=创建中, built=创建完成, fail=创建失败, close=已关闭), createTime \n" +
                     "}")
     @RequestMapping("/market/one")
     public Object one(HttpServletRequest request, String marketAddress) {
@@ -86,28 +117,6 @@ public class MarketController extends BaseController {
                 return Wrapper.alert(getLocaleMsg(LangHandle.MarketTxHashFormatError));
             }
             return Wrapper.success(marketService.queryByTxHash(txHash));
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            return Wrapper.sysError();
-        }
-    }
-
-
-    @Deprecated
-    @ApiOperation(value = "更新市场address<暂用，后续由服务端处理>", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：txHash, marketAddress\n" +
-                        "返回：是否成功")
-    @RequestMapping("/update/market/address")
-    public Object updateMarketAddress(HttpServletRequest request, String txHash, String marketAddress) {
-        try {
-            if (marketService.isTxHashExist(txHash)) {
-                return Wrapper.alert(getLocaleMsg(LangHandle.MarketTxHashRepeatError));
-            }
-            if (!Checker.isAddress(marketAddress)) {
-                return Wrapper.alert(getLocaleMsg(LangHandle.AddressFormatError));
-            }
-            marketService.updateBuilt(txHash, marketAddress);
-            return Wrapper.success();
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return Wrapper.sysError();
