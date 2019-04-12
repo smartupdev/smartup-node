@@ -18,7 +18,7 @@ public class Market {
     @Column(name="tx_hash")
     @NotNull(message = "{market_tx_hash_empty_error}", groups = Market.Add.class)
     @NotEmpty(message = "{market_tx_hash_empty_error}", groups = Market.Add.class)
-    @Size(max = 64, min = 64, message = "{market_tx_hash_format_error}", groups = Market.Add.class)
+    @Size(max = 66, min = 66, message = "{market_tx_hash_format_error}", groups = Market.Add.class)
     private String txHash;
 
     @NotNull(message = "{market_creator_address_format_error}", groups = Market.Add.class)
