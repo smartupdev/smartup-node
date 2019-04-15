@@ -107,6 +107,9 @@ public class BlockListener {
                     CreateMarketInfo info = new CreateMarketInfo();
                     info.parseTransaction(tx);
                     TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
+                    if (receipt == null) {
+                        return;
+                    }
                     info.parseTransactionReceipt(receipt);
 
                     // save market
@@ -120,6 +123,9 @@ public class BlockListener {
                     BuyCTInfo info = new BuyCTInfo();
                     info.parseTransaction(tx);
                     TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
+                    if (receipt == null) {
+                        return;
+                    }
                     info.parseTransactionReceipt(receipt);
                     info.setBlockTime(new Date(block.getTimestamp().longValue() * 1000));
 
@@ -145,6 +151,9 @@ public class BlockListener {
                 SellCTInfo info = new SellCTInfo();
                 info.parseTransaction(tx);
                 TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
+                if (receipt == null) {
+                    return;
+                }
                 info.parseTransactionReceipt(receipt);
                 info.setBlockTime(new Date(block.getTimestamp().longValue() * 1000));
 
