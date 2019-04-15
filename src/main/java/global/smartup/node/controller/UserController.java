@@ -45,31 +45,6 @@ public class UserController extends BaseController {
     @Autowired
     private Validator validator;
 
-    @Deprecated
-    @ApiOperation(value = "添加用户", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：address, name(可以空), avatarIpfsHash(可以空)\n" +
-                        "返回：是否成功")
-    @RequestMapping("/user/add")
-    public Object add(HttpServletRequest request, User user) {
-        try {
-            if (!Checker.isAddress(user.getUserAddress())) {
-                return Wrapper.alert(getLocaleMsg(LangHandle.AddressFormatError));
-            }
-            String err = validator.validate(user, User.Add.class);
-            if (err != null) {
-                return Wrapper.alert(err);
-            }
-            if (userService.isExist(user.getUserAddress())) {
-                return Wrapper.alert(getLocaleMsg(LangHandle.UserAddressAlreadyExist));
-            }
-            userService.add(user);
-            return Wrapper.success();
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            return Wrapper.sysError();
-        }
-    }
-
     @ApiOperation(value = "登录", httpMethod = "POST", response = Wrapper.class,
                 notes = "参数：address\n" +
                         "返回：code")
@@ -124,43 +99,6 @@ public class UserController extends BaseController {
             } else {
                 return Wrapper.alert(getLocaleMsg(LangHandle.UserSignatureError));
             }
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            return Wrapper.sysError();
-        }
-    }
-
-    @Deprecated
-    @ApiOperation(value = "查询用户", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：address\n" +
-                        "返回：obj = {\n" +
-                        "　address, name, avatarIpfsHash, createTime\n" +
-                        "}")
-    @RequestMapping("/user/query")
-    public Object query(HttpServletRequest request, String address) {
-        try {
-            if (!Checker.isAddress(address)) {
-                return Wrapper.alert(getLocaleMsg(LangHandle.AddressFormatError));
-            }
-            User user = userService.query(address);
-            return Wrapper.success(user);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            return Wrapper.sysError();
-        }
-    }
-
-    @Deprecated
-    @ApiOperation(value = "地址是否存在", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：address\n" +
-                        "返回：是否存在")
-    @RequestMapping("/user/exist/address")
-    public Object existAddress(HttpServletRequest request, String address) {
-        try {
-            if (!Checker.isAddress(address)) {
-                return Wrapper.alert(getLocaleMsg(LangHandle.AddressFormatError));
-            }
-            return Wrapper.success(userService.isExist(address));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return Wrapper.sysError();
