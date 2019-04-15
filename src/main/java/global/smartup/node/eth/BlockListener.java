@@ -107,7 +107,7 @@ public class BlockListener {
                     CreateMarketInfo info = new CreateMarketInfo();
                     info.parseTransaction(tx);
                     TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
-                    if (receipt == null) {
+                    if (ethClient.isTransactionFail(receipt)) {
                         return;
                     }
                     info.parseTransactionReceipt(receipt);
@@ -123,7 +123,7 @@ public class BlockListener {
                     BuyCTInfo info = new BuyCTInfo();
                     info.parseTransaction(tx);
                     TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
-                    if (receipt == null) {
+                    if (ethClient.isTransactionFail(receipt)) {
                         return;
                     }
                     info.parseTransactionReceipt(receipt);
@@ -151,7 +151,7 @@ public class BlockListener {
                 SellCTInfo info = new SellCTInfo();
                 info.parseTransaction(tx);
                 TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
-                if (receipt == null) {
+                if (ethClient.isTransactionFail(receipt)) {
                     return;
                 }
                 info.parseTransactionReceipt(receipt);

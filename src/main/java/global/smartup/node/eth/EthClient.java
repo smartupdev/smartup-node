@@ -124,6 +124,14 @@ public class EthClient {
         return null;
     }
 
+    public boolean isTransactionFail(TransactionReceipt receipt) {
+        String status = receipt.getStatus();
+        if (status.equals("0x0")) {
+            return true;
+        }
+        return false;
+    }
+
     public boolean recoverSignature (String address, String message, String signature) {
         try {
             if (!Checker.isAddress(address) || signature.length() != 132) {
