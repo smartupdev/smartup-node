@@ -10,6 +10,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
@@ -50,6 +51,15 @@ public class Config {
 
     @Value("${eth.port}")
     public String ethPort;
+
+    @Value("${eth.smartupContract}")
+    public String ethSmartupContract;
+
+    @Value("${eth.sutContract}")
+    public String ethSutContract;
+
+    @Value("${eth.nttContract}")
+    public String ethNttContract;
 
     @Bean
     public MessageSource messageSource() {

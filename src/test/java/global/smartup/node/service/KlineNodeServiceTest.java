@@ -1,7 +1,8 @@
-package global.smartup.node.eth;
+package global.smartup.node.service;
 
-
+import com.alibaba.fastjson.JSON;
 import global.smartup.node.Starter;
+import global.smartup.node.po.KlineNode;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,16 +11,17 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Starter.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class Erc20ClientTest {
-
+public class KlineNodeServiceTest {
 
     @Autowired
-    private Erc20Client erc20Client;
+    KlineNodeService klineNodeService;
 
     @Test
-    public void getSymbol() {
-        String s = erc20Client.getSymbol("0xf1899c6eb6940021c1ae4e9c3a8e29ee93704b03");
-        System.out.println(s);
+    public void queryNodeByTimeId() {
+
+        KlineNode node = klineNodeService.queryNodeByTimeId("0xd8fbc59d5ee1788e80c2919d8d9a18170139e89f", "1hour", "2019_04_15_18");
+
+        System.out.println(JSON.toJSONString(node));
     }
 
 }

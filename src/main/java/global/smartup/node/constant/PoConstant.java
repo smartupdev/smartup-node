@@ -1,5 +1,10 @@
 package global.smartup.node.constant;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class PoConstant {
 
     public class Market {
@@ -11,6 +16,8 @@ public class PoConstant {
             public static final String Built = "built";
 
             public static final String Fail = "fail";
+
+            public static final String Close = "close";
 
         }
 
@@ -45,6 +52,26 @@ public class PoConstant {
             public static final String Buy = "buy";
 
             public static final String Sell = "sell";
+
+        }
+
+    }
+
+    public static class KLineNode {
+
+        public static class Segment {
+
+            // 1min 1hour 1day 1week
+
+            public static final String Min = "1min";
+
+            public static final String Hour = "1hour";
+
+            public static final String Day = "1day";
+
+            public static final String Week = "1week";
+
+            public static final String[] All = new String[]{Hour, Day, Week};
 
         }
 

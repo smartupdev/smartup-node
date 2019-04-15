@@ -49,9 +49,11 @@ public class LangHandle {
 
 	public static final String PostTitleEmptyError = "post_title_empty_error";
 
-	public static final String PostMarketAddressFormatError = "post_market_address_format_error";
+	public static final String MarketNameRepeat = "market_name_repeat";
 
 	public static final String UserAddressAlreadyExist = "user_address_already_exist";
+
+	public static final String PostMarketAddressFormatError = "post_market_address_format_error";
 
 	public static final String PostUserAddressFormatError = "post_user_address_format_error";
 

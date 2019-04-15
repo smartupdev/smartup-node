@@ -7,17 +7,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.web3j.abi.FunctionReturnDecoder;
-import org.web3j.abi.TypeDecoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.abi.datatypes.generated.Uint256;
+import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.core.methods.response.Log;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.utils.Convert;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 @Component
@@ -27,7 +29,6 @@ public class SmartupClient {
 
     @Autowired
     private EthClient ethClient;
-
 
     public TransactionReceipt queryReceipt(String txHash) {
         return ethClient.getTxReceipt(txHash);
@@ -151,6 +152,12 @@ public class SmartupClient {
             log.error(e.getMessage(), e);
         }
         return null;
+    }
+
+    public Date getBlockTime(TransactionReceipt receipt) {
+        EthBlock.Block block = ethClient.getBlockByNumber(receipt.getBlockNumber(), false);
+        BigInteger time = block.getTimestamp();
+        return new Date(time.longValue() * 1000);
     }
 
 }

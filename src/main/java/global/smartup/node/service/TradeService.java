@@ -3,7 +3,8 @@ package global.smartup.node.service;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import global.smartup.node.constant.PoConstant;
-import global.smartup.node.eth.SmartupClient;
+import global.smartup.node.eth.info.BuyCTInfo;
+import global.smartup.node.eth.info.SellCTInfo;
 import global.smartup.node.mapper.TradeMapper;
 import global.smartup.node.po.Trade;
 import global.smartup.node.util.Pagination;
@@ -12,11 +13,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.Date;
-import java.util.List;
 
 @Service
 public class TradeService {
@@ -26,13 +25,40 @@ public class TradeService {
     @Autowired
     private TradeMapper tradeMapper;
 
-    @Autowired
-    private SmartupClient smartupClient;
 
-    public Trade add(Trade trade) {
+    public void saveBuyTxByChain(BuyCTInfo info) {
+        if (info == null || query(info.getTxHash()) != null) {
+            return;
+        }
+        Trade trade = new Trade();
+        trade.setTxHash(info.getTxHash());
+        trade.setMarketAddress(info.getEventMarketAddress());
+        trade.setUserAddress(info.getEventUserAddress());
+        trade.setStage(PoConstant.Trade.Stage.Success);
         trade.setCreateTime(new Date());
+        trade.setBlockTime(info.getBlockTime());
+        trade.setType(PoConstant.Trade.Type.Buy);
+        trade.setSutOffer(info.getEventSUTOffer());
+        trade.setSutAmount(info.getEventSUT());
+        trade.setCtAmount(info.getEventCT());
         tradeMapper.insert(trade);
-        return trade;
+    }
+
+    public void saveSellTxByChain(SellCTInfo info) {
+        if (info == null || query(info.getTxHash()) != null) {
+            return;
+        }
+        Trade trade = new Trade();
+        trade.setTxHash(info.getTxHash());
+        trade.setMarketAddress(info.getEventMarketAddress());
+        trade.setUserAddress(info.getEventUserAddress());
+        trade.setStage(PoConstant.Trade.Stage.Success);
+        trade.setCreateTime(new Date());
+        trade.setBlockTime(info.getBlockTime());
+        trade.setType(PoConstant.Trade.Type.Sell);
+        trade.setSutAmount(info.getEventSUT());
+        trade.setCtAmount(info.getEventCT());
+        tradeMapper.insert(trade);
     }
 
     public Trade query(String txHash) {
@@ -52,42 +78,5 @@ public class TradeService {
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
     }
 
-    public void findTrade() {
-        Example example = new Example(Trade.class);
-        example.createCriteria().andEqualTo("stage", PoConstant.Trade.Stage.Padding);
-        example.orderBy("createTime").asc();
-        List<Trade> list = tradeMapper.selectByExample(example);
-        for (Trade trade : list) {
-            TransactionReceipt receipt = smartupClient.queryReceipt(trade.getTxHash());
-            if (receipt == null) {
-                continue;
-            }
-            boolean isFail = smartupClient.isTxFail(receipt);
-            if (isFail) {
-                trade.setStage(PoConstant.Trade.Stage.Fail);
-                tradeMapper.updateByPrimaryKey(trade);
-                continue;
-            }
-            if (PoConstant.Trade.Type.Buy.equals(trade.getType())) {
-                Trade chain = smartupClient.getBuyPrice(receipt);
-                trade.setUserAddress(chain.getUserAddress());
-                trade.setSutOffer(chain.getSutOffer());
-                trade.setSutAmount(chain.getSutAmount());
-                trade.setCtAmount(chain.getCtAmount());
-                trade.setMarketAddress(chain.getMarketAddress());
-                trade.setStage(PoConstant.Trade.Stage.Success);
-            } else if (PoConstant.Trade.Type.Sell.equals(trade.getType())) {
-                Trade chain = smartupClient.getSellPrice(receipt);
-                trade.setUserAddress(chain.getUserAddress());
-                trade.setSutAmount(chain.getSutAmount());
-                trade.setCtAmount(chain.getCtAmount());
-                trade.setMarketAddress(chain.getMarketAddress());
-                trade.setStage(PoConstant.Trade.Stage.Success);
-            } else {
-                continue;
-            }
-            tradeMapper.updateByPrimaryKey(trade);
-        }
-    }
 
 }

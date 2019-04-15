@@ -1,4 +1,4 @@
-package global.smartup.node.eth;
+package global.smartup.node.compoment;
 
 
 import global.smartup.node.Starter;
@@ -10,16 +10,16 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Starter.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class Erc20ClientTest {
-
+public class IdGeneratorTest {
 
     @Autowired
-    private Erc20Client erc20Client;
+    IdGenerator idGenerator;
 
     @Test
-    public void getSymbol() {
-        String s = erc20Client.getSymbol("0xf1899c6eb6940021c1ae4e9c3a8e29ee93704b03");
-        System.out.println(s);
+    public void test() {
+        long id = idGenerator.getId();
+        String hex = Long.toString(id, 36);
+        System.out.println(hex);
     }
 
 }

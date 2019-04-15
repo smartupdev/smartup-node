@@ -11,15 +11,14 @@ import org.web3j.crypto.Hash;
 import org.web3j.crypto.Keys;
 import org.web3j.crypto.Sign;
 import org.web3j.protocol.Web3j;
-import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt;
-import org.web3j.protocol.core.methods.response.EthTransaction;
-import org.web3j.protocol.core.methods.response.Transaction;
-import org.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.web3j.protocol.core.DefaultBlockParameter;
+import org.web3j.protocol.core.methods.response.*;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.utils.Convert;
 import org.web3j.utils.Numeric;
 
 import javax.annotation.PostConstruct;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -47,6 +46,38 @@ public class EthClient {
         String address = config.ethProtocol + "://" + config.ethDomain + ":" + config.ethPort + "/";
         httpService = new HttpService(address);
         web3j = Web3j.build(httpService);
+    }
+
+    public BigInteger getLastBlockNumber() {
+        try {
+            EthBlockNumber blockNumber = web3j.ethBlockNumber().send();
+            if (!blockNumber.hasError()) {
+                return blockNumber.getBlockNumber();
+            } else {
+                log.error("getLastBlockNumber error {}", blockNumber.getError().getMessage());
+            }
+        } catch (IOException e) {
+            log.error("getLastBlockNumber error {}", e.getMessage());
+        }
+        return null;
+    }
+
+    public EthBlock.Block getBlockByNumber(BigInteger number, boolean isDetail) {
+        if(number.compareTo(BigInteger.ONE)<0){
+            number=BigInteger.ONE;
+        }
+        DefaultBlockParameter blockNumber = DefaultBlockParameter.valueOf(number);
+        try {
+            EthBlock ethBlock = web3j.ethGetBlockByNumber(blockNumber, isDetail).send();
+            if (!ethBlock.hasError()) {
+                return ethBlock.getBlock();
+            } else {
+                log.error("getBlockByNumber error {}", ethBlock.getError().getMessage());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public Transaction getTx(String txHash) {

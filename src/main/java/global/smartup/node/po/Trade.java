@@ -37,6 +37,18 @@ public class Trade {
     @Column(name="create_time")
     private Date createTime;
 
+    @Column(name="block_time")
+    private Date blockTime;
+
+
+    public Date getBlockTime() {
+        return blockTime;
+    }
+
+    public void setBlockTime(Date blockTime) {
+        this.blockTime = blockTime;
+    }
+
     public String getTxHash() {
         return txHash;
     }

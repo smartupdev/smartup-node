@@ -53,6 +53,10 @@ public class IdGenerator {
         return id;
     }
 
+    public String getStringId() {
+        return Long.toString(getId(), 36);
+    }
+
     private synchronized long nextId() {
         long timestamp = timeGen();
         if (timestamp < lastTimestamp) {

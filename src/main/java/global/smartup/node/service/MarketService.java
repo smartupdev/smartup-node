@@ -1,20 +1,21 @@
 package global.smartup.node.service;
 
+import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import global.smartup.node.compoment.IdGenerator;
 import global.smartup.node.constant.PoConstant;
-import global.smartup.node.eth.SmartupClient;
+import global.smartup.node.eth.info.CreateMarketInfo;
 import global.smartup.node.mapper.MarketMapper;
 import global.smartup.node.po.Market;
 import global.smartup.node.util.Pagination;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import tk.mybatis.mapper.entity.Example;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -23,65 +24,90 @@ public class MarketService {
 
     private static final Logger log = LoggerFactory.getLogger(MarketService.class);
 
+    private static List<String> CacheMarketAddresses = null;
+
     @Autowired
     private MarketMapper marketMapper;
 
     @Autowired
-    private SmartupClient smartupClient;
+    private IdGenerator idGenerator;
 
-    @Autowired
-    private RedisTemplate redisTemplate;
-
-    public void create(Market market) {
-        market.setStage(PoConstant.Market.Stage.Creating);
-        market.setCreateTime(new Date());
-        marketMapper.insert(market);
-    }
-
-    public void updateCreatingToBuilt() {
-        Example example = new Example(Market.class);
-        example.createCriteria().andEqualTo("stage", PoConstant.Market.Stage.Creating);
-        example.orderBy("createTime").asc();
-        List<Market> list = marketMapper.selectByExample(example);
-        for (Market market : list) {
-            TransactionReceipt receipt = smartupClient.queryReceipt(market.getTxHash());
-            if (receipt != null) {
-                if (smartupClient.isTxFail(receipt)) {
-                    market.setStage(PoConstant.Market.Stage.Fail);
-                    marketMapper.updateByPrimaryKey(market);
-                } else {
-                    String ctAddress = smartupClient.getCtMarketAddress(receipt);
-                    if (ctAddress != null) {
-                        market.setMarketAddress(ctAddress);
-                        market.setStage(PoConstant.Market.Stage.Built);
-                        marketMapper.updateByPrimaryKey(market);
-                    }
-                }
-            }
-
+    public void save(Market market) {
+        Market current = queryCurrentCreating(market.getCreatorAddress());
+        if (current != null) {
+            current.setName(market.getName());
+            current.setDescription(market.getDescription());
+            marketMapper.updateByPrimaryKey(current);
+        } else {
+            market.setMarketId(idGenerator.getStringId());
+            market.setStage(PoConstant.Market.Stage.Creating);
+            market.setCreateTime(new Date());
+            marketMapper.insert(market);
         }
     }
 
-    public void updateBuilt(String txHash, String address) {
+    /**
+     * 用链上的信息更新市场
+     */
+    public void updateByChain(CreateMarketInfo info) {
+        if (info == null) {
+            return;
+        }
+        if (isTxHashExist(info.getTxHash())) {
+            return;
+        }
+        Market market = queryCurrentCreating(info.getEventCreatorAddress());
+        if (market == null) {
+            log.error("Can not find create market info by user = {}, hash = {}", info.getEventMarketAddress(), info.getTxHash());
+            return;
+        }
+        market.setTxHash(info.getTxHash());
+        market.setMarketAddress(info.getEventMarketAddress());
+        market.setStage(PoConstant.Market.Stage.Built);
+        marketMapper.updateByPrimaryKey(market);
+        log.info("Find market on chain, market = {}", JSON.toJSONString(market));
+
+        // clear cache
+        CacheMarketAddresses = null;
+    }
+
+    public boolean isNameRepeat(String name) {
         Market cdt = new Market();
-        cdt.setTxHash(txHash);
-        cdt.setMarketAddress(address);
+        cdt.setName(name);
         List<Market> list = marketMapper.select(cdt);
-        if (list.size() != 1) {
-            log.error("Can not insert market repeat. txHash={}, address={}", txHash, address);
+        if (list.size() > 0) {
+            return true;
         }
-        Market m = list.get(0);
-        m.setCreatorAddress(address);
-        m.setStage(PoConstant.Market.Stage.Built);
-        marketMapper.updateByPrimaryKey(m);
+        return false;
+    }
+
+    public boolean isMarketExist(String marketAddress) {
+        if (CacheMarketAddresses == null) {
+            CacheMarketAddresses = new ArrayList<>();
+            queryAll().forEach(m -> CacheMarketAddresses.add(m.getMarketAddress()));
+        }
+        return CacheMarketAddresses.contains(marketAddress);
     }
 
     public boolean isTxHashExist(String txHash) {
-        return marketMapper.selectByPrimaryKey(txHash) != null ? true : false;
+        return queryByTxHash(txHash) != null;
+    }
+
+    public Market queryCurrentCreating(String userAddress) {
+        Market cdt = new Market();
+        cdt.setCreatorAddress(userAddress);
+        cdt.setStage(PoConstant.Market.Stage.Creating);
+        return marketMapper.selectOne(cdt);
+    }
+
+    public Market queryById(String id) {
+        return marketMapper.selectByPrimaryKey(id);
     }
 
     public Market queryByTxHash(String txHash) {
-        return marketMapper.selectByPrimaryKey(txHash);
+        Market cdt = new Market();
+        cdt.setTxHash(txHash);
+        return marketMapper.selectOne(cdt);
     }
 
     public Market queryByAddress(String address) {
@@ -98,9 +124,21 @@ public class MarketService {
         Example example = new Example(Market.class);
         example.createCriteria().andEqualTo("creatorAddress", address);
         example.orderBy("createTime").desc();
-        Page page = PageHelper.startPage(pageNumb, pageSize);
+        Page<Market> page = PageHelper.startPage(pageNumb, pageSize);
         marketMapper.selectByExample(example);
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
     }
 
+    public List<String> queryBuiltAndHasTrade() {
+        List<String> ret = new ArrayList<>();
+        Example example = new Example(Market.class);
+        example.createCriteria().andEqualTo("stage", PoConstant.Market.Stage.Built);
+        example.orderBy("createTime").asc();
+        example.excludeProperties("txHash", "creatorAddress", "name", "description", "type", "stage", "createTime");
+        List<Market> markets = marketMapper.selectByExample(example);
+        markets.forEach(m -> ret.add(m.getMarketAddress()));
+        return ret;
+    }
+
 }
+
