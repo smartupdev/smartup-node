@@ -42,6 +42,10 @@ public class MarketController extends BaseController {
                 return Wrapper.alert(err);
             }
             String userAddress = getLoginUserAddress(request);
+            boolean isRepeat = marketService.isNameRepeat(userAddress, market.getName());
+            if (isRepeat) {
+                return Wrapper.alert(getLocaleMsg(LangHandle.MarketNameRepeat));
+            }
             market.setCreatorAddress(userAddress);
             marketService.save(market);
             return Wrapper.success();
@@ -68,7 +72,7 @@ public class MarketController extends BaseController {
     @ApiOperation(value = "判断市场名字正确", httpMethod = "POST", response = Wrapper.class,
                 notes = "参数：marketName\n" +
                         "返回：是否正确")
-    @RequestMapping("/market/is/name/right")
+    @RequestMapping("/user/market/is/name/right")
     public Object isNameRight(HttpServletRequest request, String marketName) {
         try {
             Market market = new Market();
@@ -77,7 +81,7 @@ public class MarketController extends BaseController {
             if (err != null) {
                 return Wrapper.alert(err);
             }
-            boolean isRepeat = marketService.isNameRepeat(marketName);
+            boolean isRepeat = marketService.isNameRepeat(getLoginUserAddress(request), marketName);
             if (isRepeat) {
                 return Wrapper.alert(getLocaleMsg(LangHandle.MarketNameRepeat));
             }

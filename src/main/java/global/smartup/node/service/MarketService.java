@@ -17,6 +17,7 @@ import tk.mybatis.mapper.entity.Example;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 @Service
@@ -71,10 +72,17 @@ public class MarketService {
         CacheMarketAddresses = null;
     }
 
-    public boolean isNameRepeat(String name) {
+    public boolean isNameRepeat(String userAddress, String name) {
         Market cdt = new Market();
         cdt.setName(name);
         List<Market> list = marketMapper.select(cdt);
+        Iterator<Market> iterator = list.iterator();
+        while (iterator.hasNext()) {
+            Market m = iterator.next();
+            if (m.getCreatorAddress().equals(userAddress) && m.getStage().equals(PoConstant.Market.Stage.Creating)) {
+                iterator.remove();
+            }
+        }
         if (list.size() > 0) {
             return true;
         }
