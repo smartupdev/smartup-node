@@ -5,6 +5,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Date;
@@ -54,7 +55,17 @@ public class Market {
     private Date createTime;
 
 
+    @Transient
+    private MarketData data;
 
+
+    public MarketData getData() {
+        return data;
+    }
+
+    public void setData(MarketData data) {
+        this.data = data;
+    }
 
     public String getMarketId() {
         return marketId;

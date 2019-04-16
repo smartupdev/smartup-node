@@ -97,6 +97,7 @@ public class MarketController extends BaseController {
                     "返回：obj = {\n" +
                     "　marketId, txHash, creatorAddress, marketAddress, name, description, \n" +
                     "　stage(creating=创建中, built=创建完成, fail=创建失败, close=已关闭), createTime \n" +
+                    "　data = { latelyChange, last, latelyVolume, amount, count } \n" +
                     "}")
     @RequestMapping("/market/one")
     public Object one(HttpServletRequest request, String marketAddress) {
@@ -127,14 +128,15 @@ public class MarketController extends BaseController {
         }
     }
 
-    @ApiOperation(value = "全部市场列表<暂用,后续会有各种排序>", httpMethod = "POST", response = Wrapper.class,
-            notes = "参数：无\n" +
-                    "返回：obj = [ {见/api/market/one}, {}, ...]")
+    @ApiOperation(value = "全部市场列表", httpMethod = "POST", response = Wrapper.class,
+            notes = "参数：orderBy(lately_change, last, lately_volume, amount, count), asc(true从小到大/false) \n" +
+                    "　pageNumb, pageSize\n" +
+                    "返回：obj = { list = [ {见/api/market/one}, {}, ...] }")
     @RequestMapping("/market/list")
-    public Object list(HttpServletRequest request) {
+    public Object list(HttpServletRequest request, String orderBy, Boolean asc, Integer pageNumb, Integer pageSize) {
         try {
-            List list = marketService.queryAll();
-            return Wrapper.success(list);
+            Pagination page = marketService.queryPage(orderBy, asc, pageNumb, pageSize);
+            return Wrapper.success(page);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return Wrapper.sysError();

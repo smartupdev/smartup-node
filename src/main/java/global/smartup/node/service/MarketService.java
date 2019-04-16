@@ -5,20 +5,24 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import global.smartup.node.compoment.IdGenerator;
 import global.smartup.node.constant.PoConstant;
+import global.smartup.node.eth.info.BuyCTInfo;
 import global.smartup.node.eth.info.CreateMarketInfo;
+import global.smartup.node.eth.info.SellCTInfo;
+import global.smartup.node.mapper.MarketDataMapper;
 import global.smartup.node.mapper.MarketMapper;
 import global.smartup.node.po.Market;
+import global.smartup.node.po.MarketData;
 import global.smartup.node.util.Pagination;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.*;
 
 @Service
 public class MarketService {
@@ -32,6 +36,13 @@ public class MarketService {
 
     @Autowired
     private IdGenerator idGenerator;
+
+    @Autowired
+    private MarketDataMapper marketDataMapper;
+
+    @Autowired
+    private KlineNodeService klineNodeService;
+
 
     public void save(Market market) {
         Market current = queryCurrentCreating(market.getCreatorAddress());
@@ -48,9 +59,9 @@ public class MarketService {
     }
 
     /**
-     * 用链上的信息更新市场
+     * 创建市场事件，更新市场
      */
-    public void updateByChain(CreateMarketInfo info) {
+    public void updateCreateByChain(CreateMarketInfo info) {
         if (info == null) {
             return;
         }
@@ -68,8 +79,55 @@ public class MarketService {
         marketMapper.updateByPrimaryKey(market);
         log.info("Find market on chain, market = {}", JSON.toJSONString(market));
 
+        // create market data
+        MarketData data = new MarketData();
+        data.setMarketAddress(info.getEventMarketAddress());
+        data.setLatelyChange(null);
+        data.setLatelyVolume(BigDecimal.ZERO);
+        data.setAmount(BigDecimal.ZERO);
+        data.setCount(0L);
+        marketDataMapper.insert(data);
+
         // clear cache
         CacheMarketAddresses = null;
+    }
+
+    /**
+     * 购买CT事件，更新市场数据
+     */
+    public void updateBuyTradeByChain(BuyCTInfo info) {
+        String marketAddress = info.getEventMarketAddress();
+        MarketData data = marketDataMapper.selectByPrimaryKey(marketAddress);
+        if (data == null) {
+            log.error("Can not find market data, market address = {}", marketAddress);
+            return;
+        }
+        BigDecimal price = info.getEventSUT().divide(info.getEventCT(), 20, RoundingMode.DOWN);
+        data.setLatelyChange(klineNodeService.queryLatelyChange(marketAddress, price, 24));
+        data.setLatelyVolume(klineNodeService.queryLatelyVolume(info.getEventMarketAddress(), 24));
+        data.setLast(price);
+        data.setAmount(data.getAmount().add(info.getEventSUT()));
+        data.setCount(data.getCount() + 1);
+        marketDataMapper.updateByPrimaryKey(data);
+    }
+
+    /**
+     * 出售CT事件，更新市场数据
+     */
+    public void updateSellTradeByChain(SellCTInfo info) {
+        String marketAddress = info.getEventMarketAddress();
+        MarketData data = marketDataMapper.selectByPrimaryKey(marketAddress);
+        if (data == null) {
+            log.error("Can not find market data, market address = {}", marketAddress);
+            return;
+        }
+        BigDecimal price = info.getEventSUT().divide(info.getEventCT(), 20, RoundingMode.DOWN);
+        data.setLatelyChange(klineNodeService.queryLatelyChange(marketAddress, price, 24));
+        data.setLatelyVolume(klineNodeService.queryLatelyVolume(info.getEventMarketAddress(), 24));
+        data.setLast(price);
+        data.setAmount(data.getAmount().add(info.getEventSUT()));
+        data.setCount(data.getCount() + 1);
+        marketDataMapper.updateByPrimaryKey(data);
     }
 
     public boolean isNameRepeat(String userAddress, String name) {
@@ -146,6 +204,19 @@ public class MarketService {
         List<Market> markets = marketMapper.selectByExample(example);
         markets.forEach(m -> ret.add(m.getMarketAddress()));
         return ret;
+    }
+
+    public Pagination<Market> queryPage(String orderBy, Boolean asc, Integer pageNumb, Integer pageSize) {
+        List<String> orders = Arrays.asList("lately_change", "last", "lately_volume", "amount", "count");
+        if (StringUtils.isBlank(orderBy)|| !orders.contains(orderBy)) {
+            orderBy = "amount";
+        }
+        if (asc == null) {
+            asc = false;
+        }
+        Page<Market> page = PageHelper.startPage(pageNumb, pageSize);
+        marketMapper.selectOrderBy(orderBy, asc);
+        return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
     }
 
 }

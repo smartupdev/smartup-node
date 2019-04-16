@@ -84,7 +84,7 @@ create table market_data (
   last decimal(40,20),
   lately_volume decimal(40,20),
   amount decimal(40,20),
-  coun bigint
+  count bigint
 );
 
 drop table if exists dict;

@@ -138,6 +138,29 @@ public class KlineNodeService {
         return map;
     }
 
+    public BigDecimal queryLatelyVolume(String marketAddress, int hour) {
+        BigDecimal ret = BigDecimal.ZERO;
+        Date current = Common.fillZero(PoConstant.KLineNode.Segment.Hour, new Date());
+        Date start = Common.getSomeHoursAgo(current, hour);
+        List<KlineNode> list = queryNodes(marketAddress, PoConstant.KLineNode.Segment.Hour, start, current);
+        for (KlineNode node : list) {
+            ret = ret.add(node.getAmount());
+        }
+        return ret;
+    }
+
+    public BigDecimal queryLatelyChange(String marketAddress, BigDecimal price, int hour) {
+        Date current = new Date();
+        Date ago = Common.getSomeHoursAgo(current, hour);
+        String aId = Common.getTimeId(PoConstant.KLineNode.Segment.Hour, ago);
+        KlineNode aNode = queryNodeByTimeId(marketAddress, PoConstant.KLineNode.Segment.Hour, aId);
+        if (aNode == null) {
+            return null;
+        }
+        BigDecimal change = price.subtract(aNode.getEnd()).divide(aNode.getEnd(), 20, BigDecimal.ROUND_DOWN);
+        return change;
+    }
+
     public KlineNode queryNodeByTimeId(String marketAddress, String segment, String timeId) {
         if (StringUtils.isAnyBlank(marketAddress, segment, timeId)) {
             return null;

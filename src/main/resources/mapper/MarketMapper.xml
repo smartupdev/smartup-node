@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="global.smartup.node.mapper.MarketMapper">
+
+    <resultMap id="widthData" type="global.smartup.node.po.Market">
+        <id column="market_id" jdbcType="VARCHAR" property="marketId"/>
+        <result column="tx_hash" jdbcType="VARCHAR" property="txHash"/>
+        <result column="creator_address" jdbcType="VARCHAR" property="creatorAddress"/>
+        <result column="market_address" jdbcType="VARCHAR" property="marketAddress"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="description" jdbcType="VARCHAR" property="description"/>
+        <result column="type" jdbcType="VARCHAR" property="type"/>
+        <result column="stage" jdbcType="VARCHAR" property="stage"/>
+        <result column="create_time" jdbcType="DATE" property="createTime"/>
+        <association property="data" javaType="global.smartup.node.po.MarketData">
+            <id property="marketAddress" column="market_address" />
+            <result column="lately_change" jdbcType="DECIMAL" property="latelyChange" />
+            <result column="last" jdbcType="DECIMAL" property="last" />
+            <result column="lately_volume" jdbcType="DECIMAL" property="latelyVolume" />
+            <result column="amount" jdbcType="DECIMAL" property="amount" />
+            <result column="count" jdbcType="BIGINT" property="count" />
+        </association>
+    </resultMap>
+
+    <select id="selectOrderBy" resultMap="widthData">
+        select m.*, md.lately_change, md.lately_volume, md.last, md.amount, md.count
+        from market m
+            left join market_data md on m.market_address = md.market_address
+        where m.stage = 'built'
+        order by
+        if(isnull(md.${orderBy}),0,1) desc,
+        md.${orderBy}
+        <if test="asc"> asc </if>
+        <if test="!asc"> desc </if>
+    </select>
+
+</mapper>

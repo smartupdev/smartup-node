@@ -113,7 +113,7 @@ public class BlockListener {
                     info.parseTransactionReceipt(receipt);
 
                     // save market
-                    marketService.updateByChain(info);
+                    marketService.updateCreateByChain(info);
                 }
 
                 // call buy CT
@@ -134,6 +134,9 @@ public class BlockListener {
 
                     // update kline
                     klineNodeService.updateNodeForBuyTxByChain(info);
+
+                    // update market data
+                    marketService.updateBuyTradeByChain(info);
                 }
 
                 // TODO
@@ -162,6 +165,9 @@ public class BlockListener {
 
                 // update kline
                 klineNodeService.updateNodeForSellTxByChain(info);
+
+                // update market data
+                marketService.updateSellTradeByChain(info);
             }
         }
 

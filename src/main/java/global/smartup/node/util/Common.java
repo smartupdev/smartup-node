@@ -142,6 +142,13 @@ public class Common {
         return c.getTime();
     }
 
+    public static Date getSomeHoursAgo(Date d, int some) {
+        Calendar c = Calendar.getInstance();
+        c.setTime(d);
+        c.add(Calendar.HOUR, -some);
+        return c.getTime();
+    }
+
     public static Boolean isFuture(String segment, String timeId) {
         try {
             Date d;

@@ -12,18 +12,23 @@ public class MarketData {
     @Column(name = "market_address")
     private String marketAddress;
 
+    // 最近变化率
     @Column(name = "lately_change")
     private BigDecimal latelyChange;
 
+    // 最后一笔价格
     @Column(name = "last")
     private BigDecimal last;
 
+    // 最近交易量
     @Column(name = "lately_volume")
     private BigDecimal latelyVolume;
 
+    // 总交易量
     @Column(name = "amount")
     private BigDecimal amount;
 
+    // 总交易次数
     @Column(name = "count")
     private Long count;
 
