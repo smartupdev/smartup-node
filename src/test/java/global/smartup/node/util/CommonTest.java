@@ -18,7 +18,7 @@ import java.util.List;
 public class CommonTest {
 
     @Test
-    public void test() {
+    public void parseInput() {
         String input = "0x000000000000000000000000437098700e7de348e436b809c74bb2442abd3bd60000000000000000000000000000000000000000000000878678326eac900000000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000001";
 
         List<Type> params =  FunctionReturnDecoder.decode(input, Arrays.asList(new TypeReference[]{
@@ -43,6 +43,12 @@ public class CommonTest {
             sb.append(s);
         }
         System.out.println(sb.toString());
+    }
+
+    @Test
+    public void getTimeIdInRange() {
+        List<String> list = Common.getTimeIdInRange("1week", "2019_04_01", "2019_04_16");
+        list.forEach(System.out::println);
     }
 
     @Test

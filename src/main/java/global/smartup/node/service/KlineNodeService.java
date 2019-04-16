@@ -1,6 +1,8 @@
 package global.smartup.node.service;
 
+import com.alibaba.fastjson.JSON;
 import global.smartup.node.constant.PoConstant;
+import global.smartup.node.constant.RedisKey;
 import global.smartup.node.eth.info.BuyCTInfo;
 import global.smartup.node.eth.info.SellCTInfo;
 import global.smartup.node.mapper.KlineNodeMapper;
@@ -11,6 +13,7 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
@@ -18,6 +21,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.ParseException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class KlineNodeService {
@@ -26,6 +30,9 @@ public class KlineNodeService {
 
     @Autowired
     private KlineNodeMapper klineNodeMapper;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     public synchronized KlineNode createNode(String marketAddress, String segment, Date date,
                                              BigDecimal start, BigDecimal end, BigDecimal amount,  Long count) {
@@ -94,6 +101,9 @@ public class KlineNodeService {
                 node.setAmount(node.getAmount().add(sut));
                 node.setCount(node.getCount() + 1);
                 klineNodeMapper.updateByPrimaryKey(node);
+
+                // remove cache
+                removeCache(marketAddress, segment, timeId);
             }
         }
     }
@@ -106,8 +116,16 @@ public class KlineNodeService {
             KlineNode last = queryLastNode(marketAddress, segment, current);
             if (last != null) {
                 createNode(marketAddress, segment, current, last.getEnd(), last.getEnd(), BigDecimal.ZERO, 0L);
+
+                // remove cache
+                removeCache(marketAddress, segment, timeId);
             }
         }
+    }
+
+    public void removeCache(String marketAddress, String segment, String timeId) {
+        String key = RedisKey.KlinePrefix + marketAddress + ":" + segment + ":" + timeId;
+        redisTemplate.delete(key);
     }
 
     public Map<String, KlineNode> querySegmentNodes(String marketAddress, Date time) {
@@ -148,11 +166,29 @@ public class KlineNodeService {
         }
     }
 
-    public List<KlineNode> queryRangeNodes(String marketAddress, String segment, String start, String end) {
+    public List<KlineNode> queryNodes(String marketAddress, String segment, Date start, Date end) {
+        List<KlineNode> list = new ArrayList<>();
+        if (StringUtils.isAnyBlank(marketAddress, segment) || start == null || end == null) {
+            return list;
+        }
+        Example example = new Example(KlineNode.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("marketAddress", marketAddress)
+                .andEqualTo("segment", segment)
+                .andGreaterThanOrEqualTo("time", start)
+                .andLessThanOrEqualTo("time", end);
+        return klineNodeMapper.selectByExample(example);
+    }
+
+    public List<KlineNode> queryNodes(String marketAddress, String segment, String start, String end) {
         List<KlineNode> list = new ArrayList<>();
         Date s, e;
         try {
-            s = DateUtils.parseDate(start, "yyyy-MM-dd");
+            if (StringUtils.isBlank(start)) {
+                s = Common.getSomeDaysAgo(new Date(), 7);
+            } else {
+                s = DateUtils.parseDate(start, "yyyy-MM-dd");
+            }
             if (StringUtils.isBlank(end)) {
                 e = new Date();
             } else {
@@ -164,21 +200,44 @@ public class KlineNodeService {
         return queryNodes(marketAddress, segment, Common.getDayStart(s), e);
     }
 
-    public List<KlineNode> queryNodes(String marketAddress, String segment, Date start, Date end) {
+    public List<KlineNode> queryCacheNodes(String marketAddress, String segment, String start, String end) {
         List<KlineNode> list = new ArrayList<>();
-        if (StringUtils.isAnyBlank(marketAddress, segment) || start == null) {
-            return list;
+        List<String> ids = Common.getTimeIdInRange(segment, start, end);
+        ids.forEach(id -> {
+            KlineNode n = queryCachedNode(marketAddress, segment, id);
+            if (n != null) {
+                list.add(n);
+            }
+        });
+        return list;
+    }
+
+    public KlineNode queryCachedNode(String marketAddress, String segment, String timeId) {
+        KlineNode node;
+        if (StringUtils.isAnyBlank(marketAddress, timeId)) {
+            return null;
         }
-        if (end == null) {
-            end = Common.getDayEnd(new Date());
+        Boolean isFuture = Common.isFuture(segment, timeId);
+        if (isFuture == null || isFuture) {
+            return null;
         }
-        Example example = new Example(KlineNode.class);
-        Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("marketAddress", marketAddress)
-                .andEqualTo("segment", segment)
-                .andGreaterThanOrEqualTo("time", start)
-                .andLessThanOrEqualTo("time", end);
-        return klineNodeMapper.selectByExample(example);
+        String redisKey = RedisKey.KlinePrefix + marketAddress + ":" + segment + ":" + timeId;
+        Object val = redisTemplate.opsForValue().get(redisKey);
+        if (val == null) {
+            node = queryNodeByTimeId(marketAddress, PoConstant.KLineNode.Segment.Hour, timeId);
+            if (node == null) {
+                redisTemplate.opsForValue().set(redisKey, RedisKey.KlineNoDataFlag, RedisKey.KlineExpire, TimeUnit.MILLISECONDS);
+                return null;
+            } else {
+                redisTemplate.opsForValue().set(redisKey, JSON.toJSONString(node), RedisKey.KlineExpire, TimeUnit.MILLISECONDS);
+                return node;
+            }
+        }
+        if (RedisKey.KlineNoDataFlag.equals(val.toString())) {
+            return null;
+        } else {
+            return JSON.parseObject(val.toString(), KlineNode.class);
+        }
     }
 
 }
