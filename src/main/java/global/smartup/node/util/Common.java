@@ -2,6 +2,7 @@ package global.smartup.node.util;
 
 import global.smartup.node.constant.BuConstant;
 import global.smartup.node.constant.PoConstant;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.web3j.crypto.ECKeyPair;
@@ -174,6 +175,9 @@ public class Common {
 
     public static List<String> getTimeIdInRange(String segment, String start, String end) {
         List<String> list = new ArrayList<>();
+        if (StringUtils.isAnyBlank(segment, start, end)) {
+            return list;
+        }
         Date current = new Date();
         Calendar calendar = Calendar.getInstance();
         try {
