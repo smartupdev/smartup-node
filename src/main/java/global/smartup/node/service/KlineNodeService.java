@@ -5,10 +5,8 @@ import global.smartup.node.eth.info.BuyCTInfo;
 import global.smartup.node.eth.info.SellCTInfo;
 import global.smartup.node.mapper.KlineNodeMapper;
 import global.smartup.node.po.KlineNode;
-import global.smartup.node.po.Trade;
 import global.smartup.node.util.Common;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +27,8 @@ public class KlineNodeService {
     @Autowired
     private KlineNodeMapper klineNodeMapper;
 
-    public synchronized KlineNode createNode(String marketAddress, String segment, Date date, BigDecimal start, BigDecimal sut, Long count) {
+    public synchronized KlineNode createNode(String marketAddress, String segment, Date date,
+                                             BigDecimal start, BigDecimal end, BigDecimal amount,  Long count) {
         String timeId = Common.getTimeId(segment, date);
         KlineNode exits = queryNodeByTimeId(marketAddress, segment, timeId);
         if (exits != null) {
@@ -38,10 +37,10 @@ public class KlineNodeService {
         KlineNode node = new KlineNode();
         node.setMarketAddress(marketAddress);
         node.setStart(start);
-        node.setEnd(sut);
-        node.setHigh(sut);
-        node.setLow(sut);
-        node.setAmount(sut);
+        node.setEnd(end);
+        node.setHigh(end);
+        node.setLow(end);
+        node.setAmount(amount);
         node.setCount(count);
         node.setTimeId(timeId);
         node.setTime(Common.fillZero(segment, date));
@@ -83,7 +82,7 @@ public class KlineNodeService {
             if (node == null) {
                 BigDecimal start = queryLastPrice(marketAddress, segment, time);
                 start = start != null ? start : price;
-                createNode(marketAddress, segment, time, start, price, 1L);
+                createNode(marketAddress, segment, time, start, price, sut, 1L);
             } else {
                 if (price.compareTo(node.getHigh()) > 0) {
                     node.setHigh(price);
@@ -106,7 +105,7 @@ public class KlineNodeService {
         if (node == null) {
             KlineNode last = queryLastNode(marketAddress, segment, current);
             if (last != null) {
-                createNode(marketAddress, segment, current, last.getEnd(), last.getEnd(), 0L);
+                createNode(marketAddress, segment, current, last.getEnd(), last.getEnd(), BigDecimal.ZERO, 0L);
             }
         }
     }
