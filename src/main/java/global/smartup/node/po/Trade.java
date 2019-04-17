@@ -3,6 +3,7 @@ package global.smartup.node.po;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -40,6 +41,17 @@ public class Trade {
     @Column(name="block_time")
     private Date blockTime;
 
+    @Transient
+    private User user;
+
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 
     public Date getBlockTime() {
         return blockTime;
