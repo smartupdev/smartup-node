@@ -3,6 +3,7 @@ package global.smartup.node.controller;
 import global.smartup.node.compoment.Validator;
 import global.smartup.node.constant.LangHandle;
 import global.smartup.node.po.Market;
+import global.smartup.node.service.GlobalService;
 import global.smartup.node.service.MarketService;
 import global.smartup.node.util.Checker;
 import global.smartup.node.util.Pagination;
@@ -26,6 +27,9 @@ public class MarketController extends BaseController {
 
     @Autowired
     private MarketService marketService;
+
+    @Autowired
+    private GlobalService globalService;
 
     @Autowired
     private Validator validator;
@@ -159,5 +163,17 @@ public class MarketController extends BaseController {
         }
     }
 
+    @ApiOperation(value = "全部市场数据", httpMethod = "POST", response = Wrapper.class,
+                notes = "参数：无\n" +
+                        "返回：sutAmount, marketCount, latelyPostCount")
+    @RequestMapping("/market/global")
+    public Object marketGlobal(HttpServletRequest request) {
+        try {
+            return Wrapper.success(globalService.queryGlobalData());
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return Wrapper.sysError();
+        }
+    }
 
 }

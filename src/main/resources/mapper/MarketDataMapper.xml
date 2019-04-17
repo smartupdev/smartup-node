@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="global.smartup.node.mapper.MarketDataMapper">
+
+
+    <select id="selectAllMarketAmount" resultType="java.math.BigDecimal">
+        select sum(md.amount)
+        from (
+          select market_address
+          from market where stage in
+            <foreach item="item" collection="type" separator="," open="(" close=")" index="">
+              #{item, jdbcType=VARCHAR}
+            </foreach>
+        ) m left join market_data md on m.market_address = md.market_address
+    </select>
+
+</mapper>

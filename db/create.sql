@@ -52,6 +52,17 @@ create table post (
   create_time datetime
 );
 
+drop table if exists post_data;
+create table post_data(
+  post_id bigint primary key,
+  reply_count int,
+  like_count int,
+  dislike_count int,
+  share_count int,
+  collect_count int,
+  last_reply_time datetime
+);
+
 drop table if exists reply;
 create table reply (
   reply_id bigint primary key,

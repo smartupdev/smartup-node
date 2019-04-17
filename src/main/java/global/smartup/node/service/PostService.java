@@ -4,8 +4,11 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import global.smartup.node.compoment.IdGenerator;
 import global.smartup.node.constant.PoConstant;
+import global.smartup.node.mapper.PostDataMapper;
 import global.smartup.node.mapper.PostMapper;
 import global.smartup.node.po.Post;
+import global.smartup.node.po.PostData;
+import global.smartup.node.util.Common;
 import global.smartup.node.util.Pagination;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -27,11 +30,24 @@ public class PostService {
     @Autowired
     private IdGenerator idGenerator;
 
+    @Autowired
+    private PostDataMapper postDataMapper;
+
 
     public void create(Post post) {
-        post.setPostId(idGenerator.getId());
+        Long id = idGenerator.getId();
+        post.setPostId(id);
         post.setCreateTime(new Date());
         postMapper.insert(post);
+
+        PostData postData = new PostData();
+        postData.setPostId(id);
+        postData.setReplyCount(0);
+        postData.setShareCount(0);
+        postData.setCollectCount(0);
+        postData.setLikeCount(0);
+        postData.setDislikeCount(0);
+        postDataMapper.insert(postData);
     }
 
     public boolean isExist(Long postId) {
@@ -59,6 +75,11 @@ public class PostService {
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
     }
 
-
+    public Integer queryLatelyReplyCount() {
+        Example example = new Example(PostData.class);
+        Date lately = Common.getSomeDaysAgo(new Date(), 30);
+        example.createCriteria().andGreaterThanOrEqualTo("lastReplyTime", lately);
+        return postDataMapper.selectCountByExample(example);
+    }
 
 }

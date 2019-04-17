@@ -4,17 +4,17 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import global.smartup.node.compoment.IdGenerator;
 import global.smartup.node.constant.BuConstant;
+import global.smartup.node.mapper.PostDataMapper;
 import global.smartup.node.mapper.ReplyMapper;
+import global.smartup.node.po.PostData;
 import global.smartup.node.po.Reply;
 import global.smartup.node.util.Pagination;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -22,6 +22,9 @@ import java.util.List;
 public class ReplyService {
 
     private static final Logger log = LoggerFactory.getLogger(ReplyService.class);
+
+    @Autowired
+    private PostDataMapper postDataMapper;
 
     @Autowired
     private ReplyMapper replyMapper;
@@ -36,6 +39,11 @@ public class ReplyService {
         reply.setReplyId(idGenerator.getId());
         reply.setCreateTime(new Date());
         replyMapper.insert(reply);
+
+        PostData data = postDataMapper.selectByPrimaryKey(reply.getPostId());
+        data.setReplyCount(data.getReplyCount() + 1);
+        data.setLastReplyTime(new Date());
+        postDataMapper.updateByPrimaryKey(data);
     }
 
     public boolean isExist(Long replyId) {

@@ -227,5 +227,15 @@ public class MarketService {
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
     }
 
+    public Integer queryMarketCount() {
+        Example example = new Example(Market.class);
+        example.createCriteria().andIn("stage", Arrays.asList("built"));
+        return marketMapper.selectCountByExample(example);
+    }
+
+    public BigDecimal queryAllMarketSUTAmount() {
+        return marketDataMapper.selectAllMarketAmount(Arrays.asList("built"));
+    }
+
 }
 
