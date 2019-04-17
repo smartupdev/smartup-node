@@ -125,7 +125,7 @@ public class MarketService {
         data.setLatelyChange(klineNodeService.queryLatelyChange(marketAddress, price, 24));
         data.setLatelyVolume(klineNodeService.queryLatelyVolume(info.getEventMarketAddress(), 24));
         data.setLast(price);
-        data.setAmount(data.getAmount().add(info.getEventSUT()));
+        data.setAmount(data.getAmount().subtract(info.getEventSUT()));
         data.setCount(data.getCount() + 1);
         marketDataMapper.updateByPrimaryKey(data);
     }
