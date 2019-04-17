@@ -247,7 +247,7 @@ public class KlineNodeService {
         String redisKey = RedisKey.KlinePrefix + marketAddress + ":" + segment + ":" + timeId;
         Object val = redisTemplate.opsForValue().get(redisKey);
         if (val == null) {
-            node = queryNodeByTimeId(marketAddress, PoConstant.KLineNode.Segment.Hour, timeId);
+            node = queryNodeByTimeId(marketAddress, segment, timeId);
             if (node == null) {
                 redisTemplate.opsForValue().set(redisKey, RedisKey.KlineNoDataFlag, RedisKey.KlineExpire, TimeUnit.MILLISECONDS);
                 return null;
