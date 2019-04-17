@@ -78,5 +78,13 @@ public class TradeService {
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
     }
 
+    public Pagination<Trade> queryByMarket(String marketAddress, String type, Boolean asc, Integer pageNumb, Integer pageSize) {
+        if (asc == null) {
+            asc = false;
+        }
+        Page<Trade> page = PageHelper.startPage(pageNumb, pageSize);
+        tradeMapper.selectOrderBy(marketAddress, type, asc);
+        return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
+    }
 
 }

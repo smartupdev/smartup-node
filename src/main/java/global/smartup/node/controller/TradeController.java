@@ -30,6 +30,7 @@ public class TradeController extends BaseController {
                         "返回：obj = {\n" +
                         "　txHash, stage(pending, success, fail), userAddress, marketAddress, \n" +
                         "　type(buy, sell), sutOffer, sutAmount, ctAmount, createTime\n" +
+                        "　user = { 见/api/user/current }" +
                         "}")
     @RequestMapping("/user/trade/one")
     public Object userTradeOne(HttpServletRequest request, String txHash) {
@@ -42,14 +43,28 @@ public class TradeController extends BaseController {
         }
     }
 
-    @ApiOperation(value = "查询交易列表", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：type, pageNumb, pageSize\n" +
+    @ApiOperation(value = "用户交易列表", httpMethod = "POST", response = Wrapper.class,
+                notes = "参数：type(buy, sell, 空为查询全部), pageNumb, pageSize\n" +
                         "返回：obj = { list = [ { 见/api/user/trade/one }, {}, .. ] }")
     @RequestMapping("/user/trade/list")
     public Object userTradeList(HttpServletRequest request, String type, Integer pageNumb, Integer pageSize) {
         try {
             String userAddress = getLoginUserAddress(request);
             Pagination<Trade> page = tradeService.queryByUser(userAddress, type, pageNumb, pageSize);
+            return Wrapper.success(page);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return Wrapper.sysError();
+        }
+    }
+
+    @ApiOperation(value = "市场交易列表", httpMethod = "POST", response = Wrapper.class,
+                notes = "参数：marketAddress, type(buy, sell, 空为查询全部), asc(true createTime从小到大/false), pageNumb, pageSize\n" +
+                        "返回：obj = { list = [ { 见/api/user/trade/one }, {}, .. ] }")
+    @RequestMapping("/market/trade/list")
+    public Object marketTradeList(HttpServletRequest request, String marketAddress, String type, Boolean asc, Integer pageNumb, Integer pageSize) {
+        try {
+            Pagination page = tradeService.queryByMarket(marketAddress, type, asc, pageNumb, pageSize);
             return Wrapper.success(page);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
