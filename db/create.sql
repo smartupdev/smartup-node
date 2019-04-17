@@ -79,11 +79,13 @@ create table kline_node (
 
 drop table if exists market_data;
 create table market_data (
-  market_address varchar(42) primary key ,
+  market_address varchar(42) primary key,
   lately_change decimal(40,20),
   last decimal(40,20),
   lately_volume decimal(40,20),
   amount decimal(40,20),
+  ct_amount decimal(40,20),
+  ct_top_amount decimal(40,20),
   count bigint
 );
 

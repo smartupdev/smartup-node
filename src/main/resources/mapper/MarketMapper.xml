@@ -18,12 +18,14 @@
             <result column="last" jdbcType="DECIMAL" property="last" />
             <result column="lately_volume" jdbcType="DECIMAL" property="latelyVolume" />
             <result column="amount" jdbcType="DECIMAL" property="amount" />
+            <result column="ct_amount" jdbcType="DECIMAL" property="ctAmount" />
+            <result column="ct_top_amount" jdbcType="DECIMAL" property="ctTopAmount" />
             <result column="count" jdbcType="BIGINT" property="count" />
         </association>
     </resultMap>
 
     <select id="selectOrderBy" resultMap="widthData">
-        select m.*, md.lately_change, md.lately_volume, md.last, md.amount, md.count
+        select m.*, md.lately_change, md.lately_volume, md.last, md.amount, md.count, md.ct_amount, md.ct_top_amount
         from market m
             left join market_data md on m.market_address = md.market_address
         where m.stage = 'built'

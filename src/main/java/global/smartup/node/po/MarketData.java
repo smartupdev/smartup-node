@@ -24,14 +24,39 @@ public class MarketData {
     @Column(name = "lately_volume")
     private BigDecimal latelyVolume;
 
-    // 总交易量
+    // 市场中的SUT
     @Column(name = "amount")
     private BigDecimal amount;
+
+    // 市场发行的CT
+    @Column(name = "ct_amount")
+    private BigDecimal ctAmount;
+
+    // 市场最多发行的CT
+    @Column(name = "ct_top_amount")
+    private BigDecimal ctTopAmount;
 
     // 总交易次数
     @Column(name = "count")
     private Long count;
 
+
+
+    public BigDecimal getCtAmount() {
+        return ctAmount;
+    }
+
+    public void setCtAmount(BigDecimal ctAmount) {
+        this.ctAmount = ctAmount;
+    }
+
+    public BigDecimal getCtTopAmount() {
+        return ctTopAmount;
+    }
+
+    public void setCtTopAmount(BigDecimal ctTopAmount) {
+        this.ctTopAmount = ctTopAmount;
+    }
 
     public String getMarketAddress() {
         return marketAddress;

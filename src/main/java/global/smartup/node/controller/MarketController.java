@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 
 @Api(description = "市场")
 @RestController
@@ -97,7 +96,7 @@ public class MarketController extends BaseController {
                     "返回：obj = {\n" +
                     "　marketId, txHash, creatorAddress, marketAddress, name, description, \n" +
                     "　stage(creating=创建中, built=创建完成, fail=创建失败, close=已关闭), createTime \n" +
-                    "　data = { latelyChange, last, latelyVolume, amount, count } \n" +
+                    "　data = { latelyChange, last, latelyVolume, amount, ctAmount, ctTopAmount, count } \n" +
                     "}")
     @RequestMapping("/market/one")
     public Object one(HttpServletRequest request, String marketAddress) {

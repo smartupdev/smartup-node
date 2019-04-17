@@ -85,6 +85,8 @@ public class MarketService {
         data.setLatelyChange(null);
         data.setLatelyVolume(BigDecimal.ZERO);
         data.setAmount(BigDecimal.ZERO);
+        data.setCtAmount(BigDecimal.ZERO);
+        data.setCtTopAmount(BigDecimal.ZERO);
         data.setCount(0L);
         marketDataMapper.insert(data);
 
@@ -107,6 +109,11 @@ public class MarketService {
         data.setLatelyVolume(klineNodeService.queryLatelyVolume(info.getEventMarketAddress(), 24));
         data.setLast(price);
         data.setAmount(data.getAmount().add(info.getEventSUT()));
+        data.setCtAmount(data.getCtAmount().add(info.getEventCT()));
+        // ctAmount 变大，重新计算ctTopAmount
+        if (data.getCtAmount().compareTo(data.getCtTopAmount()) > 0) {
+            data.setCtTopAmount(data.getCtAmount());
+        }
         data.setCount(data.getCount() + 1);
         marketDataMapper.updateByPrimaryKey(data);
     }
@@ -126,6 +133,7 @@ public class MarketService {
         data.setLatelyVolume(klineNodeService.queryLatelyVolume(info.getEventMarketAddress(), 24));
         data.setLast(price);
         data.setAmount(data.getAmount().subtract(info.getEventSUT()));
+        data.setCtAmount(data.getCtAmount().subtract(info.getEventCT()));
         data.setCount(data.getCount() + 1);
         marketDataMapper.updateByPrimaryKey(data);
     }
