@@ -106,3 +106,12 @@ create table dict (
   value varchar(128)
 );
 insert into dict values ('block_number', '0');
+
+drop table if exists ct_account;
+create table ct_account(
+  user_address varchar(42),
+  market_address varchar(42),
+  amount decimal(40,20),
+  last_update_time datetime,
+  primary key(user_address, market_address)
+);

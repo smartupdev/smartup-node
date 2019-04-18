@@ -103,7 +103,7 @@ public class MarketController extends BaseController {
                     "　data = { latelyChange, last, latelyVolume, amount, ctAmount, ctTopAmount, count } \n" +
                     "}")
     @RequestMapping("/market/one")
-    public Object one(HttpServletRequest request, String marketAddress) {
+    public Object marketOne(HttpServletRequest request, String marketAddress) {
         try {
             if (!Checker.isAddress(marketAddress)) {
                 return Wrapper.alert(getLocaleMsg(LangHandle.MarketCreatorAddressFormatError));
@@ -136,7 +136,7 @@ public class MarketController extends BaseController {
                     "　pageNumb, pageSize\n" +
                     "返回：obj = { list = [ {见/api/market/one}, {}, ...] }")
     @RequestMapping("/market/list")
-    public Object list(HttpServletRequest request, String orderBy, Boolean asc, Integer pageNumb, Integer pageSize) {
+    public Object marketList(HttpServletRequest request, String orderBy, Boolean asc, Integer pageNumb, Integer pageSize) {
         try {
             Pagination page = marketService.queryPage(orderBy, asc, pageNumb, pageSize);
             return Wrapper.success(page);
@@ -166,8 +166,8 @@ public class MarketController extends BaseController {
     @ApiOperation(value = "全部市场数据", httpMethod = "POST", response = Wrapper.class,
                 notes = "参数：无\n" +
                         "返回：sutAmount, marketCount, latelyPostCount")
-    @RequestMapping("/market/global")
-    public Object marketGlobal(HttpServletRequest request) {
+    @RequestMapping("/market/global/data")
+    public Object marketGlobalData(HttpServletRequest request) {
         try {
             return Wrapper.success(globalService.queryGlobalData());
         } catch (Exception e) {
@@ -175,5 +175,7 @@ public class MarketController extends BaseController {
             return Wrapper.sysError();
         }
     }
+
+
 
 }

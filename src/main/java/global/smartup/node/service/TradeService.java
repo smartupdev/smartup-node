@@ -27,7 +27,7 @@ public class TradeService {
 
 
     public void saveBuyTxByChain(BuyCTInfo info) {
-        if (info == null || query(info.getTxHash()) != null) {
+        if (info == null || queryByTxHash(info.getTxHash()) != null) {
             return;
         }
         Trade trade = new Trade();
@@ -45,7 +45,7 @@ public class TradeService {
     }
 
     public void saveSellTxByChain(SellCTInfo info) {
-        if (info == null || query(info.getTxHash()) != null) {
+        if (info == null || queryByTxHash(info.getTxHash()) != null) {
             return;
         }
         Trade trade = new Trade();
@@ -61,7 +61,11 @@ public class TradeService {
         tradeMapper.insert(trade);
     }
 
-    public Trade query(String txHash) {
+    public boolean isTxHashExist(String txHash) {
+        return tradeMapper.selectByPrimaryKey(txHash) != null;
+    }
+
+    public Trade queryByTxHash(String txHash) {
         return tradeMapper.selectByPrimaryKey(txHash);
     }
 

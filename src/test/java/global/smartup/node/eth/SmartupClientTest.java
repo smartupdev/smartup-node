@@ -12,6 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @RunWith(SpringRunner.class)
@@ -67,6 +68,12 @@ public class SmartupClientTest {
             Date date = smartupClient.getBlockTime(receipt);
             System.out.println(DateFormatUtils.ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT.format(date));
         }
+    }
+
+    @Test
+    public void getCtBalance() {
+        BigDecimal b = smartupClient.getCtBalance("0x27bd0b63fbe4799ad60bd92159b308ecab6a9059", "0xB44940Be0eeA81a3D0dA22CC15208AF4744BeA8E");
+        System.out.println(b.toPlainString());
     }
 
 }

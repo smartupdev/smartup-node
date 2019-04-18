@@ -39,7 +39,7 @@ public class EthClient {
     public static final BigInteger GasLimit = BigInteger.valueOf(1000_000);
 
     @Autowired
-    private Config config;
+    public Config config;
 
     @PostConstruct
     public void init() {
@@ -167,6 +167,10 @@ public class EthClient {
             log.error(e.getMessage(), e);
         }
         return false;
+    }
+
+    public void test() {
+
     }
 
 }

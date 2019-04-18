@@ -1,7 +1,7 @@
-package global.smartup.node.eth;
+package global.smartup.node.service;
 
 import global.smartup.node.Starter;
-
+import global.smartup.node.eth.EthClient;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,23 +13,17 @@ import java.math.BigInteger;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = Starter.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class BlockListenerTest {
+public class BlockServiceTest {
 
     @Autowired
-    private BlockListener blockListener;
+    private BlockService blockService;
 
     @Autowired
     private EthClient ethClient;
 
     @Test
-    public void parseBlock() {
-
+    public void test() {
         EthBlock.Block block = ethClient.getBlockByNumber(BigInteger.valueOf(5408855L), true);
-        // blockListener.parseBlock(block);
-
+        blockService.parseBlock(block);
     }
-
-
-
-
 }

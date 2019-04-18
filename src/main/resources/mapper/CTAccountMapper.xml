@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="global.smartup.node.mapper.CTAccountMapper">
+
+    <resultMap id="ctAccWithMarket" type="global.smartup.node.vo.CTAccountWithMarket">
+        <result column="market_id" jdbcType="VARCHAR" property="marketId" />
+        <result column="market_address" jdbcType="VARCHAR" property="marketAddress" />
+        <result column="lately_change" jdbcType="DECIMAL" property="latelyChange" />
+        <result column="user_address" jdbcType="VARCHAR" property="userAddress" />
+        <result column="ct_amount" jdbcType="DECIMAL" property="ctAmount" />
+        <result column="last_update_time" jdbcType="TIMESTAMP" property="lastUpdateTime" />
+    </resultMap>
+
+    <select id="selectWidthMarket" resultMap="ctAccWithMarket">
+        select m.market_id, m.market_address, md.lately_change, ca.user_address, ca.amount as ct_amount, ca.last_update_time
+        from (
+                 select *
+                 from ct_account
+                 where user_address = #{userAddress}
+             ) ca
+            left join market m on m.market_address = ca.market_address
+            left join market_data md on md.market_address = ca.market_address
+        order by ca.last_update_time desc
+    </select>
+
+</mapper>

@@ -35,7 +35,7 @@ public class TradeController extends BaseController {
     @RequestMapping("/user/trade/one")
     public Object userTradeOne(HttpServletRequest request, String txHash) {
         try {
-            Trade trade = tradeService.query(txHash);
+            Trade trade = tradeService.queryByTxHash(txHash);
             return Wrapper.success(trade);
         } catch (Exception e) {
             log.error(e.getMessage(), e);

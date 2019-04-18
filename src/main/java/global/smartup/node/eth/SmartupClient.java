@@ -6,21 +6,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.FunctionReturnDecoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Address;
+import org.web3j.abi.datatypes.Function;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.abi.datatypes.generated.Uint256;
+import org.web3j.protocol.core.Request;
 import org.web3j.protocol.core.methods.response.EthBlock;
+import org.web3j.protocol.core.methods.response.EthCall;
 import org.web3j.protocol.core.methods.response.Log;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.utils.Convert;
+import org.web3j.utils.Numeric;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+
+import static java.util.Collections.emptyList;
 
 @Component
 public class SmartupClient {
@@ -158,6 +163,39 @@ public class SmartupClient {
         EthBlock.Block block = ethClient.getBlockByNumber(receipt.getBlockNumber(), false);
         BigInteger time = block.getTimestamp();
         return new Date(time.longValue() * 1000);
+    }
+
+    public BigDecimal getCtBalance(String marketAddress, String userAddress) {
+        BigDecimal ret = null;
+        try {
+            Function fn = new Function(
+                    "balanceOf",
+                    Arrays.asList(new Address(userAddress)),
+                    emptyList()
+            );
+            String data = FunctionEncoder.encode(fn);
+            Map<String, String> map = new HashMap<>();
+            map.put("to", marketAddress);
+            map.put("data", data);
+            Object[] params = new Object[]{map, "latest"};
+
+            Request<String, EthCall> request = new Request("eth_call", Arrays.asList(params), ethClient.httpService, EthCall.class);
+            EthCall resp = request.send();
+            if (resp.hasError()) {
+                log.error(resp.getError().getMessage());
+                return ret;
+            }
+            BigInteger balance = Numeric.decodeQuantity(resp.getValue());
+            ret = new BigDecimal(balance.toString())
+                    .divide(
+                            Convert.Unit.ETHER.getWeiFactor(),
+                            20,
+                            BigDecimal.ROUND_DOWN
+                    );
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        return ret;
     }
 
 }
