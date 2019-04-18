@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="global.smartup.node.mapper.CollectMapper">
+
+
+
+    <select id="selectCollectedMarket" resultType="global.smartup.node.po.Market">
+        select m.*
+        from (
+             select object_mark
+             from collect where user_address = #{userAddress} and type = 'market'
+             order by create_time desc
+        ) c left join market m on m.market_address = c.object_mark
+    </select>
+
+    <select id="selectCollectedPost" resultType="global.smartup.node.po.Post">
+        select p.*
+        from (
+             select object_mark
+             from collect where user_address = #{userAddress} and type = 'post'
+             order by create_time desc
+         ) c left join post p on p.post_id = c.object_mark
+    </select>
+
+</mapper>

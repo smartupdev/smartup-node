@@ -123,7 +123,7 @@ public class BlockService {
         }
 
         // call CT
-        if (marketService.isMarketExist(to)) {
+        if (marketService.isMarketAddressInCache(to)) {
             String input = tx.getInput();
             // call sell CT
             if (input.startsWith(Constant.CT.Sell)) {

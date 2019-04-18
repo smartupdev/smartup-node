@@ -115,3 +115,12 @@ create table ct_account(
   last_update_time datetime,
   primary key(user_address, market_address)
 );
+
+drop table if exists collect;
+create table collect (
+  user_address varchar(42),
+  type varchar(64) comment 'market,post',
+  object_mark varchar(64),
+  create_time datetime,
+  primary key (user_address, type, object_mark)
+)

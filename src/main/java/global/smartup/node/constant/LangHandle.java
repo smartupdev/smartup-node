@@ -7,7 +7,11 @@ public class LangHandle {
 
 	public static final String MarketCreatorAddressFormatError = "market_creator_address_format_error";
 
+	public static final String CollectTypeError = "collect_type_error";
+
 	public static final String ReplyNotExist = "reply_not_exist";
+
+	public static final String CollectObjectNotExist = "collect_object_not_exist";
 
 	public static final String PostDescriptionLengthError = "post_description_length_error";
 
@@ -15,9 +19,9 @@ public class LangHandle {
 
 	public static final String UserNameMaxSizeError = "user_name_max_size_error";
 
-	public static final String PostDescriptionEmptyError = "post_description_empty_error";
-
 	public static final String TradeTxHashFormatError = "trade_tx_hash_format_error";
+
+	public static final String PostDescriptionEmptyError = "post_description_empty_error";
 
 	public static final String UserAddressNotExist = "user_address_not_exist";
 

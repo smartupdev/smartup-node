@@ -155,12 +155,16 @@ public class MarketService {
         return false;
     }
 
-    public boolean isMarketExist(String marketAddress) {
+    public boolean isMarketAddressInCache(String marketAddress) {
         if (CacheMarketAddresses == null) {
             CacheMarketAddresses = new ArrayList<>();
             queryAll().forEach(m -> CacheMarketAddresses.add(m.getMarketAddress()));
         }
         return CacheMarketAddresses.contains(marketAddress);
+    }
+
+    public boolean isMarketIdExist(String marketId) {
+        return marketMapper.selectByPrimaryKey(marketId) != null;
     }
 
     public boolean isTxHashExist(String txHash) {

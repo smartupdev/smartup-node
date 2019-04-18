@@ -77,4 +77,18 @@ public class PoConstant {
 
     }
 
+    public static class Collect {
+
+        public static class Type {
+
+            public static final String Market = "market";
+
+            public static final String Post = "post";
+
+            public static final String[] All = new String[]{Market, Post};
+
+        }
+
+    }
+
 }
