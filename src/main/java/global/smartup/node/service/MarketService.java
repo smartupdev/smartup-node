@@ -29,6 +29,9 @@ public class MarketService {
 
     private static final Logger log = LoggerFactory.getLogger(MarketService.class);
 
+    /**
+     * 缓存已有的CT市场地址，方便快速判断一笔tx是否需要记录
+     */
     private static List<String> CacheMarketAddresses = null;
 
     @Autowired
@@ -59,7 +62,7 @@ public class MarketService {
     }
 
     /**
-     * 创建市场事件，更新市场
+     * 创建市场成功，更新市场
      */
     public void updateCreateByChain(CreateMarketInfo info) {
         if (info == null) {
@@ -92,6 +95,19 @@ public class MarketService {
 
         // clear cache
         CacheMarketAddresses = null;
+    }
+
+    /**
+     *  创建市场失败
+     */
+    public void updateCreateFailByChain(String txHash, String userAddress) {
+        Market market = queryCurrentCreating(userAddress);
+        if (market == null) {
+            return;
+        }
+        market.setTxHash(txHash);
+        market.setStage(PoConstant.Market.Stage.Fail);
+        marketMapper.updateByPrimaryKey(market);
     }
 
     /**

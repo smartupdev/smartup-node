@@ -6,6 +6,7 @@ import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.DynamicBytes;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.abi.datatypes.generated.Uint256;
+import org.web3j.crypto.Keys;
 import org.web3j.protocol.core.methods.response.Log;
 import org.web3j.protocol.core.methods.response.Transaction;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
@@ -67,7 +68,7 @@ public class BuyCTInfo {
                 TypeReference.create(DynamicBytes.class)
         }));
 
-        this.inputMarketAddress = params.get(0).getValue().toString();
+        this.inputMarketAddress = Keys.toChecksumAddress(params.get(0).getValue().toString());
         this.inputSUT = Convert.fromWei(params.get(1).getValue().toString(), Convert.Unit.ETHER);
         DynamicBytes dynamicBytes = (DynamicBytes) params.get(2);
         BigInteger val = new BigInteger(dynamicBytes.getValue());
@@ -96,8 +97,8 @@ public class BuyCTInfo {
                 TypeReference.create(Uint256.class),
                 TypeReference.create(Uint256.class)
         }));
-        eventMarketAddress = params.get(0).getValue().toString();
-        eventUserAddress = params.get(1).getValue().toString();
+        eventMarketAddress = Keys.toChecksumAddress(params.get(0).getValue().toString());
+        eventUserAddress = Keys.toChecksumAddress(params.get(1).getValue().toString());
         eventSUTOffer = Convert.fromWei(params.get(2).getValue().toString(), Convert.Unit.ETHER);
         eventSUT = Convert.fromWei(params.get(3).getValue().toString(), Convert.Unit.ETHER);
         eventCT = Convert.fromWei(params.get(4).getValue().toString(), Convert.Unit.ETHER);

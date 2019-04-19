@@ -17,7 +17,7 @@
         <druid.starter.version>1.1.10</druid.starter.version>
         <tk.mapper.version>1.2.3</tk.mapper.version>
         <javax.cache.api>1.1.0</javax.cache.api>
-        <fastjson.version>1.2.35</fastjson.version>
+        <fastjson.version>1.2.57</fastjson.version>
         <commons.lang3.version>3.6</commons.lang3.version>
         <commons.codec.version>1.11</commons.codec.version>
         <swagger.version>2.9.2</swagger.version>

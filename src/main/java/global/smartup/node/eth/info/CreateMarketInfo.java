@@ -6,6 +6,7 @@ import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.DynamicBytes;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.abi.datatypes.generated.Uint256;
+import org.web3j.crypto.Keys;
 import org.web3j.protocol.core.methods.response.Log;
 import org.web3j.protocol.core.methods.response.Transaction;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
@@ -52,7 +53,7 @@ public class CreateMarketInfo {
                 TypeReference.create(Uint256.class),
                 TypeReference.create(DynamicBytes.class)
         }));
-        this.inputSmartupAddress = params.get(0).getValue().toString();
+        this.inputSmartupAddress = Keys.toChecksumAddress(params.get(0).getValue().toString());
         this.inputAmount = Convert.fromWei(params.get(1).getValue().toString(), Convert.Unit.ETHER);
     }
 
@@ -75,8 +76,8 @@ public class CreateMarketInfo {
                 TypeReference.create(Address.class),
                 TypeReference.create(Uint256.class)
         }));
-        eventMarketAddress = params.get(0).getValue().toString();
-        eventCreatorAddress = params.get(1).getValue().toString();
+        eventMarketAddress = Keys.toChecksumAddress(params.get(0).getValue().toString());
+        eventCreatorAddress = Keys.toChecksumAddress(params.get(1).getValue().toString());
         eventAmount = Convert.fromWei(params.get(2).getValue().toString(), Convert.Unit.ETHER);
     }
 

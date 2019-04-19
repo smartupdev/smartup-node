@@ -5,6 +5,7 @@ import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.abi.datatypes.generated.Uint256;
+import org.web3j.crypto.Keys;
 import org.web3j.protocol.core.methods.response.Log;
 import org.web3j.protocol.core.methods.response.Transaction;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
@@ -56,11 +57,11 @@ public class SellCTInfo {
             return;
         }
         String status = receipt.getStatus();
-        if (status.equals("0x0")) {
+        if ("0x0".equals(status)) {
             return;
         }
         List<Log> list = receipt.getLogs();
-        if (list.size() != 2) {
+        if (list.size() < 2) {
             return;
         }
         Log log = list.get(1);
@@ -71,8 +72,8 @@ public class SellCTInfo {
                 TypeReference.create(Uint256.class),
                 TypeReference.create(Uint256.class)
         }));
-        eventMarketAddress = params.get(0).getValue().toString();
-        eventUserAddress = params.get(1).getValue().toString();
+        eventMarketAddress = Keys.toChecksumAddress(params.get(0).getValue().toString());
+        eventUserAddress = Keys.toChecksumAddress(params.get(1).getValue().toString());
         eventSUT = Convert.fromWei(params.get(2).getValue().toString(), Convert.Unit.ETHER);
         eventCT = Convert.fromWei(params.get(3).getValue().toString(), Convert.Unit.ETHER);
     }

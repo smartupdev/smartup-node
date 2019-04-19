@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Service
@@ -25,11 +26,8 @@ public class TradeService {
     @Autowired
     private TradeMapper tradeMapper;
 
-
     public void saveBuyTxByChain(BuyCTInfo info) {
-        if (info == null || queryByTxHash(info.getTxHash()) != null) {
-            return;
-        }
+        //save
         Trade trade = new Trade();
         trade.setTxHash(info.getTxHash());
         trade.setMarketAddress(info.getEventMarketAddress());
@@ -45,9 +43,7 @@ public class TradeService {
     }
 
     public void saveSellTxByChain(SellCTInfo info) {
-        if (info == null || queryByTxHash(info.getTxHash()) != null) {
-            return;
-        }
+        //save
         Trade trade = new Trade();
         trade.setTxHash(info.getTxHash());
         trade.setMarketAddress(info.getEventMarketAddress());
@@ -59,6 +55,31 @@ public class TradeService {
         trade.setSutAmount(info.getEventSUT());
         trade.setCtAmount(info.getEventCT());
         tradeMapper.insert(trade);
+    }
+
+    public void saveFailTradeTxByChain(String txHash, String type, String userAddress, String marketAddress, BigDecimal sut, BigDecimal ct, Date blockTime) {
+        Trade trade = new Trade();
+        trade.setTxHash(txHash);
+        trade.setMarketAddress(marketAddress);
+        trade.setUserAddress(userAddress);
+        trade.setStage(PoConstant.Trade.Stage.Success);
+        trade.setCreateTime(new Date());
+        trade.setBlockTime(blockTime);
+        trade.setType(type);
+        trade.setSutAmount(sut);
+        trade.setCtAmount(ct);
+        tradeMapper.insert(trade);
+    }
+
+    public boolean isTxHashHandled(String txHash) {
+        Trade t = tradeMapper.selectByPrimaryKey(txHash);
+        if (t == null) {
+            return false;
+        }
+        if (t.getStage().equals(PoConstant.Trade.Stage.Padding)) {
+            return false;
+        }
+        return true;
     }
 
     public boolean isTxHashExist(String txHash) {

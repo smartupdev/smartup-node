@@ -91,4 +91,16 @@ public class PoConstant {
 
     }
 
+    public static class Notification {
+
+        public static class Type {
+
+            public static final String MarketCreateFinish = "MarketCreateFinish";
+
+            public static final String TradeFinish = "TradeFinish";
+
+        }
+
+    }
+
 }

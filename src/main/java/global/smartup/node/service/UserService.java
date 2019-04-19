@@ -5,8 +5,8 @@ import global.smartup.node.mapper.UserMapper;
 import global.smartup.node.po.User;
 import global.smartup.node.util.Common;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import org.web3j.crypto.Keys;
 
 import java.util.Date;
 import java.util.List;
@@ -17,10 +17,8 @@ public class UserService {
     @Autowired
     private UserMapper userMapper;
 
-    @Autowired
-    private IdGenerator idGenerator;
-
     public User add(User user) {
+        user.setUserAddress(Keys.toChecksumAddress(user.getUserAddress()));
         user.setCreateTime(new Date());
         user.setCode(generateCode());
         userMapper.insert(user);
@@ -28,6 +26,7 @@ public class UserService {
     }
 
     public User add(String address) {
+        address = Keys.toChecksumAddress(address);
         User user = new User();
         user.setUserAddress(address);
         user.setCreateTime(new Date());
@@ -46,6 +45,7 @@ public class UserService {
     }
 
     public void updateCode(String address) {
+        address = Keys.toChecksumAddress(address);
         User user = userMapper.selectByPrimaryKey(address);
         user.setCode(generateCode());
         userMapper.updateByPrimaryKey(user);
@@ -56,10 +56,12 @@ public class UserService {
     }
 
     public User query(String address) {
+        address = Keys.toChecksumAddress(address);
         return userMapper.selectByPrimaryKey(address);
     }
 
     public boolean isExist(String address) {
+        address = Keys.toChecksumAddress(address);
         return userMapper.selectByPrimaryKey(address) != null;
     }
 

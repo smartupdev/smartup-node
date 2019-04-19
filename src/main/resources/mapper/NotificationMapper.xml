@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="global.smartup.node.mapper.NotificationMapper">
+
+
+
+    <select id="selectUnreadFew" resultType="global.smartup.node.po.Notification">
+
+        select * from notification
+        where user_address = #{userAddress} and is_read = 0
+        order by create_time desc
+        limit #{limit}
+
+    </select>
+
+
+    <select id="selectUnreadCount" resultType="java.lang.Integer">
+
+        select count(*) from notification
+        where user_address = #{userAddress} and is_read = 0
+
+    </select>
+
+</mapper>

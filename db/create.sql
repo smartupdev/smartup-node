@@ -123,4 +123,14 @@ create table collect (
   object_mark varchar(64),
   create_time datetime,
   primary key (user_address, type, object_mark)
-)
+);
+
+drop table if exists notification;
+create table notification (
+  notification_id bigint primary key,
+  user_address varchar(42),
+  type varchar(32),
+  content varchar(512),
+  is_read tinyint(1),
+  create_time datetime
+);

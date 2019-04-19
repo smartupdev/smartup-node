@@ -1,6 +1,7 @@
 package global.smartup.node.service;
 
 import global.smartup.node.Config;
+import global.smartup.node.constant.PoConstant;
 import global.smartup.node.eth.EthClient;
 import global.smartup.node.eth.info.BuyCTInfo;
 import global.smartup.node.eth.info.Constant;
@@ -10,19 +11,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.web3j.crypto.Keys;
 import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.core.methods.response.Transaction;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 
-import java.math.BigInteger;
 import java.util.Date;
 
 @Service
 public class BlockService {
 
     private static final Logger log = LoggerFactory.getLogger(BlockService.class);
-
-    private static BigInteger ParseBlockNumber = null;
 
     @Autowired
     private Config config;
@@ -41,6 +40,9 @@ public class BlockService {
 
     @Autowired
     private CTAccountService ctAccountService;
+
+    @Autowired
+    private NotificationService notificationService;
 
 
     public void parseBlock(EthBlock.Block block) {
@@ -72,48 +74,12 @@ public class BlockService {
 
                 //  call create market
                 if (input.endsWith(CreateMarketInfo.ByteLastFlag)) {
-                    log.info("Handle create market txHash = {}", tx.getHash());
-
-                    CreateMarketInfo info = new CreateMarketInfo();
-                    info.parseTransaction(tx);
-                    TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
-                    if (ethClient.isTransactionFail(receipt)) {
-                        return;
-                    }
-                    info.parseTransactionReceipt(receipt);
-
-                    // save market
-                    marketService.updateCreateByChain(info);
+                    handleCreateMarket(tx);
                 }
 
                 // call buy CT
                 if (BuyCTInfo.isBuyCTTransaction(input, config.ethSmartupContract)) {
-                    log.info("Handle buy CT txHash = {}", tx.getHash());
-
-                    if (tradeService.isTxHashExist(tx.getHash())) {
-                        return;
-                    }
-
-                    BuyCTInfo info = new BuyCTInfo();
-                    info.parseTransaction(tx);
-                    TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
-                    if (ethClient.isTransactionFail(receipt)) {
-                        return;
-                    }
-                    info.parseTransactionReceipt(receipt);
-                    info.setBlockTime(new Date(block.getTimestamp().longValue() * 1000));
-
-                    // save transaction
-                    tradeService.saveBuyTxByChain(info);
-
-                    // update kline
-                    klineNodeService.updateNodeForBuyTxByChain(info);
-
-                    // update market data
-                    marketService.updateBuyTradeByChain(info);
-
-                    // update ct account
-                    ctAccountService.updateFromChain(info.getEventMarketAddress(), info.getEventUserAddress());
+                    handleBuyCT(block, tx);
                 }
 
                 // TODO
@@ -125,35 +91,12 @@ public class BlockService {
         // call CT
         if (marketService.isMarketAddressInCache(to)) {
             String input = tx.getInput();
+
             // call sell CT
             if (input.startsWith(Constant.CT.Sell)) {
-                log.info("Handle sell CT txHash = {}", tx.getHash());
-
-                if (tradeService.isTxHashExist(tx.getHash())) {
-                    return;
-                }
-
-                SellCTInfo info = new SellCTInfo();
-                info.parseTransaction(tx);
-                TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
-                if (ethClient.isTransactionFail(receipt)) {
-                    return;
-                }
-                info.parseTransactionReceipt(receipt);
-                info.setBlockTime(new Date(block.getTimestamp().longValue() * 1000));
-
-                // save transaction
-                tradeService.saveSellTxByChain(info);
-
-                // update kline
-                klineNodeService.updateNodeForSellTxByChain(info);
-
-                // update market data
-                marketService.updateSellTradeByChain(info);
-
-                // update ct account
-                ctAccountService.updateFromChain(info.getEventMarketAddress(), info.getEventUserAddress());
+                handleSellCT(block, tx);
             }
+
         }
 
         // TODO
@@ -164,6 +107,137 @@ public class BlockService {
             // flag vote
 
             // proposal
+        }
+
+    }
+
+
+    private void handleCreateMarket(Transaction tx) {
+        log.info("Handle create market txHash = {}", tx.getHash());
+
+        String from = Keys.toChecksumAddress(tx.getFrom());
+        TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
+
+        if (ethClient.isTransactionFail(receipt)) {
+            // tx fail
+
+            // update market
+            marketService.updateCreateFailByChain(tx.getHash(), from);
+
+            // send ntfc
+            notificationService.sendMarketCreateFinish(tx.getHash(), false, from, null);
+
+        } else {
+            // tx success
+
+            CreateMarketInfo info = new CreateMarketInfo();
+            info.parseTransaction(tx);
+            info.parseTransactionReceipt(receipt);
+
+            // update market
+            marketService.updateCreateByChain(info);
+
+            // send  ntfc
+            notificationService.sendMarketCreateFinish(info.getTxHash(), true, from,  info.getEventMarketAddress());
+        }
+
+
+    }
+
+    private void handleBuyCT(EthBlock.Block block, Transaction tx) {
+        log.info("Handle buy CT txHash = {}", tx.getHash());
+
+        if (tradeService.isTxHashHandled(tx.getHash())) {
+            return;
+        }
+
+        Date blockTime = new Date(block.getTimestamp().longValue() * 1000);
+        String from = Keys.toChecksumAddress(tx.getFrom());
+        BuyCTInfo info = new BuyCTInfo();
+        info.parseTransaction(tx);
+        TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
+
+        if (ethClient.isTransactionFail(receipt)) {
+            // tx fail
+
+            // save
+            tradeService.saveFailTradeTxByChain(tx.getHash(), PoConstant.Trade.Type.Buy, from,
+                    info.getInputMarketAddress(), info.getInputSUT(), info.getInputCT(), blockTime);
+
+            // send ntfc
+            notificationService.sendTradeFinish(info.getTxHash(), false, from, PoConstant.Trade.Type.Buy,
+                    info.getInputMarketAddress(), info.getInputSUT(), info.getInputCT());
+
+        } else {
+            // tx success
+
+            info.parseTransactionReceipt(receipt);
+            info.setBlockTime(blockTime);
+
+            // save transaction
+            tradeService.saveBuyTxByChain(info);
+
+            // update kline
+            klineNodeService.updateNodeForBuyTxByChain(info);
+
+            // update market data
+            marketService.updateBuyTradeByChain(info);
+
+            // update ct account
+            ctAccountService.updateFromChain(info.getEventMarketAddress(), info.getEventUserAddress());
+
+            // send ntfc
+            notificationService.sendTradeFinish(info.getTxHash(), true, from, PoConstant.Trade.Type.Buy,
+                    info.getEventMarketAddress(), info.getEventSUT(), info.getEventCT());
+        }
+
+    }
+
+    private void handleSellCT(EthBlock.Block block, Transaction tx) {
+        log.info("Handle sell CT txHash = {}", tx.getHash());
+
+        if (tradeService.isTxHashHandled(tx.getHash())) {
+            return;
+        }
+
+        Date blockTime = new Date(block.getTimestamp().longValue() * 1000);
+        String from = Keys.toChecksumAddress(tx.getFrom());
+        String to = Keys.toChecksumAddress(tx.getTo());
+        SellCTInfo info = new SellCTInfo();
+        info.parseTransaction(tx);
+        TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
+
+        if (ethClient.isTransactionFail(receipt)) {
+            // tx fail
+
+            // save
+            tradeService.saveFailTradeTxByChain(tx.getHash(), PoConstant.Trade.Type.Sell, from, to, null,
+                    info.getInputCT(), blockTime);
+
+            // send ntfc
+            notificationService.sendTradeFinish(tx.getHash(), false, from, PoConstant.Trade.Type.Sell, to,
+                    null, info.getInputCT());
+        } else {
+            // tx success
+
+            info.parseTransactionReceipt(receipt);
+            info.setBlockTime(blockTime);
+
+            // save transaction
+            tradeService.saveSellTxByChain(info);
+
+            // update kline
+            klineNodeService.updateNodeForSellTxByChain(info);
+
+            // update market data
+            marketService.updateSellTradeByChain(info);
+
+            // update ct account
+            ctAccountService.updateFromChain(info.getEventMarketAddress(), info.getEventUserAddress());
+
+            // send ntfc
+            notificationService.sendTradeFinish(info.getTxHash(), true, from, PoConstant.Trade.Type.Sell, to,
+                    info.getEventSUT(), info.getEventCT());
         }
 
     }
