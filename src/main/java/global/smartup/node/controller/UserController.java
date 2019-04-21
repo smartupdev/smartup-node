@@ -5,12 +5,9 @@ import global.smartup.node.compoment.Validator;
 import global.smartup.node.constant.LangHandle;
 import global.smartup.node.constant.RedisKey;
 import global.smartup.node.eth.EthClient;
-import global.smartup.node.po.Market;
 import global.smartup.node.po.User;
-import global.smartup.node.service.MarketService;
 import global.smartup.node.service.UserService;
 import global.smartup.node.util.Checker;
-import global.smartup.node.util.Pagination;
 import global.smartup.node.util.Wrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -20,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.web3j.crypto.Keys;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
@@ -79,6 +77,7 @@ public class UserController extends BaseController {
             if (!Checker.isAddress(address)) {
                 return Wrapper.alert(getLocaleMsg(LangHandle.AddressFormatError));
             }
+            address = Keys.toChecksumAddress(address);
             if (!userService.isExist(address)) {
                 return Wrapper.alert(getLocaleMsg(LangHandle.UserAddressNotExist));
             }
