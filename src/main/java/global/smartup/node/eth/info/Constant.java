@@ -13,6 +13,10 @@ public class Constant {
 
         public static final String Sell = "0xe4849b32";
 
+        public static final String SutProposal = "0x4c807f78";
+
+        public static final String SuggestProposal = "xxxx";
+
     }
 
 }

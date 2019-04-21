@@ -3,10 +3,8 @@ package global.smartup.node.service;
 import global.smartup.node.Config;
 import global.smartup.node.constant.PoConstant;
 import global.smartup.node.eth.EthClient;
-import global.smartup.node.eth.info.BuyCTInfo;
-import global.smartup.node.eth.info.Constant;
-import global.smartup.node.eth.info.CreateMarketInfo;
-import global.smartup.node.eth.info.SellCTInfo;
+import global.smartup.node.eth.info.*;
+import global.smartup.node.po.Proposal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +38,9 @@ public class BlockService {
 
     @Autowired
     private CTAccountService ctAccountService;
+
+    @Autowired
+    private ProposalService proposalService;
 
     @Autowired
     private NotificationService notificationService;
@@ -83,7 +84,7 @@ public class BlockService {
                 }
 
                 // TODO
-                // proposal
+                // appeal
 
             }
         }
@@ -97,16 +98,25 @@ public class BlockService {
                 handleSellCT(block, tx);
             }
 
+            // call sut proposal
+            if (input.startsWith(Constant.CT.SutProposal)) {
+                handleSutProposal(block, tx);
+            }
+
+            // TODO
+            // call suggest proposal
+            if (input.startsWith(Constant.CT.SuggestProposal)) {
+
+            }
+
         }
 
-        // TODO
-        // call smartup
+        // call SmartUp
         if (to.equals(config.ethSmartupContract)) {
             // flag
 
             // flag vote
 
-            // proposal
         }
 
     }
@@ -241,5 +251,48 @@ public class BlockService {
         }
 
     }
+
+    private void handleSutProposal(EthBlock.Block block, Transaction tx) {
+        log.info("Handle CT market proposal txHash = {}", tx.getHash());
+
+        Date blockTime = new Date(block.getTimestamp().longValue() * 1000);
+        String from = Keys.toChecksumAddress(tx.getFrom());
+        String to = Keys.toChecksumAddress(tx.getTo());
+        CreateProposalSutInfo info = new CreateProposalSutInfo();
+        info.parseTransaction(tx);
+        TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
+
+        // query creating proposal
+        Proposal proposal = proposalService.queryCurrentSutProposal(from, to);
+        if (proposal == null) {
+            return;
+        }
+
+        if (ethClient.isTransactionFail(receipt)) {
+            // tx fail
+
+            // save
+            proposalService.updateSutProposalCreatedFromChain(tx.getHash(), false, from, to, info.getInputSutAmount(), blockTime);
+
+            // send ntfc
+            notificationService.sendProposalCreated(tx.getHash(), false, from, to, proposal.getProposalId(),
+                    proposal.getType(), info.getInputSutAmount());
+        } else {
+            // tx success
+
+            // save
+            proposalService.updateSutProposalCreatedFromChain(tx.getHash(), true, from, to, info.getInputSutAmount(), blockTime);
+
+            // send proposal ntfc
+            notificationService.sendProposalCreated(tx.getHash(), true, from, to, proposal.getProposalId(),
+                    proposal.getType(), info.getInputSutAmount());
+
+            // TODO
+            //  send vote ntfc
+        }
+
+
+    }
+
 
 }

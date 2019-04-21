@@ -1,0 +1,66 @@
+app:
+
+  protocol: http
+  domain: 127.0.0.1
+  port: 8086
+
+eth:
+  protocol: http
+  domain: 54.255.204.122
+  port: 80
+
+  smartupContract: '0x1bff1dc00bb838187e104400d7e9128d93db5313'
+  sutContract: '0xf1899c6eb6940021c1ae4e9c3a8e29ee93704b03'
+  nttContract: '0x846ce03199a759a183cccb35146124cd3f120548'
+
+spring:
+
+  profiles:
+    active: unit
+
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://192.168.1.192/smartup_node?useSSL=false
+    username: root
+    password: Asd62342523.
+    sql-script-encoding: UTF-8
+
+    druid:
+      initial-size: 1
+      max-active: 20
+      min-idle: 5
+
+  redis:
+    host: 192.168.1.192
+    port: 6379
+    password: Asd62342523.
+    pool:
+      max-active: 2
+      min-idle: 1
+      max-wait: 5000
+
+mybatis:
+  check-config-location: false
+  mapper-locations: classpath*:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+
+mapper:
+  mapper:
+    - tk.mybatis.mapper.common.Mapper
+  not-empty: false
+  style: camelhump
+
+pagehelper:
+    helperDialect: mysql
+    reasonable: true
+    supportMethodsArguments: true
+    params: count=countSql
+
+server:
+  port: 8086
+
+logging:
+  level:
+    org.springframework: info
+    global.smartup.node.mapper: debug

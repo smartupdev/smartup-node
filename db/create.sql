@@ -134,3 +134,36 @@ create table notification (
   is_read tinyint(1),
   create_time datetime
 );
+
+drop table if exists proposal;
+create table proposal(
+  proposal_id varchar(32) primary key,
+  tx_hash varchar(66),
+  stage varchar(16),
+  type varchar(16),
+  market_address varchar(42),
+  user_address varchar(42),
+  name varchar(64),
+  description varchar(512),
+  create_time datetime,
+  block_time datetime
+);
+
+drop table if exists proposal_sut;
+create table proposal_sut(
+  proposal_id varchar(32) primary key,
+  sut_amount decimal(40,20),
+  is_success tinyint(1)
+);
+
+drop table if exists proposal_sut_vote;
+create table proposal_sut_vote(
+  proposal_vote_id varchar(32) primary key,
+  proposal_id varchar(32),
+  tx_hash varchar(66),
+  stage varchar(16),
+  user_address varchar(42),
+  is_agree tinyint(1),
+  create_time datetime,
+  block_time datetime
+);

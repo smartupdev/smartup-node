@@ -29,10 +29,8 @@ import java.util.List;
 
 
 @EnableSwagger2
-@EnableScheduling
 @MapperScan("global.smartup.node.mapper")
-@ComponentScan("global.smartup.node")
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "global.smartup.node")
 public class Starter extends WebMvcConfigurerAdapter {
 
     @Autowired

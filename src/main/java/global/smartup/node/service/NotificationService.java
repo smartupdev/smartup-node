@@ -91,6 +91,29 @@ public class NotificationService {
         delNotificationCache(userAddress);
     }
 
+    public void sendProposalCreated(String txHash, boolean isSuccess, String userAddress, String marketAddress, Long proposalId, String type, BigDecimal sutAmount) {
+        userAddress = Keys.toChecksumAddress(userAddress);
+        Notification ntfc = new Notification();
+        HashMap<String, Object> content = new HashMap<>();
+        content.put("txHash", txHash);
+        content.put("isSuccess", isSuccess);
+        content.put("userAddress", userAddress);
+        content.put("type", type);
+        content.put("marketAddress", marketAddress);
+        content.put("proposalId", proposalId);
+        content.put("sutAmount", sutAmount);
+        ntfc.setUserAddress(userAddress);
+        ntfc.setNotificationId(idGenerator.getId());
+        ntfc.setType(PoConstant.Notification.Type.ProposalCreateFinish);
+        ntfc.setContent(JSON.toJSONString(content, SerializerFeature.WriteBigDecimalAsPlain));
+        ntfc.setIsRead(false);
+        ntfc.setCreateTime(new Date());
+        notificationMapper.insert(ntfc);
+
+        //clear cache
+        delNotificationCache(userAddress);
+    }
+
     public void delNotificationCache(String userAddress) {
         userAddress = Keys.toChecksumAddress(userAddress);
         String countKey = RedisKey.NotificationPrefix + userAddress + RedisKey.NotificationCountPrefix;

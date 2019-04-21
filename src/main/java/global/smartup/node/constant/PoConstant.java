@@ -99,6 +99,32 @@ public class PoConstant {
 
             public static final String TradeFinish = "TradeFinish";
 
+            public static final String ProposalCreateFinish = "ProposalCreateFinish";
+
+        }
+
+    }
+
+    public static class Proposal {
+
+        public static class Stage {
+
+            public static final String Creating = "creating";
+
+            public static final String Voting = "voting";
+
+            public static final String Finished = "finished";
+
+            public static final String Fail = "fail";
+
+        }
+
+        public static class Type {
+
+            public static final String Sut = "sut";
+
+            public static final String Suggest = "suggest";
+
         }
 
     }

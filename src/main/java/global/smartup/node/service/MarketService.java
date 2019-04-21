@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.web3j.crypto.Keys;
 import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
@@ -172,6 +173,7 @@ public class MarketService {
     }
 
     public boolean isMarketAddressInCache(String marketAddress) {
+        marketAddress = Keys.toChecksumAddress(marketAddress);
         if (CacheMarketAddresses == null) {
             CacheMarketAddresses = new ArrayList<>();
             queryAll().forEach(m -> CacheMarketAddresses.add(m.getMarketAddress()));
