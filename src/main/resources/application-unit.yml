@@ -16,7 +16,7 @@ eth:
 spring:
 
   profiles:
-    active: dev
+    active: unit
 
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
@@ -63,4 +63,4 @@ server:
 logging:
   level:
     org.springframework: info
-    global.smartup.node: info
+    global.smartup.node: debug

@@ -3,7 +3,6 @@ package global.smartup.node.eth.info;
 import org.web3j.abi.FunctionReturnDecoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Address;
-import org.web3j.abi.datatypes.DynamicBytes;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.crypto.Keys;
@@ -14,59 +13,55 @@ import org.web3j.utils.Convert;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
-public class CreateMarketInfo {
-
-    public static final String ByteLastFlag = "01";
+public class CTSellInfo {
 
     private String txHash;
 
     private String input;
 
-    private String inputSmartupAddress;
+    private Date blockTime;
 
-    private BigDecimal inputAmount;
+
+    private BigDecimal inputCT;
 
 
     private String eventMarketAddress;
 
-    private String eventCreatorAddress;
+    private String eventUserAddress;
 
-    private BigDecimal eventAmount;
+    private BigDecimal eventSUT;
+
+    private BigDecimal eventCT;
+
 
 
     public void parseTransaction(Transaction tx) {
         if (tx == null) {
             return;
         }
-        this.txHash = tx.getHash();
         this.input = tx.getInput();
-
-        if (!input.endsWith(ByteLastFlag)) {
-            return;
-        }
-
+        this.txHash = tx.getHash();
         String temp = input.substring(10, input.length());
         List<Type> params =  FunctionReturnDecoder.decode(temp, Arrays.asList(new TypeReference[]{
-                TypeReference.create(Address.class),
                 TypeReference.create(Uint256.class),
-                TypeReference.create(DynamicBytes.class)
         }));
-        this.inputSmartupAddress = Keys.toChecksumAddress(params.get(0).getValue().toString());
-        this.inputAmount = Convert.fromWei(params.get(1).getValue().toString(), Convert.Unit.ETHER);
+        this.inputCT = Convert.fromWei(params.get(0).getValue().toString(), Convert.Unit.ETHER);
     }
+
 
     public void parseTransactionReceipt(TransactionReceipt receipt) {
         if (receipt == null) {
             return;
         }
         String status = receipt.getStatus();
-        if (status.equals("0x0")) {
+        if ("0x0".equals(status)) {
             return;
         }
         List<Log> list = receipt.getLogs();
-        if (list.size() != 2) {
+        if (list.size() < 2) {
             return;
         }
         Log log = list.get(1);
@@ -74,12 +69,15 @@ public class CreateMarketInfo {
         List<Type> params =  FunctionReturnDecoder.decode(data, Arrays.asList(new TypeReference[]{
                 TypeReference.create(Address.class),
                 TypeReference.create(Address.class),
+                TypeReference.create(Uint256.class),
                 TypeReference.create(Uint256.class)
         }));
         eventMarketAddress = Keys.toChecksumAddress(params.get(0).getValue().toString());
-        eventCreatorAddress = Keys.toChecksumAddress(params.get(1).getValue().toString());
-        eventAmount = Convert.fromWei(params.get(2).getValue().toString(), Convert.Unit.ETHER);
+        eventUserAddress = Keys.toChecksumAddress(params.get(1).getValue().toString());
+        eventSUT = Convert.fromWei(params.get(2).getValue().toString(), Convert.Unit.ETHER);
+        eventCT = Convert.fromWei(params.get(3).getValue().toString(), Convert.Unit.ETHER);
     }
+
 
     public String getTxHash() {
         return txHash;
@@ -97,22 +95,21 @@ public class CreateMarketInfo {
         this.input = input;
     }
 
-    public String getInputSmartupAddress() {
-        return inputSmartupAddress;
+    public Date getBlockTime() {
+        return blockTime;
     }
 
-    public void setInputSmartupAddress(String inputSmartupAddress) {
-        this.inputSmartupAddress = inputSmartupAddress;
+    public void setBlockTime(Date blockTime) {
+        this.blockTime = blockTime;
     }
 
-    public BigDecimal getInputAmount() {
-        return inputAmount;
+    public BigDecimal getInputCT() {
+        return inputCT;
     }
 
-    public void setInputAmount(BigDecimal inputAmount) {
-        this.inputAmount = inputAmount;
+    public void setInputCT(BigDecimal inputCT) {
+        this.inputCT = inputCT;
     }
-
 
     public String getEventMarketAddress() {
         return eventMarketAddress;
@@ -122,19 +119,27 @@ public class CreateMarketInfo {
         this.eventMarketAddress = eventMarketAddress;
     }
 
-    public String getEventCreatorAddress() {
-        return eventCreatorAddress;
+    public String getEventUserAddress() {
+        return eventUserAddress;
     }
 
-    public void setEventCreatorAddress(String eventCreatorAddress) {
-        this.eventCreatorAddress = eventCreatorAddress;
+    public void setEventUserAddress(String eventUserAddress) {
+        this.eventUserAddress = eventUserAddress;
     }
 
-    public BigDecimal getEventAmount() {
-        return eventAmount;
+    public BigDecimal getEventSUT() {
+        return eventSUT;
     }
 
-    public void setEventAmount(BigDecimal eventAmount) {
-        this.eventAmount = eventAmount;
+    public void setEventSUT(BigDecimal eventSUT) {
+        this.eventSUT = eventSUT;
+    }
+
+    public BigDecimal getEventCT() {
+        return eventCT;
+    }
+
+    public void setEventCT(BigDecimal eventCT) {
+        this.eventCT = eventCT;
     }
 }

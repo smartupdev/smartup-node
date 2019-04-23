@@ -5,9 +5,9 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import global.smartup.node.compoment.IdGenerator;
 import global.smartup.node.constant.PoConstant;
-import global.smartup.node.eth.info.BuyCTInfo;
-import global.smartup.node.eth.info.CreateMarketInfo;
-import global.smartup.node.eth.info.SellCTInfo;
+import global.smartup.node.eth.info.CTBuyInfo;
+import global.smartup.node.eth.info.MarketCreateInfo;
+import global.smartup.node.eth.info.CTSellInfo;
 import global.smartup.node.mapper.MarketDataMapper;
 import global.smartup.node.mapper.MarketMapper;
 import global.smartup.node.po.Market;
@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.web3j.crypto.Keys;
 import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
@@ -64,7 +65,7 @@ public class MarketService {
     /**
      * 创建市场成功，更新市场
      */
-    public void updateCreateByChain(CreateMarketInfo info) {
+    public void updateCreateByChain(MarketCreateInfo info) {
         if (info == null) {
             return;
         }
@@ -113,7 +114,7 @@ public class MarketService {
     /**
      * 购买CT事件，更新市场数据
      */
-    public void updateBuyTradeByChain(BuyCTInfo info) {
+    public void updateBuyTradeByChain(CTBuyInfo info) {
         String marketAddress = info.getEventMarketAddress();
         MarketData data = marketDataMapper.selectByPrimaryKey(marketAddress);
         if (data == null) {
@@ -137,7 +138,7 @@ public class MarketService {
     /**
      * 出售CT事件，更新市场数据
      */
-    public void updateSellTradeByChain(SellCTInfo info) {
+    public void updateSellTradeByChain(CTSellInfo info) {
         String marketAddress = info.getEventMarketAddress();
         MarketData data = marketDataMapper.selectByPrimaryKey(marketAddress);
         if (data == null) {
@@ -172,6 +173,7 @@ public class MarketService {
     }
 
     public boolean isMarketAddressInCache(String marketAddress) {
+        marketAddress = Keys.toChecksumAddress(marketAddress);
         if (CacheMarketAddresses == null) {
             CacheMarketAddresses = new ArrayList<>();
             queryAll().forEach(m -> CacheMarketAddresses.add(m.getMarketAddress()));

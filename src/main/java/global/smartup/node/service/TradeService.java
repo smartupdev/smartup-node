@@ -3,8 +3,8 @@ package global.smartup.node.service;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import global.smartup.node.constant.PoConstant;
-import global.smartup.node.eth.info.BuyCTInfo;
-import global.smartup.node.eth.info.SellCTInfo;
+import global.smartup.node.eth.info.CTBuyInfo;
+import global.smartup.node.eth.info.CTSellInfo;
 import global.smartup.node.mapper.TradeMapper;
 import global.smartup.node.po.Trade;
 import global.smartup.node.util.Pagination;
@@ -26,7 +26,7 @@ public class TradeService {
     @Autowired
     private TradeMapper tradeMapper;
 
-    public void saveBuyTxByChain(BuyCTInfo info) {
+    public void saveBuyTxByChain(CTBuyInfo info) {
         //save
         Trade trade = new Trade();
         trade.setTxHash(info.getTxHash());
@@ -42,7 +42,7 @@ public class TradeService {
         tradeMapper.insert(trade);
     }
 
-    public void saveSellTxByChain(SellCTInfo info) {
+    public void saveSellTxByChain(CTSellInfo info) {
         //save
         Trade trade = new Trade();
         trade.setTxHash(info.getTxHash());

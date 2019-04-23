@@ -3,10 +3,8 @@ package global.smartup.node.service;
 import global.smartup.node.Config;
 import global.smartup.node.constant.PoConstant;
 import global.smartup.node.eth.EthClient;
-import global.smartup.node.eth.info.BuyCTInfo;
-import global.smartup.node.eth.info.Constant;
-import global.smartup.node.eth.info.CreateMarketInfo;
-import global.smartup.node.eth.info.SellCTInfo;
+import global.smartup.node.eth.info.*;
+import global.smartup.node.po.Proposal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +40,9 @@ public class BlockService {
     private CTAccountService ctAccountService;
 
     @Autowired
+    private ProposalService proposalService;
+
+    @Autowired
     private NotificationService notificationService;
 
 
@@ -73,17 +74,16 @@ public class BlockService {
             if (input.startsWith(Constant.SUT.ApproveAndCall)) {
 
                 //  call create market
-                if (input.endsWith(CreateMarketInfo.ByteLastFlag)) {
+                if (input.endsWith(MarketCreateInfo.ByteLastFlag)) {
                     handleCreateMarket(tx);
                 }
 
                 // call buy CT
-                if (BuyCTInfo.isBuyCTTransaction(input, config.ethSmartupContract)) {
+                if (CTBuyInfo.isBuyCTTransaction(input, config.ethSmartupContract)) {
                     handleBuyCT(block, tx);
                 }
 
-                // TODO
-                // proposal
+                // appeal
 
             }
         }
@@ -97,16 +97,44 @@ public class BlockService {
                 handleSellCT(block, tx);
             }
 
+            // call sut proposal
+            if (input.startsWith(Constant.CT.SutProposal)) {
+                handleSutProposal(block, tx);
+            }
+
+            // call sut proposal vote
+            if (input.startsWith(Constant.CT.SutProposalVote)) {
+                handleSutProposalVote(block, tx);
+            }
+
+            // call sut proposal finish
+            if (input.startsWith(Constant.CT.SutProposalFinish)) {
+                handleSutProposalFinish(block, tx);
+            }
+
+            //  call suggest proposal
+            if (input.startsWith(Constant.CT.SuggestProposal)) {
+                handleSuggestProposal(block, tx);
+            }
+
+            // call suggest proposal vote
+            if (input.startsWith(Constant.CT.SuggestProposalVote)) {
+                handleSuggestProposalVote(block, tx);
+            }
+
+            // call suggest proposal finish
+            if (input.startsWith(Constant.CT.SuggestProposalFinish)) {
+                handleSuggestProposalFinish(block, tx);
+            }
+
         }
 
-        // TODO
-        // call smartup
+        // call SmartUp
         if (to.equals(config.ethSmartupContract)) {
             // flag
 
             // flag vote
 
-            // proposal
         }
 
     }
@@ -130,7 +158,7 @@ public class BlockService {
         } else {
             // tx success
 
-            CreateMarketInfo info = new CreateMarketInfo();
+            MarketCreateInfo info = new MarketCreateInfo();
             info.parseTransaction(tx);
             info.parseTransactionReceipt(receipt);
 
@@ -153,7 +181,7 @@ public class BlockService {
 
         Date blockTime = new Date(block.getTimestamp().longValue() * 1000);
         String from = Keys.toChecksumAddress(tx.getFrom());
-        BuyCTInfo info = new BuyCTInfo();
+        CTBuyInfo info = new CTBuyInfo();
         info.parseTransaction(tx);
         TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
 
@@ -203,7 +231,7 @@ public class BlockService {
         Date blockTime = new Date(block.getTimestamp().longValue() * 1000);
         String from = Keys.toChecksumAddress(tx.getFrom());
         String to = Keys.toChecksumAddress(tx.getTo());
-        SellCTInfo info = new SellCTInfo();
+        CTSellInfo info = new CTSellInfo();
         info.parseTransaction(tx);
         TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
 
@@ -239,6 +267,172 @@ public class BlockService {
             notificationService.sendTradeFinish(info.getTxHash(), true, from, PoConstant.Trade.Type.Sell, to,
                     info.getEventSUT(), info.getEventCT());
         }
+
+    }
+
+    private void handleSutProposal(EthBlock.Block block, Transaction tx) {
+        log.info("Handle proposal txHash = {}", tx.getHash());
+
+        Date blockTime = new Date(block.getTimestamp().longValue() * 1000);
+        String from = Keys.toChecksumAddress(tx.getFrom());
+        String to = Keys.toChecksumAddress(tx.getTo());
+        ProposalSutCreateInfo info = new ProposalSutCreateInfo();
+        info.parseTransaction(tx);
+        TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
+
+        // query creating proposal
+        Proposal proposal = proposalService.queryEditingProposal(from, to, PoConstant.Proposal.Type.Sut);
+        if (proposal == null) {
+            return;
+        }
+
+        if (ethClient.isTransactionFail(receipt)) {
+            // tx fail
+
+            // save
+            proposalService.updateSutProposalCreatedFromChain(tx.getHash(), false, from, to, info.getInputSutAmount(), blockTime);
+
+            // send ntfc
+            notificationService.sendProposalCreated(tx.getHash(), false, from, to, proposal.getProposalId(),
+                    proposal.getType(), info.getInputSutAmount());
+        } else {
+            // tx success
+
+            // save
+            proposalService.updateSutProposalCreatedFromChain(tx.getHash(), true, from, to, info.getInputSutAmount(), blockTime);
+
+            // send proposal ntfc
+            notificationService.sendProposalCreated(tx.getHash(), true, from, to, proposal.getProposalId(),
+                    proposal.getType(), info.getInputSutAmount());
+
+            // TODO
+            //  send vote ntfc
+        }
+
+
+    }
+
+
+    private void handleSutProposalVote(EthBlock.Block block, Transaction tx) {
+        log.info("Handle sut proposal vote txHash = {}", tx.getHash());
+
+        Date blockTime = new Date(block.getTimestamp().longValue() * 1000);
+        String from = Keys.toChecksumAddress(tx.getFrom());
+        String to = Keys.toChecksumAddress(tx.getTo());
+        ProposalSutVoteInfo info = new ProposalSutVoteInfo();
+        info.parseTransaction(tx);
+        TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
+
+        Proposal proposal = proposalService.queryLastCreated(to, PoConstant.Proposal.Type.Sut);
+        if (proposal == null) {
+            return;
+        }
+
+        if (ethClient.isTransactionFail(receipt)) {
+            // save
+            proposalService.updateSutProposalVoteFromChain(tx.getHash(), false, from, to, info.getInputVote(), blockTime);
+
+            // send ntfc
+            notificationService.sendProposalSutVoteFinish(tx.getHash(), false, from, to, proposal.getProposalId(), info.getInputVote());
+
+        } else {
+            // save
+            proposalService.updateSutProposalVoteFromChain(tx.getHash(), true, from, to, info.getInputVote(), blockTime);
+
+            // send ntfc
+            notificationService.sendProposalSutVoteFinish(tx.getHash(), true, from, to, proposal.getProposalId(), info.getInputVote());
+        }
+    }
+
+
+    private void handleSutProposalFinish(EthBlock.Block block, Transaction tx) {
+        log.info("Handle sut proposal finish = {}", tx.getHash());
+
+        Date blockTime = new Date(block.getTimestamp().longValue() * 1000);
+        String from = Keys.toChecksumAddress(tx.getFrom());
+        String to = Keys.toChecksumAddress(tx.getTo());
+        TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
+
+        Proposal proposal = proposalService.queryLastCreated(to, PoConstant.Proposal.Type.Sut);
+        if (proposal == null || !proposal.getIsFinished()) {
+            return;
+        }
+        ProposalSutFinishInfo info = new ProposalSutFinishInfo();
+        info.parseTransactionReceipt(receipt);
+
+        if (ethClient.isTransactionFail(receipt)) {
+            // update proposal
+            proposalService.updateSutProposalFinishFromChain(tx.getHash(), false, from, to, null);
+
+            // send ntfc
+            notificationService.sendProposalSutFinish(tx.getHash(), false, from, to, proposal.getProposalId(), null);
+
+        } else {
+            // update proposal
+            proposalService.updateSutProposalFinishFromChain(tx.getHash(), true, from, to, info.getEvenIsAgree());
+
+            // send ntfc
+            notificationService.sendProposalSutFinish(tx.getHash(), true, from, to, proposal.getProposalId(), info.getEvenIsAgree());
+        }
+    }
+
+    private void handleSuggestProposal(EthBlock.Block block, Transaction tx) {
+        log.info("Handle suggest proposal finish tx hash = {}", tx.getHash());
+
+        Date blockTime = new Date(block.getTimestamp().longValue() * 1000);
+        String from = Keys.toChecksumAddress(tx.getFrom());
+        String to = Keys.toChecksumAddress(tx.getTo());
+        TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
+
+        Proposal proposal = proposalService.queryEditingProposal(from, to, PoConstant.Proposal.Type.Suggest);
+        if (proposal == null) {
+            log.error("Can not find creating suggest proposal tx hash = {}, user = {}, market = {}", to, from);
+            return;
+        }
+        if (!proposal.getIsFinished()) {
+            return;
+        }
+
+        ProposalSuggestCreateInfo info = new ProposalSuggestCreateInfo();
+        info.parseTransactionReceipt(receipt);
+
+        if (ethClient.isTransactionFail(receipt)) {
+            // save
+            proposalService.updateSuggestProposalCreatedFromChain(tx.getHash(), false, from, to, null, blockTime);
+
+            // send ntfc
+            notificationService.sendProposalSuggestVoteFinsh(tx.getHash(), false, from, to, proposal.getProposalId(), null);
+
+        } else {
+            // save
+            proposalService.updateSuggestProposalCreatedFromChain(tx.getHash(), true, from, to, info.getEventProposalId(), blockTime);
+
+            // send ntfc
+            notificationService.sendProposalSuggestVoteFinsh(tx.getHash(), true, from, to, proposal.getProposalId(), info.getEventProposalId());
+        }
+
+    }
+
+    private void handleSuggestProposalVote(EthBlock.Block block, Transaction tx) {
+        log.info("Handle suggest proposal vote finish = {}", tx.getHash());
+
+        Date blockTime = new Date(block.getTimestamp().longValue() * 1000);
+        String from = Keys.toChecksumAddress(tx.getFrom());
+        String to = Keys.toChecksumAddress(tx.getTo());
+        TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
+
+
+
+    }
+
+    private void handleSuggestProposalFinish(EthBlock.Block block, Transaction tx) {
+        log.info("Handle suggest proposal finish finish = {}", tx.getHash());
+
+        Date blockTime = new Date(block.getTimestamp().longValue() * 1000);
+        String from = Keys.toChecksumAddress(tx.getFrom());
+        String to = Keys.toChecksumAddress(tx.getTo());
+        TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
+
 
     }
 

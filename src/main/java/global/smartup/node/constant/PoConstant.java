@@ -1,11 +1,27 @@
 package global.smartup.node.constant;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 public class PoConstant {
+
+
+    public static class TxStage {
+
+        public static final String Creating = "creating";
+
+        public static final String Pending = "pending";
+
+        public static final String Success = "success";
+
+        public static final String Fail = "fail";
+
+
+        public static boolean isFinish(String stage) {
+            if (Success.equals(stage) || Fail.equals(stage)) {
+                return true;
+            }
+            return false;
+        }
+
+    }
 
     public class Market {
 
@@ -99,8 +115,29 @@ public class PoConstant {
 
             public static final String TradeFinish = "TradeFinish";
 
+            public static final String ProposalSutCreateFinish = "ProposalSutCreateFinish";
+
+            public static final String ProposalSutVoteFinish = "ProposalSutVoteFinish";
+
+            public static final String ProposalSutFinish = "ProposalSutFinish";
+
+            public static final String ProposalSuggestCreateFinish = "ProposalSuggestCreateFinish";
+
         }
 
     }
+
+    public static class Proposal {
+
+        public static class Type {
+
+            public static final String Sut = "sut";
+
+            public static final String Suggest = "suggest";
+
+        }
+
+    }
+
 
 }
