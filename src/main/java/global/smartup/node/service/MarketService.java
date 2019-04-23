@@ -200,7 +200,11 @@ public class MarketService {
     }
 
     public Market queryById(String id) {
-        return marketMapper.selectByPrimaryKey(id);
+        Market market = marketMapper.selectByPrimaryKey(id);
+        if (market != null) {
+            market.setData(marketDataMapper.selectByPrimaryKey(market.getMarketAddress()));
+        }
+        return market;
     }
 
     public Market queryByTxHash(String txHash) {
@@ -212,7 +216,11 @@ public class MarketService {
     public Market queryByAddress(String address) {
         Market cdt = new Market();
         cdt.setMarketAddress(address);
-        return marketMapper.selectOne(cdt);
+        Market market = marketMapper.selectOne(cdt);
+        if (market != null) {
+            market.setData(marketDataMapper.selectByPrimaryKey(market.getMarketAddress()));
+        }
+        return market;
     }
 
     public List<Market> queryAll() {
