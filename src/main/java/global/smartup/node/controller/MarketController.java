@@ -99,7 +99,7 @@ public class MarketController extends BaseController {
             notes = "参数：marketAddress\n" +
                     "返回：obj = {\n" +
                     "　marketId, txHash, creatorAddress, marketAddress, name, description, \n" +
-                    "　stage(creating=创建中, built=创建完成, fail=创建失败, close=已关闭), createTime \n" +
+                    "　stage(creating=编辑中, pending=创建中, success=创建完成, fail=创建失败), createTime, isCollect(是否被收藏) \n" +
                     "　data = { latelyChange, last, latelyVolume, amount, ctAmount, ctTopAmount, count } \n" +
                     "}")
     @RequestMapping("/market/one")
@@ -109,6 +109,23 @@ public class MarketController extends BaseController {
                 return Wrapper.alert(getLocaleMsg(LangHandle.MarketCreatorAddressFormatError));
             }
             return Wrapper.success(marketService.queryByAddress(marketAddress));
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return Wrapper.sysError();
+        }
+    }
+
+    @ApiOperation(value = "市场详情", httpMethod = "POST", response = Wrapper.class,
+            notes = "参数：marketId\n" +
+                    "返回：obj = {\n" +
+                    "　marketId, txHash, creatorAddress, marketAddress, name, description, \n" +
+                    "　stage(creating=编辑中, pending=创建中, success=创建完成, fail=创建失败), createTime \n" +
+                    "　data = { latelyChange, last, latelyVolume, amount, ctAmount, ctTopAmount, count } \n" +
+                    "}")
+    @RequestMapping("/market/one/by/id")
+    public Object marketOneById(HttpServletRequest request, String marketId) {
+        try {
+            return Wrapper.success(marketService.queryById(marketId));
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return Wrapper.sysError();
@@ -138,8 +155,38 @@ public class MarketController extends BaseController {
     @RequestMapping("/market/list")
     public Object marketList(HttpServletRequest request, String orderBy, Boolean asc, Integer pageNumb, Integer pageSize) {
         try {
-            Pagination page = marketService.queryPage(orderBy, asc, pageNumb, pageSize);
+            String userAddress = getLoginUserAddress(request);
+            Pagination page = marketService.queryPage(userAddress, orderBy, asc, pageNumb, pageSize);
             return Wrapper.success(page);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return Wrapper.sysError();
+        }
+    }
+
+    @ApiOperation(value = "搜索市场", httpMethod = "POST", response = Wrapper.class,
+            notes = "参数：name, orderBy(lately_change, last, lately_volume, amount, count), asc(true从小到大/false) \n" +
+                    "返回：obj = { list = [ {见/api/market/one}, {}, ...] }")
+    @RequestMapping("/market/search")
+    public Object marketSearch(HttpServletRequest request, String name, String orderBy, Boolean asc, Integer pageNumb, Integer pageSize) {
+        try {
+            String userAddress = getLoginUserAddress(request);
+            Pagination page = marketService.querySearchPage(userAddress, name, orderBy, asc, pageNumb, pageSize);
+            return Wrapper.success(page);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return Wrapper.sysError();
+        }
+    }
+
+    @ApiOperation(value = "市场top", httpMethod = "POST", response = Wrapper.class,
+                notes = "参数：type(hottest, newest, populous, richest), limit(20~100) \n" +
+                        "返回：obj = { list = [ {见/api/market/one}, {}, ...] }")
+    @RequestMapping("/market/top")
+    public Object marketTop(HttpServletRequest request) {
+        try {
+
+            return Wrapper.success();
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return Wrapper.sysError();

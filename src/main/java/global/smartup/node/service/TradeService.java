@@ -32,7 +32,7 @@ public class TradeService {
         trade.setTxHash(info.getTxHash());
         trade.setMarketAddress(info.getEventMarketAddress());
         trade.setUserAddress(info.getEventUserAddress());
-        trade.setStage(PoConstant.Trade.Stage.Success);
+        trade.setStage(PoConstant.TxStage.Success);
         trade.setCreateTime(new Date());
         trade.setBlockTime(info.getBlockTime());
         trade.setType(PoConstant.Trade.Type.Buy);
@@ -48,7 +48,7 @@ public class TradeService {
         trade.setTxHash(info.getTxHash());
         trade.setMarketAddress(info.getEventMarketAddress());
         trade.setUserAddress(info.getEventUserAddress());
-        trade.setStage(PoConstant.Trade.Stage.Success);
+        trade.setStage(PoConstant.TxStage.Success);
         trade.setCreateTime(new Date());
         trade.setBlockTime(info.getBlockTime());
         trade.setType(PoConstant.Trade.Type.Sell);
@@ -62,7 +62,7 @@ public class TradeService {
         trade.setTxHash(txHash);
         trade.setMarketAddress(marketAddress);
         trade.setUserAddress(userAddress);
-        trade.setStage(PoConstant.Trade.Stage.Success);
+        trade.setStage(PoConstant.TxStage.Success);
         trade.setCreateTime(new Date());
         trade.setBlockTime(blockTime);
         trade.setType(type);
@@ -76,7 +76,7 @@ public class TradeService {
         if (t == null) {
             return false;
         }
-        if (t.getStage().equals(PoConstant.Trade.Stage.Padding)) {
+        if (t.getStage().equals(PoConstant.TxStage.Pending)) {
             return false;
         }
         return true;

@@ -10,10 +10,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import tk.mybatis.mapper.entity.Example;
 
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CollectService {
@@ -73,6 +75,16 @@ public class CollectService {
 
     public boolean isCollected(String userAddress, String type, String objectMark) {
         return query(userAddress, type, objectMark) != null;
+    }
+
+    public List<String> isCollected(String userAddress, String type, List<Object> objectMark) {
+        Example example = new Example(Collect.class);
+        example.createCriteria()
+                .andEqualTo("userAddress", userAddress)
+                .andEqualTo("type", type)
+                .andIn("objectMark", objectMark);
+        List<Collect> collects = collectMapper.selectByExample(example);
+        return collects.stream().map(Collect::getObjectMark).collect(Collectors.toList());
     }
 
     public Collect query(String userAddress, String type, String objectMark) {

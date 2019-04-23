@@ -24,6 +24,7 @@ import tk.mybatis.mapper.entity.Example;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class MarketService {
@@ -47,6 +48,8 @@ public class MarketService {
     @Autowired
     private KlineNodeService klineNodeService;
 
+    @Autowired
+    private CollectService collectService;
 
     public void save(Market market) {
         Market current = queryCurrentCreating(market.getCreatorAddress());
@@ -56,7 +59,7 @@ public class MarketService {
             marketMapper.updateByPrimaryKey(current);
         } else {
             market.setMarketId(idGenerator.getStringId());
-            market.setStage(PoConstant.Market.Stage.Creating);
+            market.setStage(PoConstant.TxStage.Creating);
             market.setCreateTime(new Date());
             marketMapper.insert(market);
         }
@@ -79,7 +82,7 @@ public class MarketService {
         }
         market.setTxHash(info.getTxHash());
         market.setMarketAddress(info.getEventMarketAddress());
-        market.setStage(PoConstant.Market.Stage.Built);
+        market.setStage(PoConstant.TxStage.Success);
         marketMapper.updateByPrimaryKey(market);
         log.info("Find market on chain, market = {}", JSON.toJSONString(market));
 
@@ -107,7 +110,7 @@ public class MarketService {
             return;
         }
         market.setTxHash(txHash);
-        market.setStage(PoConstant.Market.Stage.Fail);
+        market.setStage(PoConstant.TxStage.Fail);
         marketMapper.updateByPrimaryKey(market);
     }
 
@@ -162,7 +165,7 @@ public class MarketService {
         Iterator<Market> iterator = list.iterator();
         while (iterator.hasNext()) {
             Market m = iterator.next();
-            if (m.getCreatorAddress().equals(userAddress) && m.getStage().equals(PoConstant.Market.Stage.Creating)) {
+            if (m.getCreatorAddress().equals(userAddress) && m.getStage().equals(PoConstant.TxStage.Creating)) {
                 iterator.remove();
             }
         }
@@ -192,7 +195,7 @@ public class MarketService {
     public Market queryCurrentCreating(String userAddress) {
         Market cdt = new Market();
         cdt.setCreatorAddress(userAddress);
-        cdt.setStage(PoConstant.Market.Stage.Creating);
+        cdt.setStage(PoConstant.TxStage.Creating);
         return marketMapper.selectOne(cdt);
     }
 
@@ -228,7 +231,7 @@ public class MarketService {
     public List<String> queryBuiltAndHasTrade() {
         List<String> ret = new ArrayList<>();
         Example example = new Example(Market.class);
-        example.createCriteria().andEqualTo("stage", PoConstant.Market.Stage.Built);
+        example.createCriteria().andEqualTo("stage", PoConstant.TxStage.Success);
         example.orderBy("createTime").asc();
         example.excludeProperties("txHash", "creatorAddress", "name", "description", "type", "stage", "createTime");
         List<Market> markets = marketMapper.selectByExample(example);
@@ -236,7 +239,7 @@ public class MarketService {
         return ret;
     }
 
-    public Pagination<Market> queryPage(String orderBy, Boolean asc, Integer pageNumb, Integer pageSize) {
+    public Pagination<Market> queryPage(String userAddress, String orderBy, Boolean asc, Integer pageNumb, Integer pageSize) {
         List<String> orders = Arrays.asList("lately_change", "last", "lately_volume", "amount", "count");
         if (StringUtils.isBlank(orderBy)|| !orders.contains(orderBy)) {
             orderBy = "amount";
@@ -245,18 +248,77 @@ public class MarketService {
             asc = false;
         }
         Page<Market> page = PageHelper.startPage(pageNumb, pageSize);
-        marketMapper.selectOrderBy(orderBy, asc);
-        return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
+        marketMapper.selectOrderBy(null, orderBy, asc);
+        List<Market> list = page.getResult();
+
+        // collected
+        if (StringUtils.isNotBlank(userAddress)) {
+            List<Object> marketIds = list.stream().map(m -> m.getMarketId()).collect(Collectors.toList());
+            List<String> collected = collectService.isCollected(userAddress, PoConstant.Collect.Type.Market, marketIds);
+            list.forEach(m -> {
+                if (collected.contains(m.getMarketId())) {
+                    m.setIsCollect(true);
+                } else {
+                    m.setIsCollect(false);
+                }
+            });
+        }
+
+        return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), list);
+    }
+
+    public Pagination<Market> querySearchPage(String userAddress, String name, String orderBy, Boolean asc, Integer pageNumb, Integer pageSize) {
+        if (StringUtils.isBlank(name)) {
+            name = null;
+        }
+        List<String> orders = Arrays.asList("lately_change", "last", "lately_volume", "amount", "count");
+        if (StringUtils.isBlank(orderBy)|| !orders.contains(orderBy)) {
+            orderBy = "amount";
+        }
+        if (asc == null) {
+            asc = false;
+        }
+        Page<Market> page = PageHelper.startPage(pageNumb, pageSize);
+        marketMapper.selectOrderBy(name, orderBy, asc);
+        List<Market> list = page.getResult();
+
+        // collected
+        if (StringUtils.isNotBlank(userAddress)) {
+            List<Object> marketIds = list.stream().map(m -> m.getMarketId()).collect(Collectors.toList());
+            List<String> collected = collectService.isCollected(userAddress, PoConstant.Collect.Type.Market, marketIds);
+            list.forEach(m -> {
+                if (collected.contains(m.getMarketId())) {
+                    m.setIsCollect(true);
+                } else {
+                    m.setIsCollect(false);
+                }
+            });
+        }
+
+        return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), list);
+    }
+
+    public List<Market> queryTop(String type, Integer limit) {
+        List<Market> ret = new ArrayList<>();
+        if (PoConstant.Market.TopType.Newest.equals(type)) {
+            Example example = new Example(Market.class);
+            example.createCriteria()
+                    .andEqualTo("stage", PoConstant.TxStage.Success);
+            example.orderBy("createTime").desc();
+            PageHelper.startPage(1, limit);
+            ret = marketMapper.selectByExample(example);
+        }
+        return ret;
     }
 
     public Integer queryMarketCount() {
         Example example = new Example(Market.class);
-        example.createCriteria().andIn("stage", Arrays.asList("built"));
+        example.createCriteria().andIn("stage", Arrays.asList(PoConstant.TxStage.Success));
         return marketMapper.selectCountByExample(example);
     }
 
     public BigDecimal queryAllMarketSUTAmount() {
-        return marketDataMapper.selectAllMarketAmount(Arrays.asList("built"));
+        return marketDataMapper.selectAllMarketAmount(Arrays.asList(PoConstant.TxStage.Success));
     }
 
 }

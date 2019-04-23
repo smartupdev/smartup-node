@@ -58,6 +58,18 @@ public class Market {
     @Transient
     private MarketData data;
 
+    @Transient
+    private Boolean isCollect;
+
+
+
+    public Boolean getIsCollect() {
+        return isCollect;
+    }
+
+    public void setIsCollect(Boolean collect) {
+        isCollect = collect;
+    }
 
     public MarketData getData() {
         return data;

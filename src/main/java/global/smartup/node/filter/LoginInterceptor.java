@@ -38,6 +38,14 @@ public class LoginInterceptor implements HandlerInterceptor {
                 return false;
             }
             request.setAttribute(BaseController.LoginUserAddressRequestMark, address.toString());
+        } else {
+            String token = request.getHeader(BaseController.TokenName);
+            if (StringUtils.isNotBlank(token)) {
+                Object address  = redisTemplate.opsForValue().get(RedisKey.UserTokenPrefix + token);
+                if (address != null) {
+                    request.setAttribute(BaseController.LoginUserAddressRequestMark, address.toString());
+                }
+            }
         }
         return true;
     }

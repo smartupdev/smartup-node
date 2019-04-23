@@ -23,17 +23,29 @@ public class PoConstant {
 
     }
 
-    public class Market {
+    public static class Market {
 
-        public class Stage {
+        public static class Stage {
 
-            public static final String Creating = "creating";
+            // public static final String Creating = "creating";
+            //
+            // public static final String Built = "built";
+            //
+            // public static final String Fail = "fail";
+            //
+            // public static final String Close = "close";
 
-            public static final String Built = "built";
+        }
 
-            public static final String Fail = "fail";
+        public static class TopType {
 
-            public static final String Close = "close";
+            public static final String Hottest = "hottest";
+
+            public static final String Newest = "newest";
+
+            public static final String Populous = "populous";
+
+            public static final String Richest = "richest";
 
         }
 
@@ -55,11 +67,11 @@ public class PoConstant {
 
         public class Stage {
 
-            public static final String Padding = "pending";
-
-            public static final String Success = "success";
-
-            public static final String Fail = "fail";
+            // public static final String Padding = "pending";
+            //
+            // public static final String Success = "success";
+            //
+            // public static final String Fail = "fail";
 
         }
 

@@ -28,7 +28,11 @@
         select m.*, md.lately_change, md.lately_volume, md.last, md.amount, md.count, md.ct_amount, md.ct_top_amount
         from market m
             left join market_data md on m.market_address = md.market_address
-        where m.stage = 'built'
+        where
+            m.stage = 'success'
+            <if test="name != null">
+                and m.name like '%${name}%'
+            </if>
         order by
         if(isnull(md.${orderBy}),0,1) desc,
         md.${orderBy}
