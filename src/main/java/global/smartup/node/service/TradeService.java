@@ -62,7 +62,7 @@ public class TradeService {
         trade.setTxHash(txHash);
         trade.setMarketAddress(marketAddress);
         trade.setUserAddress(userAddress);
-        trade.setStage(PoConstant.TxStage.Success);
+        trade.setStage(PoConstant.TxStage.Fail);
         trade.setCreateTime(new Date());
         trade.setBlockTime(blockTime);
         trade.setType(type);
