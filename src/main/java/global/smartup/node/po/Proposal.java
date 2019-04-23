@@ -35,11 +35,16 @@ public class Proposal {
     @Column(name = "description")
     private String description;
 
+    @Column(name = "is_finished")
+    private Boolean isFinished;
+
     @Column(name = "create_time")
     private Date createTime;
 
     @Column(name = "block_time")
     private Date blockTime;
+
+
 
     @Transient
     private ProposalSut proposalSut;
@@ -48,12 +53,46 @@ public class Proposal {
     private List<ProposalSutVote> sutVotes;
 
 
+
+    @Transient
+    private ProposalSuggest proposalSuggest;
+
+    @Transient
+    private List<ProposalOption> options;
+
+
+
+
     public List<ProposalSutVote> getSutVotes() {
         return sutVotes;
     }
 
     public void setSutVotes(List<ProposalSutVote> sutVotes) {
         this.sutVotes = sutVotes;
+    }
+
+    public ProposalSuggest getProposalSuggest() {
+        return proposalSuggest;
+    }
+
+    public void setProposalSuggest(ProposalSuggest proposalSuggest) {
+        this.proposalSuggest = proposalSuggest;
+    }
+
+    public List<ProposalOption> getOptions() {
+        return options;
+    }
+
+    public void setOptions(List<ProposalOption> options) {
+        this.options = options;
+    }
+
+    public Boolean getIsFinished() {
+        return isFinished;
+    }
+
+    public void setIsFinished(Boolean finished) {
+        isFinished = finished;
     }
 
     public ProposalSut getProposalSut() {

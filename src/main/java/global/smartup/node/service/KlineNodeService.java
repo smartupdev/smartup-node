@@ -3,8 +3,8 @@ package global.smartup.node.service;
 import com.alibaba.fastjson.JSON;
 import global.smartup.node.constant.PoConstant;
 import global.smartup.node.constant.RedisKey;
-import global.smartup.node.eth.info.BuyCTInfo;
-import global.smartup.node.eth.info.SellCTInfo;
+import global.smartup.node.eth.info.CTBuyInfo;
+import global.smartup.node.eth.info.CTSellInfo;
 import global.smartup.node.mapper.KlineNodeMapper;
 import global.smartup.node.po.KlineNode;
 import global.smartup.node.util.Common;
@@ -56,7 +56,7 @@ public class KlineNodeService {
         return node;
     }
 
-    public void updateNodeForBuyTxByChain(BuyCTInfo info) {
+    public void updateNodeForBuyTxByChain(CTBuyInfo info) {
         if (info == null) {
             return;
         }
@@ -67,7 +67,7 @@ public class KlineNodeService {
         updateNodeByChain(marketAddress, sut, ct, time);
     }
 
-    public void updateNodeForSellTxByChain(SellCTInfo info) {
+    public void updateNodeForSellTxByChain(CTSellInfo info) {
         if (info == null) {
             return;
         }

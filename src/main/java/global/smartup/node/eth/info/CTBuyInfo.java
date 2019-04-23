@@ -3,6 +3,7 @@ package global.smartup.node.eth.info;
 import org.web3j.abi.FunctionReturnDecoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Address;
+import org.web3j.abi.datatypes.DynamicBytes;
 import org.web3j.abi.datatypes.Type;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.crypto.Keys;
@@ -12,11 +13,12 @@ import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.utils.Convert;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-public class SellCTInfo {
+public class CTBuyInfo {
 
     private String txHash;
 
@@ -25,6 +27,11 @@ public class SellCTInfo {
     private Date blockTime;
 
 
+
+    private String inputMarketAddress;
+
+    private BigDecimal inputSUT;
+
     private BigDecimal inputCT;
 
 
@@ -32,11 +39,21 @@ public class SellCTInfo {
 
     private String eventUserAddress;
 
+    private BigDecimal eventSUTOffer;
+
     private BigDecimal eventSUT;
 
     private BigDecimal eventCT;
 
 
+    public static boolean isBuyCTTransaction(String input, String smartupContract) {
+        if (input.endsWith("0") &&
+                !input.toLowerCase().contains(smartupContract.toLowerCase().substring(2, smartupContract.length()))
+                ) {
+            return true;
+        }
+        return false;
+    }
 
     public void parseTransaction(Transaction tx) {
         if (tx == null) {
@@ -46,9 +63,16 @@ public class SellCTInfo {
         this.txHash = tx.getHash();
         String temp = input.substring(10, input.length());
         List<Type> params =  FunctionReturnDecoder.decode(temp, Arrays.asList(new TypeReference[]{
+                TypeReference.create(Address.class),
                 TypeReference.create(Uint256.class),
+                TypeReference.create(DynamicBytes.class)
         }));
-        this.inputCT = Convert.fromWei(params.get(0).getValue().toString(), Convert.Unit.ETHER);
+
+        this.inputMarketAddress = Keys.toChecksumAddress(params.get(0).getValue().toString());
+        this.inputSUT = Convert.fromWei(params.get(1).getValue().toString(), Convert.Unit.ETHER);
+        DynamicBytes dynamicBytes = (DynamicBytes) params.get(2);
+        BigInteger val = new BigInteger(dynamicBytes.getValue());
+        this.inputCT = new BigDecimal(val).divide(Convert.Unit.ETHER.getWeiFactor());
     }
 
 
@@ -57,11 +81,11 @@ public class SellCTInfo {
             return;
         }
         String status = receipt.getStatus();
-        if ("0x0".equals(status)) {
+        if (status.equals("0x0")) {
             return;
         }
         List<Log> list = receipt.getLogs();
-        if (list.size() < 2) {
+        if (list.size() != 2) {
             return;
         }
         Log log = list.get(1);
@@ -70,21 +94,25 @@ public class SellCTInfo {
                 TypeReference.create(Address.class),
                 TypeReference.create(Address.class),
                 TypeReference.create(Uint256.class),
+                TypeReference.create(Uint256.class),
                 TypeReference.create(Uint256.class)
         }));
         eventMarketAddress = Keys.toChecksumAddress(params.get(0).getValue().toString());
         eventUserAddress = Keys.toChecksumAddress(params.get(1).getValue().toString());
-        eventSUT = Convert.fromWei(params.get(2).getValue().toString(), Convert.Unit.ETHER);
-        eventCT = Convert.fromWei(params.get(3).getValue().toString(), Convert.Unit.ETHER);
+        eventSUTOffer = Convert.fromWei(params.get(2).getValue().toString(), Convert.Unit.ETHER);
+        eventSUT = Convert.fromWei(params.get(3).getValue().toString(), Convert.Unit.ETHER);
+        eventCT = Convert.fromWei(params.get(4).getValue().toString(), Convert.Unit.ETHER);
     }
 
 
-    public String getTxHash() {
-        return txHash;
+
+
+    public Date getBlockTime() {
+        return blockTime;
     }
 
-    public void setTxHash(String txHash) {
-        this.txHash = txHash;
+    public void setBlockTime(Date blockTime) {
+        this.blockTime = blockTime;
     }
 
     public String getInput() {
@@ -95,12 +123,28 @@ public class SellCTInfo {
         this.input = input;
     }
 
-    public Date getBlockTime() {
-        return blockTime;
+    public String getTxHash() {
+        return txHash;
     }
 
-    public void setBlockTime(Date blockTime) {
-        this.blockTime = blockTime;
+    public void setTxHash(String txHash) {
+        this.txHash = txHash;
+    }
+
+    public String getInputMarketAddress() {
+        return inputMarketAddress;
+    }
+
+    public void setInputMarketAddress(String inputMarketAddress) {
+        this.inputMarketAddress = inputMarketAddress;
+    }
+
+    public BigDecimal getInputSUT() {
+        return inputSUT;
+    }
+
+    public void setInputSUT(BigDecimal inputSUT) {
+        this.inputSUT = inputSUT;
     }
 
     public BigDecimal getInputCT() {
@@ -125,6 +169,14 @@ public class SellCTInfo {
 
     public void setEventUserAddress(String eventUserAddress) {
         this.eventUserAddress = eventUserAddress;
+    }
+
+    public BigDecimal getEventSUTOffer() {
+        return eventSUTOffer;
+    }
+
+    public void setEventSUTOffer(BigDecimal eventSUTOffer) {
+        this.eventSUTOffer = eventSUTOffer;
     }
 
     public BigDecimal getEventSUT() {

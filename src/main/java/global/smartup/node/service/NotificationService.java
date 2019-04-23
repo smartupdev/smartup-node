@@ -104,7 +104,74 @@ public class NotificationService {
         content.put("sutAmount", sutAmount);
         ntfc.setUserAddress(userAddress);
         ntfc.setNotificationId(idGenerator.getId());
-        ntfc.setType(PoConstant.Notification.Type.ProposalCreateFinish);
+        ntfc.setType(PoConstant.Notification.Type.ProposalSutCreateFinish);
+        ntfc.setContent(JSON.toJSONString(content, SerializerFeature.WriteBigDecimalAsPlain));
+        ntfc.setIsRead(false);
+        ntfc.setCreateTime(new Date());
+        notificationMapper.insert(ntfc);
+
+        //clear cache
+        delNotificationCache(userAddress);
+    }
+
+    public void sendProposalSutVoteFinish(String txHash, boolean isSuccess, String userAddress, String marketAddress, Long proposalId, Boolean isAgree) {
+        userAddress = Keys.toChecksumAddress(userAddress);
+        Notification ntfc = new Notification();
+        HashMap<String, Object> content = new HashMap<>();
+        content.put("txHash", txHash);
+        content.put("isSuccess", isSuccess);
+        content.put("userAddress", userAddress);
+        content.put("marketAddress", marketAddress);
+        content.put("proposalId", proposalId);
+        content.put("isAgree", isAgree);
+        ntfc.setUserAddress(userAddress);
+        ntfc.setNotificationId(idGenerator.getId());
+        ntfc.setType(PoConstant.Notification.Type.ProposalSutVoteFinish);
+        ntfc.setContent(JSON.toJSONString(content, SerializerFeature.WriteBigDecimalAsPlain));
+        ntfc.setIsRead(false);
+        ntfc.setCreateTime(new Date());
+        notificationMapper.insert(ntfc);
+
+        //clear cache
+        delNotificationCache(userAddress);
+    }
+
+
+    public void sendProposalSutFinish(String txHash, boolean isSuccess, String userAddress, String marketAddress, Long proposalId, Boolean isAgree){
+        userAddress = Keys.toChecksumAddress(userAddress);
+        Notification ntfc = new Notification();
+        HashMap<String, Object> content = new HashMap<>();
+        content.put("txHash", txHash);
+        content.put("isSuccess", isSuccess);
+        content.put("userAddress", userAddress);
+        content.put("marketAddress", marketAddress);
+        content.put("proposalId", proposalId);
+        content.put("isAgree", isAgree);
+        ntfc.setUserAddress(userAddress);
+        ntfc.setNotificationId(idGenerator.getId());
+        ntfc.setType(PoConstant.Notification.Type.ProposalSutFinish);
+        ntfc.setContent(JSON.toJSONString(content, SerializerFeature.WriteBigDecimalAsPlain));
+        ntfc.setIsRead(false);
+        ntfc.setCreateTime(new Date());
+        notificationMapper.insert(ntfc);
+
+        //clear cache
+        delNotificationCache(userAddress);
+    }
+
+    public void sendProposalSuggestVoteFinsh(String txHash, boolean isSuccess, String userAddress, String marketAddress, Long proposalId, String proposalChainId) {
+        userAddress = Keys.toChecksumAddress(userAddress);
+        Notification ntfc = new Notification();
+        HashMap<String, Object> content = new HashMap<>();
+        content.put("txHash", txHash);
+        content.put("isSuccess", isSuccess);
+        content.put("userAddress", userAddress);
+        content.put("marketAddress", marketAddress);
+        content.put("proposalId", proposalId);
+        content.put("proposalChainId", proposalChainId);
+        ntfc.setUserAddress(userAddress);
+        ntfc.setNotificationId(idGenerator.getId());
+        ntfc.setType(PoConstant.Notification.Type.ProposalSuggestCreateFinish);
         ntfc.setContent(JSON.toJSONString(content, SerializerFeature.WriteBigDecimalAsPlain));
         ntfc.setIsRead(false);
         ntfc.setCreateTime(new Date());

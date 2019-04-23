@@ -9,7 +9,7 @@ eth:
   domain: 54.255.204.122
   port: 80
 
-  smartupContract: '0x1bff1dc00bb838187e104400d7e9128d93db5313'
+  smartupContract: '0x58327b616E3A38C59C587E5166bB7531088BA0d5'
   sutContract: '0xf1899c6eb6940021c1ae4e9c3a8e29ee93704b03'
   nttContract: '0x846ce03199a759a183cccb35146124cd3f120548'
 

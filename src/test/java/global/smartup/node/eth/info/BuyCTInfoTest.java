@@ -24,7 +24,7 @@ public class BuyCTInfoTest {
     @Test
     public void parseTransaction() {
         Transaction tx = ethClient.getTx("0xfc78e39b585a52cc309273ea008f5471375b377374dcd5550a4f12aeddd5b172");
-        BuyCTInfo info = new BuyCTInfo();
+        CTBuyInfo info = new CTBuyInfo();
         info.parseTransaction(tx);
         System.out.println(JSON.toJSONString(info));
     }
@@ -32,7 +32,7 @@ public class BuyCTInfoTest {
     @Test
     public void parseTransactionReceipt() {
         TransactionReceipt receipt = ethClient.getTxReceipt("0xfc78e39b585a52cc309273ea008f5471375b377374dcd5550a4f12aeddd5b172");
-        BuyCTInfo info = new BuyCTInfo();
+        CTBuyInfo info = new CTBuyInfo();
         info.parseTransactionReceipt(receipt);
         System.out.println(JSON.toJSONString(info));
     }
