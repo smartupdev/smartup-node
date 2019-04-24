@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 
 @Api(description = "通知")
 @RestController
@@ -66,12 +67,12 @@ public class NotificationController extends BaseController {
     }
 
     @ApiOperation(value = "设为已读", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：notificationId\n" +
+                notes = "参数：notificationId (notificationId=1, notificationId=2 ...)\n" +
                         "返回：是否成功")
     @RequestMapping("/set/read")
-    public Object setRead(HttpServletRequest request, Long notificationId) {
+    public Object setRead(HttpServletRequest request, Long[] notificationIds) {
         try {
-            notificationService.modRead(notificationId);
+            notificationService.modRead(Arrays.asList(notificationIds));
             return Wrapper.success();
         } catch (Exception e) {
             log.error(e.getMessage(), e);

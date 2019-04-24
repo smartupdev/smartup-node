@@ -229,6 +229,12 @@ public class NotificationService {
         delNotificationCache(ntfc.getUserAddress());
     }
 
+    public void modRead(List<Long> ids) {
+        for (Long id : ids) {
+            modRead(id);
+        }
+    }
+
     public UnreadNtfc queryUnreadInCache(String userAddress) {
         userAddress = Keys.toChecksumAddress(userAddress);
         UnreadNtfc unreadNtfc = new UnreadNtfc();
