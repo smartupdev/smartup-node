@@ -303,6 +303,9 @@ public class MarketService {
 
     public List<Market> queryTop(String userAddress, String type, Integer limit) {
         List<Market> ret = new ArrayList<>();
+        if (limit == null || limit.compareTo(100) > 0 || limit.compareTo(0) < 0) {
+            limit = 20;
+        }
         if (PoConstant.Market.TopType.Hottest.equals(type)) {
             Page<Market> page = PageHelper.startPage(1, limit);
             marketMapper.selectNameLikeAndOrderBy(null, true, "post_count", false);

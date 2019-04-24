@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 @Api(description = "市场")
 @RestController
@@ -183,10 +184,10 @@ public class MarketController extends BaseController {
                 notes = "参数：type(hottest, newest, populous, richest), limit(20~100) \n" +
                         "返回：obj = { list = [ {见/api/market/one}, {}, ...] }")
     @RequestMapping("/market/top")
-    public Object marketTop(HttpServletRequest request) {
+    public Object marketTop(HttpServletRequest request, String type, Integer limit) {
         try {
-
-            return Wrapper.success();
+            List ret = marketService.queryTop(getLoginUserAddress(request), type, limit);
+            return Wrapper.success(ret);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return Wrapper.sysError();
