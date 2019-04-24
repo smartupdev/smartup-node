@@ -132,6 +132,7 @@ drop table if exists notification;
 create table notification (
   notification_id bigint primary key,
   user_address varchar(42),
+  style varchar(32),
   type varchar(32),
   content varchar(512),
   is_read tinyint(1),

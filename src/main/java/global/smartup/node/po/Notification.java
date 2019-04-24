@@ -15,6 +15,9 @@ public class Notification {
     @Column(name="user_address")
     private String userAddress;
 
+    @Column(name="style")
+    private String style;
+
     @Column(name="type")
     private String type;
 
@@ -27,6 +30,16 @@ public class Notification {
     @Column(name="create_time")
     private Date createTime;
 
+
+
+
+    public String getStyle() {
+        return style;
+    }
+
+    public void setStyle(String style) {
+        this.style = style;
+    }
 
     public String getUserAddress() {
         return userAddress;

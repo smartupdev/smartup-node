@@ -121,6 +121,14 @@ public class PoConstant {
 
     public static class Notification {
 
+        public static class Style {
+
+            public static final String System = "system";
+
+            public static final String Personal = "personal";
+
+        }
+
         public static class Type {
 
             public static final String MarketCreateFinish = "MarketCreateFinish";

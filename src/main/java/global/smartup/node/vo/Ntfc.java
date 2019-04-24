@@ -9,6 +9,8 @@ public class Ntfc {
 
     private String userAddress;
 
+    private String style;
+
     private String type;
 
     private Map<String, Object> content;
@@ -17,6 +19,14 @@ public class Ntfc {
 
     private Date createTime;
 
+
+    public String getStyle() {
+        return style;
+    }
+
+    public void setStyle(String style) {
+        this.style = style;
+    }
 
     public Long getNotificationId() {
         return notificationId;
