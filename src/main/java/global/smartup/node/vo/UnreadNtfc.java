@@ -1,14 +1,12 @@
 package global.smartup.node.vo;
 
-import global.smartup.node.po.Notification;
-
 import java.util.List;
 
 public class UnreadNtfc {
 
     private Integer count;
 
-    private List<Notification> list;
+    private List<Ntfc> list;
 
 
     public Integer getCount() {
@@ -19,11 +17,11 @@ public class UnreadNtfc {
         this.count = count;
     }
 
-    public List<Notification> getList() {
+    public List<Ntfc> getList() {
         return list;
     }
 
-    public void setList(List<Notification> list) {
+    public void setList(List<Ntfc> list) {
         this.list = list;
     }
 }

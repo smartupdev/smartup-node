@@ -1,6 +1,7 @@
 package global.smartup.node.service;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.parser.Feature;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -10,9 +11,11 @@ import global.smartup.node.constant.RedisKey;
 import global.smartup.node.mapper.NotificationMapper;
 import global.smartup.node.po.Notification;
 import global.smartup.node.util.Pagination;
+import global.smartup.node.vo.Ntfc;
 import global.smartup.node.vo.UnreadNtfc;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -249,14 +252,14 @@ public class NotificationService {
             count = Integer.valueOf(countObj.toString());
             unreadNtfc.setCount(count);
             if (count.compareTo(0) == 0) {
-                unreadNtfc.setList(list);
+                unreadNtfc.setList(transferVo(list));
                 return unreadNtfc;
             }
 
             Object listObj = redisTemplate.opsForValue().get(listKey);
             if (listObj != null) {
                 list = JSON.parseObject(listObj.toString(), List.class);
-                unreadNtfc.setList(list);
+                unreadNtfc.setList(transferVo(list));
                 return unreadNtfc;
             }
         }
@@ -265,7 +268,7 @@ public class NotificationService {
         count = notificationMapper.selectUnreadCount(userAddress);
         list = notificationMapper.selectUnreadFew(userAddress, 10);
         unreadNtfc.setCount(count);
-        unreadNtfc.setList(list);
+        unreadNtfc.setList(transferVo(list));
 
         // save in cache
         redisTemplate.opsForValue().set(countKey, count, RedisKey.NotificationExpire, TimeUnit.MILLISECONDS);
@@ -274,17 +277,28 @@ public class NotificationService {
         return unreadNtfc;
     }
 
-    public Pagination<Notification> queryPage(String userAddress, Integer pageNumb, Integer pageSize) {
+    public Pagination<Ntfc> queryPage(String userAddress, Integer pageNumb, Integer pageSize) {
         userAddress = Keys.toChecksumAddress(userAddress);
         Example example = new Example(Notification.class);
         example.createCriteria().andEqualTo("userAddress", userAddress);
         example.orderBy("createTime").desc();
         Page<Notification> page = PageHelper.startPage(pageNumb, pageSize);
         notificationMapper.selectByExample(example);
-        return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
+        List<Ntfc> list = transferVo(page.getResult());
+        return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), list);
     }
 
 
-
+    public List<Ntfc> transferVo(List<Notification> list) {
+        List<Ntfc> ret = new ArrayList<>();
+        for (Notification notification : list) {
+            Ntfc ntfc = new Ntfc();
+            BeanUtils.copyProperties(notification, ntfc, "content");
+            HashMap<String, Object> map = JSON.parseObject(notification.getContent(), HashMap.class, Feature.UseBigDecimal);
+            ntfc.setContent(map);
+            ret.add(ntfc);
+        }
+        return ret;
+    }
 }
 

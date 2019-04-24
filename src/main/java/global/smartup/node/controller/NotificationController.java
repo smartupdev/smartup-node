@@ -49,7 +49,7 @@ public class NotificationController extends BaseController {
                 notes = "参数：pageNumb, pageSize\n" +
                         "返回：obj = {\n" +
                         "　list = [\n" +
-                        "　　{notificationId, userAddress, type, content(json字符串), isRead, createTime} , ... \n" +
+                        "　　{notificationId, userAddress, type, content, isRead, createTime} , ... \n" +
                         "　]\n" +
                         "}\n" +
                         "type, content 说明：\n" +
