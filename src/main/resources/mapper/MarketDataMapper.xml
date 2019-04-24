@@ -7,8 +7,8 @@
         select sum(md.amount)
         from (
           select market_address
-          from market where stage in
-            <foreach item="item" collection="type" separator="," open="(" close=")" index="">
+          from market where `status` in
+            <foreach item="item" collection="statuses" separator="," open="(" close=")" index="">
               #{item, jdbcType=VARCHAR}
             </foreach>
         ) m left join market_data md on m.market_address = md.market_address

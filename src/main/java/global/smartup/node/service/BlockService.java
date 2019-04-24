@@ -4,6 +4,7 @@ import global.smartup.node.Config;
 import global.smartup.node.constant.PoConstant;
 import global.smartup.node.eth.EthClient;
 import global.smartup.node.eth.info.*;
+import global.smartup.node.po.Market;
 import global.smartup.node.po.Proposal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -146,6 +147,11 @@ public class BlockService {
         String from = Keys.toChecksumAddress(tx.getFrom());
         TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
 
+        Market market = marketService.queryCurrentCreating(from);
+        if (market == null) {
+            return;
+        }
+
         if (ethClient.isTransactionFail(receipt)) {
             // tx fail
 
@@ -153,7 +159,7 @@ public class BlockService {
             marketService.updateCreateFailByChain(tx.getHash(), from);
 
             // send ntfc
-            notificationService.sendMarketCreateFinish(tx.getHash(), false, from, null);
+            notificationService.sendMarketCreateFinish(tx.getHash(), false, market.getMarketId(), from, null);
 
         } else {
             // tx success
@@ -166,7 +172,7 @@ public class BlockService {
             marketService.updateCreateByChain(info);
 
             // send  ntfc
-            notificationService.sendMarketCreateFinish(info.getTxHash(), true, from,  info.getEventMarketAddress());
+            notificationService.sendMarketCreateFinish(info.getTxHash(), true, market.getMarketId(), from, info.getEventMarketAddress());
         }
 
 

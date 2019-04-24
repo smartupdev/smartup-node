@@ -24,6 +24,7 @@ create table market (
   description varchar(512),
   type varchar(16),
   stage varchar(16),
+  status varchar(16),
   create_time datetime
 );
 

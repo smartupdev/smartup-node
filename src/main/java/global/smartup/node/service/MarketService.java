@@ -9,6 +9,7 @@ import global.smartup.node.eth.info.MarketCreateInfo;
 import global.smartup.node.eth.info.CTSellInfo;
 import global.smartup.node.mapper.MarketDataMapper;
 import global.smartup.node.mapper.MarketMapper;
+import global.smartup.node.po.Collect;
 import global.smartup.node.po.Market;
 import global.smartup.node.po.MarketData;
 import global.smartup.node.util.Pagination;
@@ -51,17 +52,29 @@ public class MarketService {
     private CollectService collectService;
 
 
-    public void save(Market market) {
+    public Market save(Market market) {
         Market current = queryCurrentCreating(market.getCreatorAddress());
         if (current != null) {
             current.setName(market.getName());
             current.setDescription(market.getDescription());
             marketMapper.updateByPrimaryKey(current);
+            return current;
         } else {
             market.setMarketId(idGenerator.getStringId());
-            market.setStage(PoConstant.TxStage.Creating);
+            market.setStatus(PoConstant.Market.Status.Creating);
             market.setCreateTime(new Date());
             marketMapper.insert(market);
+            return market;
+        }
+    }
+
+    public void updateLock(String marketId, String txHash) {
+        Market market = marketMapper.selectByPrimaryKey(marketId);
+        if (market != null && PoConstant.Market.Status.Creating.equals(market.getStatus())) {
+            market.setStage(PoConstant.TxStage.Pending);
+            market.setStatus(PoConstant.Market.Status.Locked);
+            market.setTxHash(txHash);
+            marketMapper.updateByPrimaryKey(market);
         }
     }
 
@@ -83,6 +96,7 @@ public class MarketService {
         market.setTxHash(info.getTxHash());
         market.setMarketAddress(info.getEventMarketAddress());
         market.setStage(PoConstant.TxStage.Success);
+        market.setStatus(PoConstant.Market.Status.Open);
         marketMapper.updateByPrimaryKey(market);
 
         // create market data
@@ -107,11 +121,9 @@ public class MarketService {
      */
     public void updateCreateFailByChain(String txHash, String userAddress) {
         Market market = queryCurrentCreating(userAddress);
-        if (market == null) {
-            return;
-        }
         market.setTxHash(txHash);
         market.setStage(PoConstant.TxStage.Fail);
+        market.setStatus(PoConstant.Market.Status.Close);
         marketMapper.updateByPrimaryKey(market);
     }
 
@@ -186,7 +198,8 @@ public class MarketService {
         Iterator<Market> iterator = list.iterator();
         while (iterator.hasNext()) {
             Market m = iterator.next();
-            if (m.getCreatorAddress().equals(userAddress) && m.getStage().equals(PoConstant.TxStage.Creating)) {
+            if (m.getCreatorAddress().equals(userAddress)
+                    && PoConstant.Market.Status.Creating.equals(m.getStatus())) {
                 iterator.remove();
             }
         }
@@ -214,10 +227,17 @@ public class MarketService {
     }
 
     public Market queryCurrentCreating(String userAddress) {
-        Market cdt = new Market();
-        cdt.setCreatorAddress(userAddress);
-        cdt.setStage(PoConstant.TxStage.Creating);
-        return marketMapper.selectOne(cdt);
+        Example example = new Example(Market.class);
+        example.createCriteria()
+                .andEqualTo("creatorAddress", userAddress)
+                .andIn("status", Arrays.asList(PoConstant.Market.Status.Creating, PoConstant.Market.Status.Locked));
+        List<Market> list = marketMapper.selectByExample(example);
+        if (list.size() == 0) {
+            return null;
+        } else if (list.size() > 1) {
+            log.error("Redundant creating market, User address = {}");
+        }
+        return list.get(0);
     }
 
     public Market queryById(String id) {
@@ -231,7 +251,11 @@ public class MarketService {
     public Market queryByTxHash(String txHash) {
         Market cdt = new Market();
         cdt.setTxHash(txHash);
-        return marketMapper.selectOne(cdt);
+        Market market = marketMapper.selectOne(cdt);
+        if (market != null) {
+            market.setData(marketDataMapper.selectByPrimaryKey(market.getMarketAddress()));
+        }
+        return market;
     }
 
     public Market queryByAddress(String address) {
@@ -333,12 +357,19 @@ public class MarketService {
 
     public Integer queryMarketCount() {
         Example example = new Example(Market.class);
-        example.createCriteria().andIn("stage", Arrays.asList(PoConstant.TxStage.Success));
+        example.createCriteria().andIn("status", Arrays.asList(PoConstant.Market.Status.Open));
         return marketMapper.selectCountByExample(example);
     }
 
     public BigDecimal queryAllMarketSUTAmount() {
-        return marketDataMapper.selectAllMarketAmount(Arrays.asList(PoConstant.TxStage.Success));
+        return marketDataMapper.selectAllMarketAmount(Arrays.asList(PoConstant.Market.Status.Open));
+    }
+
+    public void queryUserCollect(String userAddress, Market market) {
+        if (StringUtils.isNotBlank(userAddress) && market != null) {
+            boolean is = collectService.isCollected(userAddress, PoConstant.Collect.Type.Market, market.getMarketId());
+            market.setIsCollect(is);
+        }
     }
 
     private void queryUserCollect(String userAddress, List<Market> list) {
@@ -366,4 +397,5 @@ public class MarketService {
     }
 
 }
+
 

@@ -9,6 +9,6 @@ import java.util.List;
 
 public interface MarketDataMapper extends Mapper<MarketData> {
 
-    BigDecimal selectAllMarketAmount(@Param("type") List<String> type);
+    BigDecimal selectAllMarketAmount(@Param("statuses") List<String> statuses);
 
 }

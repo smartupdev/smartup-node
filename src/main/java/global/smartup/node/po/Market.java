@@ -48,13 +48,20 @@ public class Market {
     private String type;
 
     /**
-     * {@link global.smartup.node.constant.PoConstant.Market.Stage}
+     * {@link global.smartup.node.constant.PoConstant.TxStage}
      */
     @Column(name="stage")
     private String stage;
 
+    /**
+     * {@link global.smartup.node.constant.PoConstant.Market.Status}
+     */
+    @Column(name="status")
+    private String status;
+
     @Column(name="create_time")
     private Date createTime;
+
 
 
     @Transient
@@ -68,6 +75,15 @@ public class Market {
 
 
 
+
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
     public List<BigDecimal> getSevenDayNode() {
         return sevenDayNode;

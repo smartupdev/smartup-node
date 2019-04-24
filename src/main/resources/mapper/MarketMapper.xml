@@ -11,6 +11,7 @@
         <result column="description" jdbcType="VARCHAR" property="description"/>
         <result column="type" jdbcType="VARCHAR" property="type"/>
         <result column="stage" jdbcType="VARCHAR" property="stage"/>
+        <result column="status" jdbcType="VARCHAR" property="status"/>
         <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
         <association property="data" javaType="global.smartup.node.po.MarketData">
             <id property="marketAddress" column="market_address" />
@@ -31,7 +32,7 @@
         from market m
             left join market_data md on m.market_address = md.market_address
         where
-            m.stage = 'success'
+            m.status = 'open'
             <if test="name != null">
                 and m.name like '%${name}%'
             </if>

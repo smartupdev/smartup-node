@@ -48,14 +48,16 @@ public class NotificationService {
     private IdGenerator idGenerator;
 
 
-    public void sendMarketCreateFinish(String txHash, boolean isSuccess, String userAddress, String marketAddress) {
+    public void sendMarketCreateFinish(String txHash, boolean isSuccess, String marketId, String userAddress, String marketAddress) {
         userAddress = Keys.toChecksumAddress(userAddress);
         Notification ntfc = new Notification();
         HashMap<String, Object> content = new HashMap<>();
-        content.put("userAddress", userAddress);
-        content.put("isSuccess", isSuccess);
-        content.put("marketAddress", marketAddress);
+        content.put("title", "Create market success!");
         content.put("txHash", txHash);
+        content.put("isSuccess", isSuccess);
+        content.put("marketId", marketId);
+        content.put("userAddress", userAddress);
+        content.put("marketAddress", marketAddress);
         ntfc.setUserAddress(userAddress);
         ntfc.setNotificationId(idGenerator.getId());
         ntfc.setType(PoConstant.Notification.Type.MarketCreateFinish);
@@ -72,6 +74,11 @@ public class NotificationService {
         userAddress = Keys.toChecksumAddress(userAddress);
         Notification ntfc = new Notification();
         HashMap<String, Object> content = new HashMap<>();
+        if (PoConstant.Trade.Type.Buy.equals(type)) {
+            content.put("title", "Buy ct success!");
+        } else {
+            content.put("title", "Sell ct success!");
+        }
         content.put("txHash", txHash);
         content.put("isSuccess", isSuccess);
         content.put("userAddress", userAddress);
@@ -256,3 +263,4 @@ public class NotificationService {
 
 
 }
+

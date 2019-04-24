@@ -25,15 +25,15 @@ public class PoConstant {
 
     public static class Market {
 
-        public static class Stage {
+        public static class Status {
 
-            // public static final String Creating = "creating";
-            //
-            // public static final String Built = "built";
-            //
-            // public static final String Fail = "fail";
-            //
-            // public static final String Close = "close";
+            public static final String Creating = "creating";
+
+            public static final String Locked = "locked";
+
+            public static final String Open = "open";
+
+            public static final String Close = "close";
 
         }
 

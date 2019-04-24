@@ -67,4 +67,6 @@ public class LangHandle {
 
 	public static final String TradeMarketAddressFormatError = "trade_market_address_format_error";
 
+	public static final String MarketSaveWhenLock = "market_save_when_lock";
+
 }

@@ -2,6 +2,7 @@ package global.smartup.node.controller;
 
 import global.smartup.node.compoment.Validator;
 import global.smartup.node.constant.LangHandle;
+import global.smartup.node.constant.PoConstant;
 import global.smartup.node.po.Market;
 import global.smartup.node.service.GlobalService;
 import global.smartup.node.service.MarketService;
@@ -37,7 +38,7 @@ public class MarketController extends BaseController {
 
     @ApiOperation(value = "保存市场", httpMethod = "POST", response = Wrapper.class,
             notes = "参数：name, description\n" +
-                    "返回：是否成功")
+                    "返回：obj = { 见/api/market/one }")
     @RequestMapping("/user/market/save")
     public Object save(HttpServletRequest request, Market market) {
         try {
@@ -46,13 +47,19 @@ public class MarketController extends BaseController {
                 return Wrapper.alert(err);
             }
             String userAddress = getLoginUserAddress(request);
+
+            Market current = marketService.queryCurrentCreating(userAddress);
+            if (current != null && PoConstant.Market.Status.Locked.equals(current.getStatus())) {
+                return Wrapper.alert(getLocaleMsg(LangHandle.MarketSaveWhenLock));
+            }
+
             boolean isRepeat = marketService.isNameRepeat(userAddress, market.getName());
             if (isRepeat) {
                 return Wrapper.alert(getLocaleMsg(LangHandle.MarketNameRepeat));
             }
             market.setCreatorAddress(userAddress);
-            marketService.save(market);
-            return Wrapper.success();
+            Market ret = marketService.save(market);
+            return Wrapper.success(ret);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return Wrapper.sysError();
@@ -67,6 +74,20 @@ public class MarketController extends BaseController {
         try {
             Market market = marketService.queryCurrentCreating(getLoginUserAddress(request));
             return Wrapper.success(market);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return Wrapper.sysError();
+        }
+    }
+
+    @ApiOperation(value = "支付后锁定市场", httpMethod = "POST", response = Wrapper.class,
+                notes = "参数：marketId, txHash\n" +
+                        "返回：是否成功")
+    @RequestMapping("/user/market/lock")
+    public Object lock(HttpServletRequest request, String marketId, String txHash) {
+        try {
+            marketService.updateLock(marketId, txHash);
+            return Wrapper.success();
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return Wrapper.sysError();
@@ -100,7 +121,9 @@ public class MarketController extends BaseController {
             notes = "参数：marketAddress\n" +
                     "返回：obj = {\n" +
                     "　marketId, txHash, creatorAddress, marketAddress, name, description, \n" +
-                    "　stage(creating=编辑中, pending=创建中, success=创建完成, fail=创建失败), createTime, isCollect(是否被收藏) \n" +
+                    "　stage(pending=创建中, success=创建完成, fail=创建失败), " +
+                    "　status(creating=编辑中, locked=锁定, open=开放, close=关闭)" +
+                    "　createTime, isCollect(是否被收藏) \n" +
                     "　sevenDayNode(7天交易)\n" +
                     "　data = { latelyChange, last, latelyVolume, amount, ctAmount, ctTopAmount, count, postCount, userCount } \n" +
                     "}")
@@ -110,7 +133,9 @@ public class MarketController extends BaseController {
             if (!Checker.isAddress(marketAddress)) {
                 return Wrapper.alert(getLocaleMsg(LangHandle.MarketCreatorAddressFormatError));
             }
-            return Wrapper.success(marketService.queryByAddress(marketAddress));
+            Market market = marketService.queryByAddress(marketAddress);
+            marketService.queryUserCollect(getLoginUserAddress(request), market);
+            return Wrapper.success(market);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return Wrapper.sysError();
@@ -127,7 +152,9 @@ public class MarketController extends BaseController {
     @RequestMapping("/market/one/by/id")
     public Object marketOneById(HttpServletRequest request, String marketId) {
         try {
-            return Wrapper.success(marketService.queryById(marketId));
+            Market market = marketService.queryById(marketId);
+            marketService.queryUserCollect(getLoginUserAddress(request), market);
+            return Wrapper.success(market);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return Wrapper.sysError();
@@ -143,7 +170,9 @@ public class MarketController extends BaseController {
             if (!Checker.isTxHash(txHash)) {
                 return Wrapper.alert(getLocaleMsg(LangHandle.MarketTxHashFormatError));
             }
-            return Wrapper.success(marketService.queryByTxHash(txHash));
+            Market market = marketService.queryByTxHash(txHash);
+            marketService.queryUserCollect(getLoginUserAddress(request), market);
+            return Wrapper.success(market);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return Wrapper.sysError();

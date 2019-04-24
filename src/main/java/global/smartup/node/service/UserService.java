@@ -1,9 +1,9 @@
 package global.smartup.node.service;
 
-import global.smartup.node.compoment.IdGenerator;
 import global.smartup.node.mapper.UserMapper;
 import global.smartup.node.po.User;
 import global.smartup.node.util.Common;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.Keys;
@@ -18,7 +18,11 @@ public class UserService {
     private UserMapper userMapper;
 
     public User add(User user) {
-        user.setUserAddress(Keys.toChecksumAddress(user.getUserAddress()));
+        String address = Keys.toChecksumAddress(user.getUserAddress());
+        user.setUserAddress(address);
+        if (StringUtils.isBlank(user.getName())) {
+            user.setName(address);
+        }
         user.setCreateTime(new Date());
         user.setCode(generateCode());
         userMapper.insert(user);
@@ -28,6 +32,9 @@ public class UserService {
     public User add(String address) {
         address = Keys.toChecksumAddress(address);
         User user = new User();
+        if (StringUtils.isBlank(user.getName())) {
+            user.setName(address);
+        }
         user.setUserAddress(address);
         user.setCreateTime(new Date());
         user.setCode(generateCode());
