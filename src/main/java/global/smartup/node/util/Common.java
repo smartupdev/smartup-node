@@ -157,9 +157,6 @@ public class Common {
             e.printStackTrace();
         }
         Date start = Common.getSomeDaysAgo(end, 7);
-        System.out.printf("start = %s  end = %s \n",
-                DateFormatUtils.ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT.format(start),
-                DateFormatUtils.ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT.format(end));
 
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(start);
