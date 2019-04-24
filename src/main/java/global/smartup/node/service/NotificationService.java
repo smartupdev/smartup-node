@@ -52,7 +52,13 @@ public class NotificationService {
         userAddress = Keys.toChecksumAddress(userAddress);
         Notification ntfc = new Notification();
         HashMap<String, Object> content = new HashMap<>();
-        content.put("title", "Create market success!");
+        if (isSuccess) {
+            content.put("title", "Create market success!");
+            content.put("text", "Create market success!");
+        } else {
+            content.put("title", "Create market fail!");
+            content.put("text", "Create market fail!");
+        }
         content.put("txHash", txHash);
         content.put("isSuccess", isSuccess);
         content.put("marketId", marketId);
@@ -75,9 +81,21 @@ public class NotificationService {
         Notification ntfc = new Notification();
         HashMap<String, Object> content = new HashMap<>();
         if (PoConstant.Trade.Type.Buy.equals(type)) {
-            content.put("title", "Buy ct success!");
+            if (isSuccess) {
+                content.put("title", "Buy ct success!");
+                content.put("text", "Buy ct success!");
+            } else {
+                content.put("title", "Buy ct fail!");
+                content.put("text", "Buy ct fail!");
+            }
         } else {
-            content.put("title", "Sell ct success!");
+            if (isSuccess) {
+                content.put("title", "Sell ct success!");
+                content.put("text", "Sell ct success!");
+            } else {
+                content.put("title", "Sell ct fail!");
+                content.put("text", "Sell ct fail!");
+            }
         }
         content.put("txHash", txHash);
         content.put("isSuccess", isSuccess);
