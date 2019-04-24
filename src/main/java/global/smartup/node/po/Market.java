@@ -8,7 +8,9 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 @Table(name = "market")
 public class Market {
@@ -61,7 +63,19 @@ public class Market {
     @Transient
     private Boolean isCollect;
 
+    @Transient
+    private List<BigDecimal> sevenDayNode;
 
+
+
+
+    public List<BigDecimal> getSevenDayNode() {
+        return sevenDayNode;
+    }
+
+    public void setSevenDayNode(List<BigDecimal> sevenDayNode) {
+        this.sevenDayNode = sevenDayNode;
+    }
 
     public Boolean getIsCollect() {
         return isCollect;

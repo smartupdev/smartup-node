@@ -18,7 +18,6 @@ import org.web3j.utils.Convert;
 import org.web3j.utils.Numeric;
 
 import javax.annotation.PostConstruct;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -56,7 +55,7 @@ public class EthClient {
             } else {
                 log.error("getLastBlockNumber error {}", blockNumber.getError().getMessage());
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("getLastBlockNumber error {}", e.getMessage());
         }
         return null;
@@ -74,7 +73,7 @@ public class EthClient {
             } else {
                 log.error("getBlockByNumber error {}", ethBlock.getError().getMessage());
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;

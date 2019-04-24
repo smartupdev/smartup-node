@@ -67,4 +67,12 @@ public class CommonTest {
         System.out.println(id);
     }
 
+    @Test
+    public void getSevenDay6HourNode() {
+        List<String> ret = Common.getSevenDay6HourNode();
+        for (String s : ret) {
+            System.out.println(s);
+        }
+    }
+
 }

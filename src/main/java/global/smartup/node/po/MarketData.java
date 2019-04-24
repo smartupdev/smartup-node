@@ -40,7 +40,31 @@ public class MarketData {
     @Column(name = "count")
     private Long count;
 
+    // 帖子数量
+    @Column(name = "post_count")
+    private Integer postCount;
 
+    // 用户数量
+    @Column(name = "user_count")
+    private Integer userCount;
+
+
+
+    public Integer getPostCount() {
+        return postCount;
+    }
+
+    public void setPostCount(Integer postCount) {
+        this.postCount = postCount;
+    }
+
+    public Integer getUserCount() {
+        return userCount;
+    }
+
+    public void setUserCount(Integer userCount) {
+        this.userCount = userCount;
+    }
 
     public BigDecimal getCtAmount() {
         return ctAmount;

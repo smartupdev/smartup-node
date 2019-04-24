@@ -10,10 +10,7 @@ import org.web3j.crypto.Keys;
 
 import java.math.BigInteger;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class Common {
 
@@ -149,6 +146,42 @@ public class Common {
         c.add(Calendar.HOUR, -some);
         return c.getTime();
     }
+
+    public static List<String> getSevenDay6HourNode() {
+        List<String> list = new ArrayList<>();
+
+        Date end = null;
+        try {
+            end = DateUtils.parseDate("2019-04-24 07:00:00", "yyyy-MM-dd HH:mm:ss");
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        Date start = Common.getSomeDaysAgo(end, 7);
+        System.out.printf("start = %s  end = %s \n",
+                DateFormatUtils.ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT.format(start),
+                DateFormatUtils.ISO_8601_EXTENDED_DATETIME_TIME_ZONE_FORMAT.format(end));
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(start);
+        calendar.set(Calendar.HOUR, 0);
+
+        while (calendar.getTime().getTime() <= end.getTime()) {
+            String id = DateFormatUtils.format(calendar.getTime(), BuConstant.KlineIdFormatHour);
+            list.add(id);
+            calendar.add(Calendar.HOUR, 6);
+        }
+
+        if (list.size() > 28) {
+            int remove = list.size() - 28;
+            for (int i = 0; i < remove; i++) {
+                list.remove(0);
+            }
+        }
+
+        return list;
+    }
+
+
 
     public static Boolean isFuture(String segment, String timeId) {
         try {

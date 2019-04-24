@@ -21,11 +21,13 @@
             <result column="ct_amount" jdbcType="DECIMAL" property="ctAmount" />
             <result column="ct_top_amount" jdbcType="DECIMAL" property="ctTopAmount" />
             <result column="count" jdbcType="BIGINT" property="count" />
+            <result column="post_count" jdbcType="INTEGER" property="postCount" />
+            <result column="user_count" jdbcType="INTEGER" property="userCount" />
         </association>
     </resultMap>
 
-    <select id="selectOrderBy" resultMap="widthData">
-        select m.*, md.lately_change, md.lately_volume, md.last, md.amount, md.count, md.ct_amount, md.ct_top_amount
+    <select id="selectNameLikeAndOrderBy" resultMap="widthData">
+        select m.*, md.lately_change, md.lately_volume, md.last, md.amount, md.count, md.ct_amount, md.ct_top_amount, md.post_count, md.user_count
         from market m
             left join market_data md on m.market_address = md.market_address
         where
@@ -34,10 +36,19 @@
                 and m.name like '%${name}%'
             </if>
         order by
-        if(isnull(md.${orderBy}),0,1) desc,
-        md.${orderBy}
-        <if test="asc"> asc </if>
-        <if test="!asc"> desc </if>
+        <if test="inData">
+            if(isnull(md.${orderBy}),0,1) desc,
+            md.${orderBy}
+            <if test="asc"> asc </if>
+            <if test="!asc"> desc </if>
+        </if>
+        <if test="!inData">
+            if(isnull(m.${orderBy}),0,1) desc,
+            m.${orderBy}
+            <if test="asc"> asc </if>
+            <if test="!asc"> desc </if>
+        </if>
+
     </select>
 
 </mapper>

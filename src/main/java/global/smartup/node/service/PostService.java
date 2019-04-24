@@ -33,6 +33,8 @@ public class PostService {
     @Autowired
     private PostDataMapper postDataMapper;
 
+    @Autowired
+    private MarketService marketService;
 
     public void create(Post post) {
         Long id = idGenerator.getId();
@@ -48,6 +50,11 @@ public class PostService {
         postData.setLikeCount(0);
         postData.setDislikeCount(0);
         postDataMapper.insert(postData);
+
+        // update market data
+        if (StringUtils.isNotBlank(post.getMarketAddress())) {
+            marketService.updatePostCountAddOne(post.getMarketAddress());
+        }
     }
 
     public boolean isExist(Long postId) {

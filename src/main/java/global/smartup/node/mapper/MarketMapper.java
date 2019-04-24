@@ -9,6 +9,7 @@ import java.util.List;
 public interface MarketMapper extends Mapper<Market> {
 
 
-    List<Market> selectOrderBy(@Param("name") String name, @Param("orderBy") String orderBy, @Param("asc") boolean asc);
+    List<Market> selectNameLikeAndOrderBy(@Param("name") String name, @Param("inData") boolean inData,
+                                          @Param("orderBy") String orderBy, @Param("asc") boolean asc);
 
 }

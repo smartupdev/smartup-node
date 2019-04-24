@@ -1,6 +1,5 @@
 package global.smartup.node.service;
 
-import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import global.smartup.node.compoment.IdGenerator;
@@ -51,6 +50,7 @@ public class MarketService {
     @Autowired
     private CollectService collectService;
 
+
     public void save(Market market) {
         Market current = queryCurrentCreating(market.getCreatorAddress());
         if (current != null) {
@@ -84,7 +84,6 @@ public class MarketService {
         market.setMarketAddress(info.getEventMarketAddress());
         market.setStage(PoConstant.TxStage.Success);
         marketMapper.updateByPrimaryKey(market);
-        log.info("Find market on chain, market = {}", JSON.toJSONString(market));
 
         // create market data
         MarketData data = new MarketData();
@@ -95,6 +94,8 @@ public class MarketService {
         data.setCtAmount(BigDecimal.ZERO);
         data.setCtTopAmount(BigDecimal.ZERO);
         data.setCount(0L);
+        data.setPostCount(0);
+        data.setUserCount(0);
         marketDataMapper.insert(data);
 
         // clear cache
@@ -156,6 +157,26 @@ public class MarketService {
         data.setCtAmount(data.getCtAmount().subtract(info.getEventCT()));
         data.setCount(data.getCount() + 1);
         marketDataMapper.updateByPrimaryKey(data);
+    }
+
+    public void updateUserCount(String marketAddress, Integer addend) {
+        MarketData data = marketDataMapper.selectByPrimaryKey(marketAddress);
+        if (data != null) {
+            if (Math.max(data.getUserCount() + addend, 0) == 0) {
+                data.setPostCount(0);
+            } else {
+                data.setPostCount(data.getUserCount() + addend);
+            }
+            marketDataMapper.updateByPrimaryKey(data);
+        }
+    }
+
+    public void updatePostCountAddOne(String marketAddress) {
+        MarketData data = marketDataMapper.selectByPrimaryKey(marketAddress);
+        if (data != null) {
+            data.setPostCount(data.getPostCount() + 1);
+            marketDataMapper.updateByPrimaryKey(data);
+        }
     }
 
     public boolean isNameRepeat(String userAddress, String name) {
@@ -256,23 +277,10 @@ public class MarketService {
             asc = false;
         }
         Page<Market> page = PageHelper.startPage(pageNumb, pageSize);
-        marketMapper.selectOrderBy(null, orderBy, asc);
-        List<Market> list = page.getResult();
-
-        // collected
-        if (StringUtils.isNotBlank(userAddress)) {
-            List<Object> marketIds = list.stream().map(m -> m.getMarketId()).collect(Collectors.toList());
-            List<String> collected = collectService.isCollected(userAddress, PoConstant.Collect.Type.Market, marketIds);
-            list.forEach(m -> {
-                if (collected.contains(m.getMarketId())) {
-                    m.setIsCollect(true);
-                } else {
-                    m.setIsCollect(false);
-                }
-            });
-        }
-
-        return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), list);
+        marketMapper.selectNameLikeAndOrderBy(null, true, orderBy, asc);
+        queryUserCollect(userAddress, page.getResult());
+        querySevenDayNode(page.getResult());
+        return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
     }
 
     public Pagination<Market> querySearchPage(String userAddress, String name, String orderBy, Boolean asc, Integer pageNumb, Integer pageSize) {
@@ -287,35 +295,36 @@ public class MarketService {
             asc = false;
         }
         Page<Market> page = PageHelper.startPage(pageNumb, pageSize);
-        marketMapper.selectOrderBy(name, orderBy, asc);
-        List<Market> list = page.getResult();
-
-        // collected
-        if (StringUtils.isNotBlank(userAddress)) {
-            List<Object> marketIds = list.stream().map(m -> m.getMarketId()).collect(Collectors.toList());
-            List<String> collected = collectService.isCollected(userAddress, PoConstant.Collect.Type.Market, marketIds);
-            list.forEach(m -> {
-                if (collected.contains(m.getMarketId())) {
-                    m.setIsCollect(true);
-                } else {
-                    m.setIsCollect(false);
-                }
-            });
-        }
-
-        return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), list);
+        marketMapper.selectNameLikeAndOrderBy(name, true, orderBy, asc);
+        queryUserCollect(userAddress, page.getResult());
+        querySevenDayNode(page.getResult());
+        return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
     }
 
-    public List<Market> queryTop(String type, Integer limit) {
+    public List<Market> queryTop(String userAddress, String type, Integer limit) {
         List<Market> ret = new ArrayList<>();
-        if (PoConstant.Market.TopType.Newest.equals(type)) {
-            Example example = new Example(Market.class);
-            example.createCriteria()
-                    .andEqualTo("stage", PoConstant.TxStage.Success);
-            example.orderBy("createTime").desc();
-            PageHelper.startPage(1, limit);
-            ret = marketMapper.selectByExample(example);
+        if (PoConstant.Market.TopType.Hottest.equals(type)) {
+            Page<Market> page = PageHelper.startPage(1, limit);
+            marketMapper.selectNameLikeAndOrderBy(null, true, "post_count", false);
+            ret = page.getResult();
         }
+        if (PoConstant.Market.TopType.Newest.equals(type)) {
+            Page<Market> page = PageHelper.startPage(1, limit);
+            marketMapper.selectNameLikeAndOrderBy(null, false, "create_time", false);
+            ret = page.getResult();
+        }
+        if (PoConstant.Market.TopType.Populous.equals(type)) {
+            Page<Market> page = PageHelper.startPage(1, limit);
+            marketMapper.selectNameLikeAndOrderBy(null, true, "user_count", false);
+            ret = page.getResult();
+        }
+        if (PoConstant.Market.TopType.Richest.equals(type)) {
+            Page<Market> page = PageHelper.startPage(1, limit);
+            marketMapper.selectNameLikeAndOrderBy(null, true, "amount", false);
+            ret = page.getResult();
+        }
+        queryUserCollect(userAddress, ret);
+        querySevenDayNode(ret);
         return ret;
     }
 
@@ -327,6 +336,30 @@ public class MarketService {
 
     public BigDecimal queryAllMarketSUTAmount() {
         return marketDataMapper.selectAllMarketAmount(Arrays.asList(PoConstant.TxStage.Success));
+    }
+
+    private void queryUserCollect(String userAddress, List<Market> list) {
+        if (StringUtils.isBlank(userAddress) || list == null || list.size() <= 0) {
+            return;
+        }
+        if (StringUtils.isNotBlank(userAddress)) {
+            List<Object> marketIds = list.stream().map(m -> m.getMarketId()).collect(Collectors.toList());
+            List<String> collected = collectService.isCollected(userAddress, PoConstant.Collect.Type.Market, marketIds);
+            list.forEach(m -> {
+                if (collected.contains(m.getMarketId())) {
+                    m.setIsCollect(true);
+                } else {
+                    m.setIsCollect(false);
+                }
+            });
+        }
+    }
+
+    private void querySevenDayNode(List<Market> list) {
+        for (Market market : list) {
+            List<BigDecimal> ns = klineNodeService.querySevenDayNode(market.getMarketAddress());
+            market.setSevenDayNode(ns);
+        }
     }
 
 }

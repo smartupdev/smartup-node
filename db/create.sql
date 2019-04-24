@@ -97,7 +97,9 @@ create table market_data (
   amount decimal(40,20),
   ct_amount decimal(40,20),
   ct_top_amount decimal(40,20),
-  count bigint
+  count bigint,
+  post_count int(11),
+  user_count int(11)
 );
 
 drop table if exists dict;
