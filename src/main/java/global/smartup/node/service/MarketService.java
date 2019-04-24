@@ -85,12 +85,8 @@ public class MarketService {
         if (info == null) {
             return;
         }
-        if (isTxHashExist(info.getTxHash())) {
-            return;
-        }
         Market market = queryCurrentCreating(info.getEventCreatorAddress());
         if (market == null) {
-            log.error("Can not find create market info by user = {}, hash = {}", info.getEventMarketAddress(), info.getTxHash());
             return;
         }
         market.setTxHash(info.getTxHash());

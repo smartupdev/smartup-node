@@ -149,6 +149,7 @@ public class BlockService {
 
         Market market = marketService.queryCurrentCreating(from);
         if (market == null) {
+            log.error("Can not find creating market by user address = {}, tx hash = {}", from, tx.getHash());
             return;
         }
 
