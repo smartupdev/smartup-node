@@ -101,7 +101,8 @@ public class MarketController extends BaseController {
                     "返回：obj = {\n" +
                     "　marketId, txHash, creatorAddress, marketAddress, name, description, \n" +
                     "　stage(creating=编辑中, pending=创建中, success=创建完成, fail=创建失败), createTime, isCollect(是否被收藏) \n" +
-                    "　data = { latelyChange, last, latelyVolume, amount, ctAmount, ctTopAmount, count } \n" +
+                    "　sevenDayNode(7天交易)\n" +
+                    "　data = { latelyChange, last, latelyVolume, amount, ctAmount, ctTopAmount, count, postCount, userCount } \n" +
                     "}")
     @RequestMapping("/market/one")
     public Object marketOne(HttpServletRequest request, String marketAddress) {
