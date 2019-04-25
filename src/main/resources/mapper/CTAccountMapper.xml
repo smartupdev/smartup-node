@@ -5,6 +5,7 @@
     <resultMap id="ctAccWithMarket" type="global.smartup.node.vo.CTAccountWithMarket">
         <result column="market_id" jdbcType="VARCHAR" property="marketId" />
         <result column="market_address" jdbcType="VARCHAR" property="marketAddress" />
+        <result column="market_cover" jdbcType="VARCHAR" property="marketCover" />
         <result column="lately_change" jdbcType="DECIMAL" property="latelyChange" />
         <result column="user_address" jdbcType="VARCHAR" property="userAddress" />
         <result column="ct_amount" jdbcType="DECIMAL" property="ctAmount" />
@@ -12,7 +13,7 @@
     </resultMap>
 
     <select id="selectWidthMarket" resultMap="ctAccWithMarket">
-        select m.market_id, m.market_address, md.lately_change, ca.user_address, ca.amount as ct_amount, ca.last_update_time
+        select m.market_id, m.market_address, m.cover as market_cover,  md.lately_change, ca.user_address, ca.amount as ct_amount, ca.last_update_time
         from (
                  select *
                  from ct_account

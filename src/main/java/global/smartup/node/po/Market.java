@@ -40,6 +40,9 @@ public class Market {
     @Column(name="name")
     private String name;
 
+    @Column(name="cover")
+    private String cover;
+
     @Size(max = 300, min = 5, message = "{market_description_length_error}", groups = Market.Add.class)
     @Column(name="description")
     private String description;
@@ -76,6 +79,14 @@ public class Market {
 
 
 
+
+    public String getCover() {
+        return cover;
+    }
+
+    public void setCover(String cover) {
+        this.cover = cover;
+    }
 
     public String getStatus() {
         return status;

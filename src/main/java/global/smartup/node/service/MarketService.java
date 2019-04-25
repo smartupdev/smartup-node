@@ -59,6 +59,7 @@ public class MarketService {
         Market current = queryCurrentCreating(market.getCreatorAddress());
         if (current != null) {
             current.setName(market.getName());
+            current.setCover(market.getCover());
             current.setDescription(market.getDescription());
             marketMapper.updateByPrimaryKey(current);
             return current;

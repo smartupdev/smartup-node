@@ -21,6 +21,7 @@ create table market (
   creator_address varchar(42) not null,
   market_address varchar(42),
   name varchar(32) not null ,
+  cover varchar(64),
   description varchar(512),
   type varchar(16),
   stage varchar(16),
