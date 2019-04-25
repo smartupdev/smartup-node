@@ -26,7 +26,7 @@ public class AccountController extends BaseController {
 
     @ApiOperation(value = "CT账户和市场信息", httpMethod = "POST", response = Wrapper.class,
                 notes = "参数：pageNumb, pageSize\n" +
-                        "返回：obj = { list = [ {marketId, marketAddress, marketCover, latelyChange, userAddress, ctAmount, lastUpdateTime}, ... ] }")
+                        "返回：obj = { list = [ {marketId, marketAddress, marketCover, marketPhoto, latelyChange, userAddress, ctAmount, lastUpdateTime}, ... ] }")
     @RequestMapping("/user/ct/account/in/market")
     public Object ctAccountInMarket(HttpServletRequest request, Integer pageNumb, Integer pageSize) {
         try {

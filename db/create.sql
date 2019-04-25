@@ -22,6 +22,7 @@ create table market (
   market_address varchar(42),
   name varchar(32) not null ,
   cover varchar(64),
+  photo varchar(64),
   description varchar(512),
   type varchar(16),
   stage varchar(16),

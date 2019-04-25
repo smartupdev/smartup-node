@@ -43,6 +43,9 @@ public class Market {
     @Column(name="cover")
     private String cover;
 
+    @Column(name="photo")
+    private String photo;
+
     @Size(max = 300, min = 5, message = "{market_description_length_error}", groups = Market.Add.class)
     @Column(name="description")
     private String description;
@@ -79,6 +82,14 @@ public class Market {
 
 
 
+
+    public String getPhoto() {
+        return photo;
+    }
+
+    public void setPhoto(String photo) {
+        this.photo = photo;
+    }
 
     public String getCover() {
         return cover;

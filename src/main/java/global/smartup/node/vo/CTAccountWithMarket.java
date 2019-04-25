@@ -11,6 +11,8 @@ public class CTAccountWithMarket {
 
     private String marketCover;
 
+    private String marketPhoto;
+
     private BigDecimal latelyChange;
 
 
@@ -20,6 +22,15 @@ public class CTAccountWithMarket {
 
     private Date lastUpdateTime;
 
+
+
+    public String getMarketPhoto() {
+        return marketPhoto;
+    }
+
+    public void setMarketPhoto(String marketPhoto) {
+        this.marketPhoto = marketPhoto;
+    }
 
     public String getMarketId() {
         return marketId;

@@ -37,7 +37,7 @@ public class MarketController extends BaseController {
     private Validator validator;
 
     @ApiOperation(value = "保存市场", httpMethod = "POST", response = Wrapper.class,
-            notes = "参数：name, cover, description\n" +
+            notes = "参数：name, cover, photo, description\n" +
                     "返回：obj = { 见/api/market/one }")
     @RequestMapping("/user/market/save")
     public Object save(HttpServletRequest request, Market market) {
@@ -120,7 +120,7 @@ public class MarketController extends BaseController {
     @ApiOperation(value = "市场详情", httpMethod = "POST", response = Wrapper.class,
             notes = "参数：marketAddress\n" +
                     "返回：obj = {\n" +
-                    "　marketId, txHash, creatorAddress, marketAddress, name, cover, description, \n" +
+                    "　marketId, txHash, creatorAddress, marketAddress, name, cover, photo, description, \n" +
                     "　stage(pending=创建中, success=创建完成, fail=创建失败), " +
                     "　status(creating=编辑中, locked=锁定, open=开放, close=关闭)" +
                     "　createTime, isCollect(是否被收藏) \n" +

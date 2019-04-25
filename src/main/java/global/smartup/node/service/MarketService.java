@@ -60,6 +60,7 @@ public class MarketService {
         if (current != null) {
             current.setName(market.getName());
             current.setCover(market.getCover());
+            current.setPhoto(market.getPhoto());
             current.setDescription(market.getDescription());
             marketMapper.updateByPrimaryKey(current);
             return current;
