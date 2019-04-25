@@ -5,6 +5,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Date;
@@ -45,6 +46,25 @@ public class Post {
 
     @Column(name="create_time")
     private Date createTime;
+
+
+
+
+    @Transient
+    private boolean isLiked;
+
+    @Transient
+    private boolean isDisliked;
+
+
+
+    public void setIsLiked(boolean liked) {
+        isLiked = liked;
+    }
+
+    public void setIsDisliked(boolean disliked) {
+        isDisliked = disliked;
+    }
 
     public Long getPostId() {
         return postId;

@@ -130,6 +130,16 @@ create table collect (
   primary key (user_address, type, object_mark)
 );
 
+drop table if exists liked;
+create table liked (
+  user_address varchar(42),
+  market_address varchar(42),
+  type varchar(64),
+  object_mark varchar(64),
+  create_time datetime,
+  primary key (user_address, market_address, type, object_mark)
+);
+
 drop table if exists notification;
 create table notification (
   notification_id bigint primary key,

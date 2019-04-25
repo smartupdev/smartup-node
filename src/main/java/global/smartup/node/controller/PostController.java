@@ -5,10 +5,7 @@ import global.smartup.node.constant.LangHandle;
 import global.smartup.node.constant.PoConstant;
 import global.smartup.node.po.Post;
 import global.smartup.node.po.Reply;
-import global.smartup.node.service.MarketService;
-import global.smartup.node.service.PostService;
-import global.smartup.node.service.ReplyService;
-import global.smartup.node.service.UserService;
+import global.smartup.node.service.*;
 import global.smartup.node.util.Checker;
 import global.smartup.node.util.Pagination;
 import global.smartup.node.util.Wrapper;
@@ -40,6 +37,12 @@ public class PostController extends BaseController {
 
     @Autowired
     private ReplyService replyService;
+
+    @Autowired
+    private LikeService likeService;
+
+    @Autowired
+    private MarketService marketService;
 
     @ApiOperation(value = "发布主题", httpMethod = "POST", response = Wrapper.class,
                 notes = "参数：type(root=系统讨论区, market=市场讨论区), marketAddress(如果type=root marketAddress为空), title, description\n" +
@@ -189,6 +192,69 @@ public class PostController extends BaseController {
             }
             Pagination page = replyService.queryChildren(fatherId, pageNumb, pageSize);
             return Wrapper.success(page);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return Wrapper.sysError();
+        }
+    }
+
+
+    @ApiOperation(value = "标记回复喜欢/不喜欢", httpMethod = "POST", response = Wrapper.class,
+                notes = "参数：isMark( true 标记 / false 取消标记 ), type(LikeReply/DislikeReply), replyId\n" +
+                        "返回：是否成功")
+    @RequestMapping("/user/reply/like")
+    public Object replyLike(HttpServletRequest request, boolean isMark, String type, Long replyId) {
+        try {
+            String userAddress = getLoginUserAddress(request);
+            Reply reply = replyService.query(replyId);
+            if (reply != null) {
+                Post post = postService.query(reply.getPostId());
+                if (post != null) {
+                    String marketId = marketService.queryIdByAddress(post.getMarketAddress());
+                    if (marketId != null) {
+                        if (isMark) {
+                            if (PoConstant.Liked.Type.LikeReply.equals(type)) {
+                                likeService.addReplyLike(userAddress, marketId, replyId);
+                            } else if (PoConstant.Liked.Type.DislikeReply.equals(type)) {
+                                likeService.addReplyDislike(userAddress, marketId, replyId);
+                            }
+                        } else {
+                            likeService.delLike(userAddress, marketId, String.valueOf(replyId));
+                        }
+                    }
+                }
+            }
+            return Wrapper.success();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return Wrapper.sysError();
+        }
+    }
+
+    @ApiOperation(value = "标记帖子喜欢/不喜欢", httpMethod = "POST", response = Wrapper.class,
+                notes = "参数：isMark( true 标记 / false 取消标记 ), type(LikePost/DislikePost), postId\n" +
+                        "返回：是否成功")
+    @RequestMapping("/user/post/like")
+    public Object like(HttpServletRequest request, boolean isMark, String type, Long postId) {
+        try {
+            String userAddress = getLoginUserAddress(request);
+            Post post = postService.query(postId);
+            if (post != null) {
+                String marketId = marketService.queryIdByAddress(post.getMarketAddress());
+                if (marketId != null) {
+                    if (isMark) {
+                        if (PoConstant.Liked.Type.LikePost.equals(type)) {
+                            likeService.addPostLike(userAddress, marketId, postId);
+                        } else if (PoConstant.Liked.Type.DislikePost.equals(type)) {
+                            likeService.addPostDislike(userAddress, marketId, postId);
+                        }
+                    } else {
+                        likeService.delLike(userAddress, marketId, String.valueOf(postId));
+                    }
+                }
+            }
+
+            return Wrapper.success();
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return Wrapper.sysError();

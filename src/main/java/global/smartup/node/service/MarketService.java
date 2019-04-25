@@ -286,6 +286,17 @@ public class MarketService {
         return market;
     }
 
+    public String queryIdByAddress(String marketAddress) {
+        Market cdt = new Market();
+        cdt.setMarketAddress(marketAddress);
+        Market market = marketMapper.selectOne(cdt);
+        if (market != null) {
+            return market.getMarketId();
+        } else {
+            return null;
+        }
+    }
+
     public List<Market> queryAll() {
         return marketMapper.selectAll();
     }
