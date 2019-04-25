@@ -267,7 +267,7 @@ public class KlineNodeService {
         List<BigDecimal> ret = new ArrayList<>();
         List<String> nodeId = Common.getSevenDay6HourNode();
         nodeId.forEach(n -> {
-            KlineNode node = queryNodeByTimeId(marketAddress, PoConstant.KLineNode.Segment.Hour, n);
+            KlineNode node = queryCachedNode(marketAddress, PoConstant.KLineNode.Segment.Hour, n);
             if (node != null) {
                 ret.add(node.getEnd());
             }
