@@ -46,7 +46,7 @@ public class NotificationController extends BaseController {
     }
 
     @ApiOperation(value = "通知列表", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：pageNumb, pageSize\n" +
+                notes = "参数：unread(true/false/null), pageNumb, pageSize\n" +
                         "返回：obj = {\n" +
                         "　list = [\n" +
                         "　　{notificationId, userAddress, style(personal, system), type, title, text, content, isRead, createTime} , ... \n" +
@@ -56,9 +56,9 @@ public class NotificationController extends BaseController {
                         "type = MarketCreateFinish, content = {txHash, isSuccess, marketId, userAddress,  marketAddress(isSuccess==false ? null:address)}\n" +
                         "type = TradeFinish, content = {txHash, isSuccess, userAddress, type(buy/sell), marketAddress, sut(isSuccess==false&&type==sell ? null:sut), ct}")
     @RequestMapping("/list")
-    public Object list(HttpServletRequest request, Integer pageNumb, Integer pageSize) {
+    public Object list(HttpServletRequest request, Boolean unread, Integer pageNumb, Integer pageSize) {
         try {
-            Pagination page = notificationService.queryPage(getLoginUserAddress(request), pageNumb, pageSize);
+            Pagination page = notificationService.queryPage(getLoginUserAddress(request), unread, pageNumb, pageSize);
             return Wrapper.success(page);
         } catch (Exception e) {
             log.error(e.getMessage(), e);

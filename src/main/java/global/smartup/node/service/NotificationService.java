@@ -284,10 +284,14 @@ public class NotificationService {
         return unreadNtfc;
     }
 
-    public Pagination<Ntfc> queryPage(String userAddress, Integer pageNumb, Integer pageSize) {
+    public Pagination<Ntfc> queryPage(String userAddress, Boolean unread, Integer pageNumb, Integer pageSize) {
         userAddress = Keys.toChecksumAddress(userAddress);
         Example example = new Example(Notification.class);
-        example.createCriteria().andEqualTo("userAddress", userAddress);
+        Example.Criteria criteria = example.createCriteria()
+                .andEqualTo("userAddress", userAddress);
+        if (unread != null) {
+            criteria.andEqualTo("isRead", !unread);
+        }
         example.orderBy("createTime").desc();
         Page<Notification> page = PageHelper.startPage(pageNumb, pageSize);
         notificationMapper.selectByExample(example);
