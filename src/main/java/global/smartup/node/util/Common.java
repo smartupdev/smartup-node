@@ -150,12 +150,7 @@ public class Common {
     public static List<String> getSevenDay6HourNode() {
         List<String> list = new ArrayList<>();
 
-        Date end = null;
-        try {
-            end = DateUtils.parseDate("2019-04-24 07:00:00", "yyyy-MM-dd HH:mm:ss");
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
+        Date end = new Date();
         Date start = Common.getSomeDaysAgo(end, 7);
 
         Calendar calendar = Calendar.getInstance();
