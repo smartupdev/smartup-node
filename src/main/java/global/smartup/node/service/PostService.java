@@ -36,6 +36,10 @@ public class PostService {
     @Autowired
     private MarketService marketService;
 
+    @Autowired
+    private LikeService likeService;
+
+
     public void create(Post post) {
         Long id = idGenerator.getId();
         post.setPostId(id);
@@ -65,7 +69,7 @@ public class PostService {
         return postMapper.selectByPrimaryKey(postId);
     }
 
-    public Pagination<Post> queryPage(String type, String marketAddress, Integer pageNumb, Integer pageSize) {
+    public Pagination<Post> queryPage(String userAddress, String type, String marketAddress, Integer pageNumb, Integer pageSize) {
         Example example = new Example(Post.class);
         if (StringUtils.isBlank(type) || PoConstant.Post.Type.Root.equalsIgnoreCase(type)) {
             // root
@@ -79,6 +83,7 @@ public class PostService {
         example.orderBy("createTime").asc();
         Page page = PageHelper.startPage(pageNumb, pageSize);
         postMapper.selectByExample(example);
+        likeService.queryFillLike(userAddress, marketAddress, page.getResult());
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
     }
 
@@ -88,5 +93,6 @@ public class PostService {
         example.createCriteria().andGreaterThanOrEqualTo("lastReplyTime", lately);
         return postDataMapper.selectCountByExample(example);
     }
+
 
 }

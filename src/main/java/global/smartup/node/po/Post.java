@@ -49,20 +49,27 @@ public class Post {
 
 
 
+    @Transient
+    private Boolean isLiked;
 
     @Transient
-    private boolean isLiked;
-
-    @Transient
-    private boolean isDisliked;
+    private Boolean isDisliked;
 
 
 
-    public void setIsLiked(boolean liked) {
+    public Boolean getIsLiked() {
+        return isLiked;
+    }
+
+    public void setIsLiked(Boolean liked) {
         isLiked = liked;
     }
 
-    public void setIsDisliked(boolean disliked) {
+    public Boolean getIsDisliked() {
+        return isDisliked;
+    }
+
+    public void setIsDisliked(Boolean disliked) {
         isDisliked = disliked;
     }
 

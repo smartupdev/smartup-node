@@ -19,10 +19,21 @@ public class Liked {
     @Column(name = "object_mark")
     private String objectMark;
 
+    @Column(name = "is_like")
+    private Boolean isLike;
+
     @Column(name = "create_time")
     private Date createTime;
 
 
+
+    public Boolean getIsLike() {
+        return isLike;
+    }
+
+    public void setIsLike(Boolean like) {
+        isLike = like;
+    }
 
     public String getUserAddress() {
         return userAddress;

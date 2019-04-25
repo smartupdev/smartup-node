@@ -5,7 +5,9 @@ import com.github.pagehelper.PageHelper;
 import global.smartup.node.compoment.IdGenerator;
 import global.smartup.node.constant.BuConstant;
 import global.smartup.node.mapper.PostDataMapper;
+import global.smartup.node.mapper.PostMapper;
 import global.smartup.node.mapper.ReplyMapper;
+import global.smartup.node.po.Post;
 import global.smartup.node.po.PostData;
 import global.smartup.node.po.Reply;
 import global.smartup.node.util.Pagination;
@@ -32,6 +34,13 @@ public class ReplyService {
     @Autowired
     private IdGenerator idGenerator;
 
+    @Autowired
+    private PostMapper postMapper;
+
+    @Autowired
+    private LikeService likeService;
+
+
     public void add(Reply reply) {
         if (reply.getFatherId() == null) {
             reply.setFatherId(0L);
@@ -54,7 +63,8 @@ public class ReplyService {
         return replyMapper.selectByPrimaryKey(replyId);
     }
 
-    public Pagination<Reply> queryPage(Long postId, Integer pageNumb, Integer pageSize) {
+    public Pagination<Reply> queryPage(String userAddress, Long postId, Integer pageNumb, Integer pageSize) {
+        Post post = postMapper.selectByPrimaryKey(postId);
         Example example = new Example(Reply.class);
         example.createCriteria()
                 .andEqualTo("postId", postId)
@@ -62,7 +72,8 @@ public class ReplyService {
         example.orderBy("createTime").asc();
         Page<Reply> page = PageHelper.startPage(pageNumb, pageSize);
         replyMapper.selectByExample(example);
-        fillChildren(page.getResult());
+        likeService.queryFillLikeForReply(userAddress, post.getMarketAddress(), page.getResult());
+        fillChildren(userAddress, post.getMarketAddress(), page.getResult());
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
     }
 
@@ -75,13 +86,15 @@ public class ReplyService {
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
     }
 
-    public void fillChildren(List<Reply> list) {
+    public void fillChildren(String userAddress, String marketAddress, List<Reply> list) {
         if (list == null || list.size() == 0) {
             return;
         }
         list.stream().forEach(i -> {
             i.setChildrenPage(queryChildren(i.getReplyId(), 1, BuConstant.DefaultPageSize));
+            likeService.queryFillLikeForReply(userAddress, marketAddress, i.getChildrenPage().getList());
         });
+
     }
 
 }

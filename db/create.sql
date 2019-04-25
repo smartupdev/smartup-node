@@ -136,6 +136,7 @@ create table liked (
   market_address varchar(42),
   type varchar(64),
   object_mark varchar(64),
+  is_like tinyint(1),
   create_time datetime,
   primary key (user_address, market_address, type, object_mark)
 );

@@ -3,12 +3,18 @@ package global.smartup.node.service;
 import global.smartup.node.constant.PoConstant;
 import global.smartup.node.mapper.LikedMapper;
 import global.smartup.node.po.Liked;
+import global.smartup.node.po.Post;
+import global.smartup.node.po.Reply;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import tk.mybatis.mapper.entity.Example;
 
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class LikeService {
@@ -18,56 +24,78 @@ public class LikeService {
     @Autowired
     private LikedMapper likedMapper;
 
-    public void addPostLike(String userAddress, String marketAddress, Long postId) {
-        delLike(userAddress, marketAddress, String.valueOf(postId));
+    public void addMark(String userAddress, String marketAddress, String type, boolean isLike, String objMark) {
+        delMark(userAddress, marketAddress, type, objMark);
         Liked liked = new Liked();
         liked.setUserAddress(userAddress);
         liked.setMarketAddress(marketAddress);
-        liked.setType(PoConstant.Liked.Type.LikePost);
-        liked.setObjectMark(String.valueOf(postId));
+        liked.setType(type);
+        liked.setIsLike(isLike);
+        liked.setObjectMark(objMark);
         liked.setCreateTime(new Date());
         likedMapper.insert(liked);
     }
 
-    public void addPostDislike(String userAddress, String marketAddress, Long postId) {
-        delLike(userAddress, marketAddress, String.valueOf(postId));
-        Liked liked = new Liked();
-        liked.setUserAddress(userAddress);
-        liked.setMarketAddress(marketAddress);
-        liked.setType(PoConstant.Liked.Type.DislikePost);
-        liked.setObjectMark(String.valueOf(postId));
-        liked.setCreateTime(new Date());
-        likedMapper.insert(liked);
-    }
-
-    public void addReplyLike(String userAddress, String marketAddress, Long replyId) {
-        delLike(userAddress, marketAddress, String.valueOf(replyId));
-        Liked liked = new Liked();
-        liked.setUserAddress(userAddress);
-        liked.setMarketAddress(marketAddress);
-        liked.setType(PoConstant.Liked.Type.LikeReply);
-        liked.setObjectMark(String.valueOf(replyId));
-        liked.setCreateTime(new Date());
-        likedMapper.insert(liked);
-    }
-
-    public void addReplyDislike(String userAddress, String marketAddress, Long replyId) {
-        delLike(userAddress, marketAddress, String.valueOf(replyId));
-        Liked liked = new Liked();
-        liked.setUserAddress(userAddress);
-        liked.setMarketAddress(marketAddress);
-        liked.setType(PoConstant.Liked.Type.DislikeReply);
-        liked.setObjectMark(String.valueOf(replyId));
-        liked.setCreateTime(new Date());
-        likedMapper.insert(liked);
-    }
-
-    public void delLike(String userAddress, String marketAddress, String objectMark) {
+    public void delMark(String userAddress, String marketAddress, String type, String objectMark) {
         Liked cdt = new Liked();
         cdt.setUserAddress(userAddress);
         cdt.setMarketAddress(marketAddress);
         cdt.setObjectMark(objectMark);
+        cdt.setType(type);
         likedMapper.delete(cdt);
+    }
+
+    public void queryFillLike(String userAddress, String marketAddress, List<Post> list) {
+        if (StringUtils.isAnyBlank(userAddress, marketAddress) || list == null || list.size() <= 0) {
+            return;
+        }
+        List<String> ids = list.stream().map(p -> String.valueOf(p.getPostId())).collect(Collectors.toList());
+        List<Liked> likes = queryList(userAddress, marketAddress, PoConstant.Liked.Type.Post, ids);
+        if (likes.size() <= 0) {
+            return;
+        }
+        List<Long> ls = likes.stream().map(l -> l.getIsLike() ? Long.valueOf(l.getObjectMark()) : 0L).collect(Collectors.toList());
+        List<Long> dls = likes.stream().map(l -> l.getIsLike() ? 0L : Long.valueOf(l.getObjectMark())).collect(Collectors.toList());
+        list.forEach(p -> {
+            if (ls.contains(p.getPostId())) {
+                p.setIsLiked(true);
+            }
+            if (dls.contains(p.getPostId())) {
+                p.setIsDisliked(true);
+            }
+        });
+    }
+
+    public void queryFillLikeForReply(String userAddress, String marketAddress, List<Reply> list) {
+        if (StringUtils.isAnyBlank(userAddress, marketAddress) || list == null || list.size() <= 0) {
+            return;
+        }
+        List<String> ids = list.stream().map(p -> String.valueOf(p.getReplyId())).collect(Collectors.toList());
+        List<Liked> likes = queryList(userAddress, marketAddress, PoConstant.Liked.Type.Reply, ids);
+        if (likes.size() <= 0) {
+            return;
+        }
+        List<Long> ls = likes.stream().map(l -> l.getIsLike() ? Long.valueOf(l.getObjectMark()) : 0L).collect(Collectors.toList());
+        List<Long> dls = likes.stream().map(l -> l.getIsLike() ? 0L : Long.valueOf(l.getObjectMark())).collect(Collectors.toList());
+        System.out.println("");
+        list.forEach(r -> {
+            if (ls.contains(r.getReplyId())) {
+                r.setIsLiked(true);
+            }
+            if (dls.contains(r.getReplyId())) {
+                r.setIsDisliked(true);
+            }
+        });
+    }
+
+    private List<Liked> queryList(String userAddress, String marketAddress, String type, List<String> ids) {
+        Example example = new Example(Liked.class);
+        example.createCriteria()
+                .andEqualTo("userAddress", userAddress)
+                .andEqualTo("marketAddress", marketAddress)
+                .andEqualTo("type", type)
+                .andIn("objectMark", ids);
+        return likedMapper.selectByExample(example);
     }
 
 }
