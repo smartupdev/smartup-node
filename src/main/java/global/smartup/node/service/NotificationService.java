@@ -81,7 +81,7 @@ public class NotificationService {
         delNotificationCache(userAddress);
     }
 
-    public void sendTradeFinish(String txHash, boolean isSuccess, String userAddress, String type, String marketAddress, BigDecimal sut, BigDecimal ct) {
+    public void sendTradeFinish(String txHash, boolean isSuccess, String userAddress, String type, String marketId, String marketAddress, BigDecimal sut, BigDecimal ct) {
         userAddress = Keys.toChecksumAddress(userAddress);
         Notification ntfc = new Notification();
         HashMap<String, Object> content = new HashMap<>();
@@ -106,6 +106,7 @@ public class NotificationService {
         content.put("isSuccess", isSuccess);
         content.put("userAddress", userAddress);
         content.put("type", type);
+        content.put("marketId", marketId);
         content.put("marketAddress", marketAddress);
         content.put("sut", sut);
         content.put("ct", ct);

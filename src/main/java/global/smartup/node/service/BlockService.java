@@ -188,6 +188,9 @@ public class BlockService {
 
         Date blockTime = new Date(block.getTimestamp().longValue() * 1000);
         String from = Keys.toChecksumAddress(tx.getFrom());
+        String to = Keys.toChecksumAddress(tx.getTo());
+        String marketId = marketService.queryIdByAddress(to);
+
         CTBuyInfo info = new CTBuyInfo();
         info.parseTransaction(tx);
         TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
@@ -201,7 +204,7 @@ public class BlockService {
 
             // send ntfc
             notificationService.sendTradeFinish(info.getTxHash(), false, from, PoConstant.Trade.Type.Buy,
-                    info.getInputMarketAddress(), info.getInputSUT(), info.getInputCT());
+                    marketId, info.getInputMarketAddress(), info.getInputSUT(), info.getInputCT());
 
         } else {
             // tx success
@@ -223,7 +226,7 @@ public class BlockService {
 
             // send ntfc
             notificationService.sendTradeFinish(info.getTxHash(), true, from, PoConstant.Trade.Type.Buy,
-                    info.getEventMarketAddress(), info.getEventSUT(), info.getEventCT());
+                    marketId, info.getEventMarketAddress(), info.getEventSUT(), info.getEventCT());
         }
 
     }
@@ -238,6 +241,8 @@ public class BlockService {
         Date blockTime = new Date(block.getTimestamp().longValue() * 1000);
         String from = Keys.toChecksumAddress(tx.getFrom());
         String to = Keys.toChecksumAddress(tx.getTo());
+        String marketId = marketService.queryIdByAddress(to);
+
         CTSellInfo info = new CTSellInfo();
         info.parseTransaction(tx);
         TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
@@ -250,8 +255,8 @@ public class BlockService {
                     info.getInputCT(), blockTime);
 
             // send ntfc
-            notificationService.sendTradeFinish(tx.getHash(), false, from, PoConstant.Trade.Type.Sell, to,
-                    null, info.getInputCT());
+            notificationService.sendTradeFinish(tx.getHash(), false, from, PoConstant.Trade.Type.Sell,
+                    marketId, to,null, info.getInputCT());
         } else {
             // tx success
 
@@ -271,8 +276,8 @@ public class BlockService {
             ctAccountService.updateFromChain(info.getEventMarketAddress(), info.getEventUserAddress());
 
             // send ntfc
-            notificationService.sendTradeFinish(info.getTxHash(), true, from, PoConstant.Trade.Type.Sell, to,
-                    info.getEventSUT(), info.getEventCT());
+            notificationService.sendTradeFinish(info.getTxHash(), true, from, PoConstant.Trade.Type.Sell,
+                    marketId, to, info.getEventSUT(), info.getEventCT());
         }
 
     }

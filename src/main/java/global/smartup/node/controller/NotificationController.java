@@ -54,7 +54,7 @@ public class NotificationController extends BaseController {
                         "}\n" +
                         "type, content 说明：\n" +
                         "type = MarketCreateFinish, content = {txHash, isSuccess, marketId, userAddress,  marketAddress(isSuccess==false ? null:address)}\n" +
-                        "type = TradeFinish, content = {txHash, isSuccess, userAddress, type(buy/sell), marketAddress, sut(isSuccess==false&&type==sell ? null:sut), ct}")
+                        "type = TradeFinish, content = {txHash, isSuccess, userAddress, type(buy/sell), marketId, marketAddress, sut(isSuccess==false&&type==sell ? null:sut), ct}")
     @RequestMapping("/list")
     public Object list(HttpServletRequest request, Boolean unread, Integer pageNumb, Integer pageSize) {
         try {
