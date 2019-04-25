@@ -49,16 +49,30 @@ public class NotificationController extends BaseController {
                 notes = "参数：pageNumb, pageSize\n" +
                         "返回：obj = {\n" +
                         "　list = [\n" +
-                        "　　{notificationId, userAddress, style(personal, system), type, content, isRead, createTime} , ... \n" +
+                        "　　{notificationId, userAddress, style(personal, system), type, title, text, content, isRead, createTime} , ... \n" +
                         "　]\n" +
                         "}\n" +
                         "type, content 说明：\n" +
-                        "type = MarketCreateFinish, content = {title, text, txHash, isSuccess, marketId, userAddress,  marketAddress(isSuccess==false ? null:address)}\n" +
-                        "type = TradeFinish, content = {title, text, txHash, isSuccess, userAddress, type(buy/sell), marketAddress, sut(isSuccess==false&&type==sell ? null:sut), ct}")
+                        "type = MarketCreateFinish, content = {txHash, isSuccess, marketId, userAddress,  marketAddress(isSuccess==false ? null:address)}\n" +
+                        "type = TradeFinish, content = {txHash, isSuccess, userAddress, type(buy/sell), marketAddress, sut(isSuccess==false&&type==sell ? null:sut), ct}")
     @RequestMapping("/list")
     public Object list(HttpServletRequest request, Integer pageNumb, Integer pageSize) {
         try {
             Pagination page = notificationService.queryPage(getLoginUserAddress(request), pageNumb, pageSize);
+            return Wrapper.success(page);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return Wrapper.sysError();
+        }
+    }
+
+    @ApiOperation(value = "搜索通知", httpMethod = "POST", response = Wrapper.class,
+                notes = "参数：query, pageNumb, pageSize\n" +
+                        "返回：obj = { 见/user/notification/list }")
+    @RequestMapping("/search")
+    public Object search(HttpServletRequest request, String query, Integer pageNumb, Integer pageSize) {
+        try {
+            Pagination page = notificationService.querySearch(getLoginUserAddress(request), query, pageNumb, pageSize);
             return Wrapper.success(page);
         } catch (Exception e) {
             log.error(e.getMessage(), e);

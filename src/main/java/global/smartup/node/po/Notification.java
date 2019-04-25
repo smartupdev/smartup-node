@@ -21,6 +21,12 @@ public class Notification {
     @Column(name="type")
     private String type;
 
+    @Column(name="title")
+    private String title;
+
+    @Column(name="text")
+    private String text;
+
     @Column(name="content")
     private String content;
 
@@ -32,6 +38,22 @@ public class Notification {
 
 
 
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
 
     public String getStyle() {
         return style;

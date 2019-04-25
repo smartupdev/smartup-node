@@ -1,5 +1,6 @@
 package global.smartup.node.vo;
 
+import javax.persistence.Column;
 import java.util.Date;
 import java.util.Map;
 
@@ -13,12 +14,34 @@ public class Ntfc {
 
     private String type;
 
+    private String title;
+
+    private String text;
+
     private Map<String, Object> content;
 
     private Boolean isRead;
 
     private Date createTime;
 
+
+
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
 
     public String getStyle() {
         return style;

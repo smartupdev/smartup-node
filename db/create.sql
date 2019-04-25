@@ -136,6 +136,8 @@ create table notification (
   user_address varchar(42),
   style varchar(32),
   type varchar(32),
+  title varchar(128),
+  text varchar(512),
   content varchar(512),
   is_read tinyint(1),
   create_time datetime

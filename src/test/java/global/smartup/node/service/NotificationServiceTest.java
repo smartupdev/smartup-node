@@ -2,6 +2,8 @@ package global.smartup.node.service;
 
 import com.alibaba.fastjson.JSON;
 import global.smartup.node.Starter;
+import global.smartup.node.util.Pagination;
+import global.smartup.node.vo.Ntfc;
 import global.smartup.node.vo.UnreadNtfc;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,6 +32,12 @@ public class NotificationServiceTest {
     public void queryUnreadInCache() {
         UnreadNtfc ntfc = notificationService.queryUnreadInCache("user");
         System.out.println(JSON.toJSONString(ntfc));
+    }
+
+    @Test
+    public void querySearch() {
+        Pagination<Ntfc> page = notificationService.querySearch("0xB44940Be0eeA81a3D0dA22CC15208AF4744BeA8E", "c", 1, 10);
+        System.out.println(JSON.toJSONString(page));
     }
 
 }

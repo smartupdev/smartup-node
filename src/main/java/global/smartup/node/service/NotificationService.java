@@ -13,6 +13,7 @@ import global.smartup.node.po.Notification;
 import global.smartup.node.util.Pagination;
 import global.smartup.node.vo.Ntfc;
 import global.smartup.node.vo.UnreadNtfc;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -56,11 +57,11 @@ public class NotificationService {
         Notification ntfc = new Notification();
         HashMap<String, Object> content = new HashMap<>();
         if (isSuccess) {
-            content.put("title", "Create market success!");
-            content.put("text", "Create market success!");
+            ntfc.setTitle("Create market success!");
+            ntfc.setText("Create market success ... ");
         } else {
-            content.put("title", "Create market fail!");
-            content.put("text", "Create market fail!");
+            ntfc.setTitle("Create market fail!");
+            ntfc.setText("Create market fail  ... ");
         }
         content.put("txHash", txHash);
         content.put("isSuccess", isSuccess);
@@ -86,19 +87,19 @@ public class NotificationService {
         HashMap<String, Object> content = new HashMap<>();
         if (PoConstant.Trade.Type.Buy.equals(type)) {
             if (isSuccess) {
-                content.put("title", "Buy ct success!");
-                content.put("text", "Buy ct success!");
+                ntfc.setTitle("Buy ct success!");
+                ntfc.setText("Buy ct success ... ");
             } else {
-                content.put("title", "Buy ct fail!");
-                content.put("text", "Buy ct fail!");
+                ntfc.setTitle("Buy ct fail!");
+                ntfc.setText("Buy ct fail ... ");
             }
         } else {
             if (isSuccess) {
-                content.put("title", "Sell ct success!");
-                content.put("text", "Sell ct success!");
+                ntfc.setTitle("Sell ct success!");
+                ntfc.setText("Sell ct success ... ");
             } else {
-                content.put("title", "Sell ct fail!");
-                content.put("text", "Sell ct fail!");
+                ntfc.setTitle("Sell ct fail!");
+                ntfc.setText("Sell ct fail ... ");
             }
         }
         content.put("txHash", txHash);
@@ -294,6 +295,25 @@ public class NotificationService {
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), list);
     }
 
+    public Pagination<Ntfc> querySearch(String userAddress, String query, Integer pageNumb, Integer pageSize) {
+        userAddress = Keys.toChecksumAddress(userAddress);
+        Example example = new Example(Notification.class);
+        Example.Criteria criteria = example.createCriteria()
+                .andEqualTo("userAddress", userAddress);
+
+        if (StringUtils.isNotBlank(query)) {
+            if (query.length() > 100) {
+                query = query.substring(0, 100);
+            }
+            criteria.andCondition(" (title like '%" + query + "%' or text like '%" + query + "%') ");
+        }
+
+        example.orderBy("createTime").desc();
+        Page<Notification> page = PageHelper.startPage(pageNumb, pageSize);
+        notificationMapper.selectByExample(example);
+        List<Ntfc> list = transferVo(page.getResult());
+        return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), list);
+    }
 
     public List<Ntfc> transferVo(List<Notification> list) {
         List<Ntfc> ret = new ArrayList<>();
