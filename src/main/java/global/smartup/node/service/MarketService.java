@@ -2,14 +2,14 @@ package global.smartup.node.service;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import global.smartup.node.Config;
 import global.smartup.node.compoment.IdGenerator;
 import global.smartup.node.constant.PoConstant;
 import global.smartup.node.eth.info.CTBuyInfo;
-import global.smartup.node.eth.info.MarketCreateInfo;
 import global.smartup.node.eth.info.CTSellInfo;
+import global.smartup.node.eth.info.MarketCreateInfo;
 import global.smartup.node.mapper.MarketDataMapper;
 import global.smartup.node.mapper.MarketMapper;
-import global.smartup.node.po.Collect;
 import global.smartup.node.po.Market;
 import global.smartup.node.po.MarketData;
 import global.smartup.node.util.Pagination;
@@ -35,6 +35,9 @@ public class MarketService {
      * 缓存已有的CT市场地址，方便快速判断一笔tx是否需要记录
      */
     private static List<String> CacheMarketAddresses = null;
+
+    @Autowired
+    private Config config;
 
     @Autowired
     private MarketMapper marketMapper;
@@ -184,6 +187,23 @@ public class MarketService {
         if (data != null) {
             data.setPostCount(data.getPostCount() + 1);
             marketDataMapper.updateByPrimaryKey(data);
+        }
+    }
+
+    public void updateExpireLock() {
+        Integer minute = config.appBusinessMarketLockExpire;
+        Integer ms = minute * 60 * 1000;
+        Date now = new Date();
+        Market cdt = new Market();
+        cdt.setStatus(PoConstant.Market.Status.Locked);
+        List<Market> list = marketMapper.select(cdt);
+        for (Market market : list) {
+            if (now.getTime() - ms > market.getCreateTime().getTime()) {
+                market.setStage(null);
+                market.setStatus(PoConstant.Market.Status.Creating);
+                marketMapper.updateByPrimaryKey(market);
+                log.info("Market [{}] lock expire, txHash = {}", market.getMarketId(), market.getTxHash());
+            }
         }
     }
 

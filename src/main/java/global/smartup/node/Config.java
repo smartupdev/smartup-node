@@ -43,6 +43,9 @@ public class Config {
     @Value("${app.port}")
     public String appPort;
 
+    @Value("${app.business.market.lock.expire}")
+    public Integer appBusinessMarketLockExpire;
+
     @Value("${eth.protocol}")
     public String ethProtocol;
 

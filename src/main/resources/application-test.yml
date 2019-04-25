@@ -4,6 +4,10 @@ app:
   domain: 39.105.101.248
   port: 86
 
+  business:
+    market:
+      lock:
+        expire: 5
 eth:
   protocol: http
   domain: 54.255.204.122
