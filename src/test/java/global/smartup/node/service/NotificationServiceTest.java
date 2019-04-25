@@ -24,7 +24,7 @@ public class NotificationServiceTest {
 
     @Test
     public void sendTradeFinish() {
-        notificationService.sendTradeFinish("tx", true, "user", "buy", "market",
+        notificationService.sendTradeFinish("tx", true, "user", "buy", "marketId", "market",
                 new BigDecimal("0.00000000000000000000"), BigDecimal.ZERO);
     }
 
