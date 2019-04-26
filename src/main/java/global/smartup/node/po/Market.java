@@ -79,9 +79,18 @@ public class Market {
     @Transient
     private List<BigDecimal> sevenDayNode;
 
+    @Transient
+    private User creator;
 
 
 
+    public User getCreator() {
+        return creator;
+    }
+
+    public void setCreator(User creator) {
+        this.creator = creator;
+    }
 
     public String getPhoto() {
         return photo;

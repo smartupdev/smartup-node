@@ -148,6 +148,7 @@ public class MarketController extends BaseController {
                     "　marketId, txHash, creatorAddress, marketAddress, name, description, \n" +
                     "　stage(creating=编辑中, pending=创建中, success=创建完成, fail=创建失败), createTime \n" +
                     "　data = { latelyChange, last, latelyVolume, amount, ctAmount, ctTopAmount, count } \n" +
+                    "　creator = { 见/api/user/current } \n" +
                     "}")
     @RequestMapping("/market/one/by/id")
     public Object marketOneById(HttpServletRequest request, String marketId) {

@@ -54,6 +54,8 @@ public class MarketService {
     @Autowired
     private CollectService collectService;
 
+    @Autowired
+    private UserService userService;
 
     public Market save(Market market) {
         Market current = queryCurrentCreating(market.getCreatorAddress());
@@ -262,6 +264,8 @@ public class MarketService {
         Market market = marketMapper.selectByPrimaryKey(id);
         if (market != null) {
             market.setData(marketDataMapper.selectByPrimaryKey(market.getMarketAddress()));
+            market.getCreatorAddress();
+            market.setCreator(userService.query(market.getCreatorAddress()));
         }
         return market;
     }
