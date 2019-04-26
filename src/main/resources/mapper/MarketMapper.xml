@@ -14,6 +14,7 @@
         <result column="type" jdbcType="VARCHAR" property="type"/>
         <result column="stage" jdbcType="VARCHAR" property="stage"/>
         <result column="status" jdbcType="VARCHAR" property="status"/>
+        <result column="init_sut" jdbcType="VARCHAR" property="initSut"/>
         <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
         <association property="data" javaType="global.smartup.node.po.MarketData">
             <id property="marketAddress" column="market_address" />

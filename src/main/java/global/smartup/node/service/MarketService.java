@@ -57,6 +57,10 @@ public class MarketService {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private TransactionService transactionService;
+
+
     public Market save(Market market) {
         Market current = queryCurrentCreating(market.getCreatorAddress());
         if (current != null) {
@@ -82,6 +86,9 @@ public class MarketService {
             market.setStatus(PoConstant.Market.Status.Locked);
             market.setTxHash(txHash);
             marketMapper.updateByPrimaryKey(market);
+
+            // save ts
+            transactionService.addCreateMarket(txHash, marketId, market.getCreatorAddress());
         }
     }
 
@@ -98,6 +105,7 @@ public class MarketService {
         }
         market.setTxHash(info.getTxHash());
         market.setMarketAddress(info.getEventMarketAddress());
+        market.setInitSut(info.getEventAmount());
         market.setStage(PoConstant.TxStage.Success);
         market.setStatus(PoConstant.Market.Status.Open);
         marketMapper.updateByPrimaryKey(market);
@@ -122,8 +130,9 @@ public class MarketService {
     /**
      *  创建市场失败
      */
-    public void updateCreateFailByChain(String txHash, String userAddress) {
+    public void updateCreateFailByChain(String txHash, String userAddress, BigDecimal initSut) {
         Market market = queryCurrentCreating(userAddress);
+        market.setInitSut(initSut);
         market.setTxHash(txHash);
         market.setStage(PoConstant.TxStage.Fail);
         market.setStatus(PoConstant.Market.Status.Close);
@@ -322,6 +331,23 @@ public class MarketService {
         example.excludeProperties("txHash", "creatorAddress", "name", "description", "type", "stage", "createTime");
         List<Market> markets = marketMapper.selectByExample(example);
         markets.forEach(m -> ret.add(m.getMarketAddress()));
+        return ret;
+    }
+
+    public List<String> queryNames(List<String> marketIds) {
+        List<String> ret = new ArrayList<>();
+        Example example = new Example(Market.class);
+        example.createCriteria().andIn("marketId", marketIds);
+        example.selectProperties("marketId", "name");
+        List<Market> markets = marketMapper.selectByExample(example);
+        marketIds.forEach(id -> {
+            Optional<Market> o = markets.stream().filter(m -> m.getMarketId().equals(id)).findFirst();
+            if (o.isPresent()) {
+                ret.add(o.get().getName());
+            } else {
+                ret.add(null);
+            }
+        });
         return ret;
     }
 

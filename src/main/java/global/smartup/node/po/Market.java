@@ -65,6 +65,9 @@ public class Market {
     @Column(name="status")
     private String status;
 
+    @Column(name="init_sut")
+    private BigDecimal initSut;
+
     @Column(name="create_time")
     private Date createTime;
 
@@ -83,6 +86,16 @@ public class Market {
     private User creator;
 
 
+
+
+
+    public BigDecimal getInitSut() {
+        return initSut;
+    }
+
+    public void setInitSut(BigDecimal initSut) {
+        this.initSut = initSut;
+    }
 
     public User getCreator() {
         return creator;

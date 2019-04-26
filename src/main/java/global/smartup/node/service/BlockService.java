@@ -46,6 +46,9 @@ public class BlockService {
     @Autowired
     private NotificationService notificationService;
 
+    @Autowired
+    private TransactionService transactionService;
+
 
     public void parseBlock(EthBlock.Block block) {
         if (block == null) {
@@ -76,7 +79,7 @@ public class BlockService {
 
                 //  call create market
                 if (input.endsWith(MarketCreateInfo.ByteLastFlag)) {
-                    handleCreateMarket(tx);
+                    handleCreateMarket(block, tx);
                 }
 
                 // call buy CT
@@ -141,9 +144,10 @@ public class BlockService {
     }
 
 
-    private void handleCreateMarket(Transaction tx) {
+    private void handleCreateMarket(EthBlock.Block block, Transaction tx) {
         log.info("Handle create market txHash = {}", tx.getHash());
 
+        Date blockTime = new Date(block.getTimestamp().longValue() * 1000);
         String from = Keys.toChecksumAddress(tx.getFrom());
         TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
 
@@ -152,12 +156,16 @@ public class BlockService {
             log.error("Can not find creating market by user address = {}, tx hash = {}", from, tx.getHash());
             return;
         }
+        MarketCreateInfo info = new MarketCreateInfo();
+        info.parseTransaction(tx);
 
         if (ethClient.isTransactionFail(receipt)) {
-            // tx fail
-
             // update market
-            marketService.updateCreateFailByChain(tx.getHash(), from);
+            marketService.updateCreateFailByChain(tx.getHash(), from, info.getInputAmount());
+
+            // update ts
+            transactionService.modCreateMarketFinish(info.getTxHash(), PoConstant.TxStage.Fail,
+                    from, market.getMarketId(), null, info.getInputAmount(), blockTime);
 
             // send ntfc
             notificationService.sendMarketCreateFinish(tx.getHash(), false, market.getMarketId(), from, null);
@@ -165,15 +173,19 @@ public class BlockService {
         } else {
             // tx success
 
-            MarketCreateInfo info = new MarketCreateInfo();
-            info.parseTransaction(tx);
             info.parseTransactionReceipt(receipt);
 
             // update market
             marketService.updateCreateByChain(info);
 
+            // update ts
+            transactionService.modCreateMarketFinish(info.getTxHash(), PoConstant.TxStage.Success,
+                    info.getEventCreatorAddress(), market.getMarketId(), info.getEventMarketAddress(),
+                    info.getEventAmount(), blockTime);
+
             // send  ntfc
-            notificationService.sendMarketCreateFinish(info.getTxHash(), true, market.getMarketId(), from, info.getEventMarketAddress());
+            notificationService.sendMarketCreateFinish(info.getTxHash(), true, market.getMarketId(), from,
+                    info.getEventMarketAddress());
         }
 
 
@@ -188,23 +200,29 @@ public class BlockService {
 
         Date blockTime = new Date(block.getTimestamp().longValue() * 1000);
         String from = Keys.toChecksumAddress(tx.getFrom());
-        String to = Keys.toChecksumAddress(tx.getTo());
-        String marketId = marketService.queryIdByAddress(to);
 
         CTBuyInfo info = new CTBuyInfo();
         info.parseTransaction(tx);
         TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
 
-        if (ethClient.isTransactionFail(receipt)) {
-            // tx fail
+        Market market = marketService.queryByAddress(info.getInputMarketAddress());
+        if (market == null) {
+            log.error("Can not find market address = {}", info.getInputMarketAddress());
+            return;
+        }
 
+        if (ethClient.isTransactionFail(receipt)) {
             // save
             tradeService.saveFailTradeTxByChain(tx.getHash(), PoConstant.Trade.Type.Buy, from,
                     info.getInputMarketAddress(), info.getInputSUT(), info.getInputCT(), blockTime);
 
+            // update ts
+            transactionService.modTradeFinish(tx.getHash(), PoConstant.TxStage.Fail, PoConstant.Transaction.Type.BuyCT,
+                    from, market.getMarketId(), market.getMarketAddress(), info.getInputSUT(), info.getInputCT(), blockTime);
+
             // send ntfc
             notificationService.sendTradeFinish(info.getTxHash(), false, from, PoConstant.Trade.Type.Buy,
-                    marketId, info.getInputMarketAddress(), info.getInputSUT(), info.getInputCT());
+                    market.getMarketId(), info.getInputMarketAddress(), info.getInputSUT(), info.getInputCT());
 
         } else {
             // tx success
@@ -214,6 +232,10 @@ public class BlockService {
 
             // save transaction
             tradeService.saveBuyTxByChain(info);
+
+            // update ts
+            transactionService.modTradeFinish(tx.getHash(), PoConstant.TxStage.Success, PoConstant.Transaction.Type.BuyCT,
+                    from, market.getMarketId(), market.getMarketAddress(), info.getEventSUT(), info.getEventCT(), blockTime);
 
             // update kline
             klineNodeService.updateNodeForBuyTxByChain(info);
@@ -226,7 +248,7 @@ public class BlockService {
 
             // send ntfc
             notificationService.sendTradeFinish(info.getTxHash(), true, from, PoConstant.Trade.Type.Buy,
-                    marketId, info.getEventMarketAddress(), info.getEventSUT(), info.getEventCT());
+                    market.getMarketId(), info.getEventMarketAddress(), info.getEventSUT(), info.getEventCT());
         }
 
     }
@@ -241,30 +263,38 @@ public class BlockService {
         Date blockTime = new Date(block.getTimestamp().longValue() * 1000);
         String from = Keys.toChecksumAddress(tx.getFrom());
         String to = Keys.toChecksumAddress(tx.getTo());
-        String marketId = marketService.queryIdByAddress(to);
+        Market market = marketService.queryByAddress(to);
+        if (market == null) {
+            log.error("Can not find market address = {}", to);
+            return;
+        }
 
         CTSellInfo info = new CTSellInfo();
         info.parseTransaction(tx);
         TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
 
         if (ethClient.isTransactionFail(receipt)) {
-            // tx fail
-
             // save
             tradeService.saveFailTradeTxByChain(tx.getHash(), PoConstant.Trade.Type.Sell, from, to, null,
                     info.getInputCT(), blockTime);
 
+            // update ts
+            transactionService.modTradeFinish(tx.getHash(), PoConstant.TxStage.Fail, PoConstant.Transaction.Type.SellCT,
+                    from, market.getMarketId(), to, info.getEventSUT(), info.getEventCT(), blockTime);
+
             // send ntfc
             notificationService.sendTradeFinish(tx.getHash(), false, from, PoConstant.Trade.Type.Sell,
-                    marketId, to,null, info.getInputCT());
+                    market.getMarketId(), to,null, info.getInputCT());
         } else {
-            // tx success
-
             info.parseTransactionReceipt(receipt);
             info.setBlockTime(blockTime);
 
             // save transaction
             tradeService.saveSellTxByChain(info);
+
+            // update ts
+            transactionService.modTradeFinish(tx.getHash(), PoConstant.TxStage.Success, PoConstant.Transaction.Type.SellCT,
+                    from, market.getMarketId(), to, info.getEventSUT(), info.getEventCT(), blockTime);
 
             // update kline
             klineNodeService.updateNodeForSellTxByChain(info);
@@ -277,7 +307,7 @@ public class BlockService {
 
             // send ntfc
             notificationService.sendTradeFinish(info.getTxHash(), true, from, PoConstant.Trade.Type.Sell,
-                    marketId, to, info.getEventSUT(), info.getEventCT());
+                    market.getMarketId(), to, info.getEventSUT(), info.getEventCT());
         }
 
     }

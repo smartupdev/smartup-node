@@ -27,6 +27,12 @@ public class Constant {
 
     }
 
+    public static class SUTEvent {
+
+        public static final String CreateMarketFinish = "0xab80d4f237153664013aad30815c82af95ab8234bfb2d63a6518a3656e4d3a8c";
+
+    }
+
     public static class CTEventSign {
 
         public static final String SutProposalFinish = "0xaa156723b7ba5f14ff3213b29128e106b611b173968978a92fd57568271112eb";

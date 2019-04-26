@@ -6,8 +6,10 @@ import global.smartup.node.constant.LangHandle;
 import global.smartup.node.constant.RedisKey;
 import global.smartup.node.eth.EthClient;
 import global.smartup.node.po.User;
+import global.smartup.node.service.TransactionService;
 import global.smartup.node.service.UserService;
 import global.smartup.node.util.Checker;
+import global.smartup.node.util.Pagination;
 import global.smartup.node.util.Wrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -33,6 +35,9 @@ public class UserController extends BaseController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private TransactionService transactionService;
 
     @Autowired
     private EthClient ethClient;
@@ -142,6 +147,25 @@ public class UserController extends BaseController {
             }
             userService.update(user);
             return Wrapper.success();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return Wrapper.sysError();
+        }
+    }
+
+    @ApiOperation(value = "用户交易列表", httpMethod = "POST", response = Wrapper.class,
+                notes = "参数：pageNumb, pageSize\n" +
+                        "返回：obj = {\n" +
+                        "　txHash, stage(pending/success/fail), type, userAddress, marketId, marketAddress, detail, createTime, blockTime\n" +
+                        "　type = CreateMarket, detail = {sut}\n" +
+                        "　type = BuyCT, detail = {sut, ct}\n" +
+                        "　type = SellCT, detail = {sut(stage==fail ? null:sut), ct}\n" +
+                        "}")
+    @RequestMapping("/user/transaction/list")
+    public Object transactionList(HttpServletRequest request, Integer pageNumb, Integer pageSize) {
+        try {
+            Pagination page = transactionService.queryPage(getLoginUserAddress(request), pageNumb, pageSize);
+            return Wrapper.success(page);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return Wrapper.sysError();

@@ -15,6 +15,7 @@ import org.web3j.utils.Convert;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class MarketCreateInfo {
 
@@ -65,11 +66,16 @@ public class MarketCreateInfo {
         if (status.equals("0x0")) {
             return;
         }
+
         List<Log> list = receipt.getLogs();
-        if (list.size() != 2) {
+        Optional<Log> optional = list.stream()
+                .filter(l -> l.getTopics().contains(Constant.SUTEvent.CreateMarketFinish))
+                .findFirst();
+        if (!optional.isPresent()) {
             return;
         }
-        Log log = list.get(1);
+
+        Log log = optional.get();
         String data = log.getData();
         List<Type> params =  FunctionReturnDecoder.decode(data, Arrays.asList(new TypeReference[]{
                 TypeReference.create(Address.class),
