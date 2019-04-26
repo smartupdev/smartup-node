@@ -39,31 +39,31 @@ public class Reply {
     private Date createTime;
 
 
+
     @Transient
     private Pagination<Reply> childrenPage;
 
     @Transient
-    private boolean isLiked;
+    private Boolean isLiked;
 
     @Transient
-    private boolean isDisliked;
+    private Boolean isDisliked;
 
 
 
-
-    public boolean getIsLiked() {
+    public Boolean getIsLiked() {
         return isLiked;
     }
 
-    public void setIsLiked(boolean liked) {
+    public void setIsLiked(Boolean liked) {
         isLiked = liked;
     }
 
-    public boolean getIsDisliked() {
+    public Boolean getIsDisliked() {
         return isDisliked;
     }
 
-    public void setIsDisliked(boolean disliked) {
+    public void setIsDisliked(Boolean disliked) {
         isDisliked = disliked;
     }
 

@@ -163,13 +163,9 @@ public class PoConstant {
 
         public static class Type {
 
-            public static final String LikePost = "LikePost";
+            public static final String Post = "post";
 
-            public static final String DislikePost = "DislikePost";
-
-            public static final String LikeReply = "LikeReply";
-
-            public static final String DislikeReply = "DislikeReply";
+            public static final String Reply = "reply";
 
         }
 

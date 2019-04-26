@@ -101,7 +101,8 @@ public class PostController extends BaseController {
     @RequestMapping("/post/list")
     public Object list(HttpServletRequest request, String type, String marketAddress, Integer pageNumb, Integer pageSize) {
         try {
-            Pagination page = postService.queryPage(type, marketAddress, pageNumb, pageSize);
+            String userAddress = getLoginUserAddress(request);
+            Pagination page = postService.queryPage(userAddress, type, marketAddress, pageNumb, pageSize);
             return Wrapper.success(page);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -173,7 +174,8 @@ public class PostController extends BaseController {
             if (!postService.isExist(postId)) {
                 return Wrapper.alert(getLocaleMsg(LangHandle.PostNotExist));
             }
-            Pagination page = replyService.queryPage(postId, pageNumb, pageSize);
+            String userAddress = getLoginUserAddress(request);
+            Pagination page = replyService.queryPage(userAddress, postId, pageNumb, pageSize);
             return Wrapper.success(page);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -198,62 +200,35 @@ public class PostController extends BaseController {
         }
     }
 
-
-    @ApiOperation(value = "标记回复喜欢/不喜欢", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：isMark( true 标记 / false 取消标记 ), type(LikeReply/DislikeReply), replyId\n" +
-                        "返回：是否成功")
-    @RequestMapping("/user/reply/like")
-    public Object replyLike(HttpServletRequest request, boolean isMark, String type, Long replyId) {
-        try {
-            String userAddress = getLoginUserAddress(request);
-            Reply reply = replyService.query(replyId);
-            if (reply != null) {
-                Post post = postService.query(reply.getPostId());
-                if (post != null) {
-                    String marketId = marketService.queryIdByAddress(post.getMarketAddress());
-                    if (marketId != null) {
-                        if (isMark) {
-                            if (PoConstant.Liked.Type.LikeReply.equals(type)) {
-                                likeService.addReplyLike(userAddress, marketId, replyId);
-                            } else if (PoConstant.Liked.Type.DislikeReply.equals(type)) {
-                                likeService.addReplyDislike(userAddress, marketId, replyId);
-                            }
-                        } else {
-                            likeService.delLike(userAddress, marketId, String.valueOf(replyId));
-                        }
-                    }
-                }
-            }
-            return Wrapper.success();
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            return Wrapper.sysError();
-        }
-    }
-
-    @ApiOperation(value = "标记帖子喜欢/不喜欢", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：isMark( true 标记 / false 取消标记 ), type(LikePost/DislikePost), postId\n" +
+    @ApiOperation(value = "标记/删除标记  帖子/回复  喜欢/不喜欢", httpMethod = "POST", response = Wrapper.class,
+                notes = "参数：isMark(true 标记 / false 取消标记), type(post/reply), isLike(true/false), id\n" +
                         "返回：是否成功")
     @RequestMapping("/user/post/like")
-    public Object like(HttpServletRequest request, boolean isMark, String type, Long postId) {
+    public Object like(HttpServletRequest request, boolean isMark, String type, boolean isLike, Long id) {
         try {
             String userAddress = getLoginUserAddress(request);
-            Post post = postService.query(postId);
-            if (post != null) {
-                String marketId = marketService.queryIdByAddress(post.getMarketAddress());
-                if (marketId != null) {
+            if (PoConstant.Liked.Type.Post.equals(type)) {
+                Post post = postService.query(id);
+                if (post != null) {
                     if (isMark) {
-                        if (PoConstant.Liked.Type.LikePost.equals(type)) {
-                            likeService.addPostLike(userAddress, marketId, postId);
-                        } else if (PoConstant.Liked.Type.DislikePost.equals(type)) {
-                            likeService.addPostDislike(userAddress, marketId, postId);
-                        }
+                        likeService.addMark(userAddress, post.getMarketAddress(), type, isLike, String.valueOf(id));
                     } else {
-                        likeService.delLike(userAddress, marketId, String.valueOf(postId));
+                        likeService.delMark(userAddress, post.getMarketAddress(), type, String.valueOf(id));
+                    }
+                }
+            } else if (PoConstant.Liked.Type.Reply.equals(type)) {
+                Reply reply = replyService.query(id);
+                if (reply != null) {
+                    Post post = postService.query(reply.getPostId());
+                    if (post != null) {
+                        if (isMark) {
+                            likeService.addMark(userAddress, post.getMarketAddress(), type, isLike, String.valueOf(id));
+                        } else {
+                            likeService.delMark(userAddress, post.getMarketAddress(), type, String.valueOf(id));
+                        }
                     }
                 }
             }
-
             return Wrapper.success();
         } catch (Exception e) {
             log.error(e.getMessage(), e);
