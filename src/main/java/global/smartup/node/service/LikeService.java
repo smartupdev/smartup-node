@@ -24,11 +24,11 @@ public class LikeService {
     @Autowired
     private LikedMapper likedMapper;
 
-    public void addMark(String userAddress, String marketAddress, String type, boolean isLike, String objMark) {
-        delMark(userAddress, marketAddress, type, objMark);
+    public void addMark(String userAddress, String marketId, String type, boolean isLike, String objMark) {
+        delMark(userAddress, marketId, type, objMark);
         Liked liked = new Liked();
         liked.setUserAddress(userAddress);
-        liked.setMarketAddress(marketAddress);
+        liked.setMarketId(marketId);
         liked.setType(type);
         liked.setIsLike(isLike);
         liked.setObjectMark(objMark);
@@ -36,21 +36,21 @@ public class LikeService {
         likedMapper.insert(liked);
     }
 
-    public void delMark(String userAddress, String marketAddress, String type, String objectMark) {
+    public void delMark(String userAddress, String marketId, String type, String objectMark) {
         Liked cdt = new Liked();
         cdt.setUserAddress(userAddress);
-        cdt.setMarketAddress(marketAddress);
+        cdt.setMarketId(marketId);
         cdt.setObjectMark(objectMark);
         cdt.setType(type);
         likedMapper.delete(cdt);
     }
 
-    public void queryFillLike(String userAddress, String marketAddress, List<Post> list) {
-        if (StringUtils.isAnyBlank(userAddress, marketAddress) || list == null || list.size() <= 0) {
+    public void queryFillLike(String userAddress, String marketId, List<Post> list) {
+        if (StringUtils.isAnyBlank(userAddress, marketId) || list == null || list.size() <= 0) {
             return;
         }
         List<String> ids = list.stream().map(p -> String.valueOf(p.getPostId())).collect(Collectors.toList());
-        List<Liked> likes = queryList(userAddress, marketAddress, PoConstant.Liked.Type.Post, ids);
+        List<Liked> likes = queryList(userAddress, marketId, PoConstant.Liked.Type.Post, ids);
         if (likes.size() <= 0) {
             return;
         }
@@ -66,12 +66,12 @@ public class LikeService {
         });
     }
 
-    public void queryFillLikeForReply(String userAddress, String marketAddress, List<Reply> list) {
-        if (StringUtils.isAnyBlank(userAddress, marketAddress) || list == null || list.size() <= 0) {
+    public void queryFillLikeForReply(String userAddress, String marketId, List<Reply> list) {
+        if (StringUtils.isAnyBlank(userAddress, marketId) || list == null || list.size() <= 0) {
             return;
         }
         List<String> ids = list.stream().map(p -> String.valueOf(p.getReplyId())).collect(Collectors.toList());
-        List<Liked> likes = queryList(userAddress, marketAddress, PoConstant.Liked.Type.Reply, ids);
+        List<Liked> likes = queryList(userAddress, marketId, PoConstant.Liked.Type.Reply, ids);
         if (likes.size() <= 0) {
             return;
         }
@@ -88,11 +88,11 @@ public class LikeService {
         });
     }
 
-    private List<Liked> queryList(String userAddress, String marketAddress, String type, List<String> ids) {
+    private List<Liked> queryList(String userAddress, String marketId, String type, List<String> ids) {
         Example example = new Example(Liked.class);
         example.createCriteria()
                 .andEqualTo("userAddress", userAddress)
-                .andEqualTo("marketAddress", marketAddress)
+                .andEqualTo("marketAddress", marketId)
                 .andEqualTo("type", type)
                 .andIn("objectMark", ids);
         return likedMapper.selectByExample(example);

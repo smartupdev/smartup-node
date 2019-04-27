@@ -61,11 +61,13 @@ create table trade (
 drop table if exists post;
 create table post (
   post_id bigint primary key,
-  type varchar(16) comment 'root/market',
+  type varchar(16),
+  market_id varchar(42),
   market_address varchar(42),
   user_address varchar(42),
   title varchar(32),
   description varchar(512),
+  photo varchar(66),
   create_time datetime
 );
 
@@ -138,7 +140,7 @@ create table ct_account(
 drop table if exists collect;
 create table collect (
   user_address varchar(42),
-  type varchar(64) comment 'market,post',
+  type varchar(64),
   object_mark varchar(64),
   create_time datetime,
   primary key (user_address, type, object_mark)
@@ -147,12 +149,12 @@ create table collect (
 drop table if exists liked;
 create table liked (
   user_address varchar(42),
-  market_address varchar(42),
+  market_Id varchar(42),
   type varchar(64),
   object_mark varchar(64),
   is_like tinyint(1),
   create_time datetime,
-  primary key (user_address, market_address, type, object_mark)
+  primary key (user_address, market_Id, type, object_mark)
 );
 
 drop table if exists notification;

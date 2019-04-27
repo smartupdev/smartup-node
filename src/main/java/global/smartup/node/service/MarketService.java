@@ -270,6 +270,10 @@ public class MarketService {
     }
 
     public Market queryById(String id) {
+        return marketMapper.selectByPrimaryKey(id);
+    }
+
+    public Market queryWithDataById(String id) {
         Market market = marketMapper.selectByPrimaryKey(id);
         if (market != null) {
             market.setData(marketDataMapper.selectByPrimaryKey(market.getMarketAddress()));

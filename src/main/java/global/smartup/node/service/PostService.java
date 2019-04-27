@@ -6,6 +6,7 @@ import global.smartup.node.compoment.IdGenerator;
 import global.smartup.node.constant.PoConstant;
 import global.smartup.node.mapper.PostDataMapper;
 import global.smartup.node.mapper.PostMapper;
+import global.smartup.node.po.Market;
 import global.smartup.node.po.Post;
 import global.smartup.node.po.PostData;
 import global.smartup.node.util.Common;
@@ -43,6 +44,10 @@ public class PostService {
     public void create(Post post) {
         Long id = idGenerator.getId();
         post.setPostId(id);
+        if (PoConstant.Post.Type.Market.equals(post.getType())) {
+            Market market = marketService.queryById(post.getMarketId());
+            post.setMarketAddress(market.getMarketAddress());
+        }
         post.setCreateTime(new Date());
         postMapper.insert(post);
 
@@ -56,7 +61,7 @@ public class PostService {
         postDataMapper.insert(postData);
 
         // update market data
-        if (StringUtils.isNotBlank(post.getMarketAddress())) {
+        if (StringUtils.isNotBlank(post.getMarketId())) {
             marketService.updatePostCountAddOne(post.getMarketAddress());
         }
     }
@@ -69,7 +74,7 @@ public class PostService {
         return postMapper.selectByPrimaryKey(postId);
     }
 
-    public Pagination<Post> queryPage(String userAddress, String type, String marketAddress, Integer pageNumb, Integer pageSize) {
+    public Pagination<Post> queryPage(String userAddress, String type, String marketId, Integer pageNumb, Integer pageSize) {
         Example example = new Example(Post.class);
         if (StringUtils.isBlank(type) || PoConstant.Post.Type.Root.equalsIgnoreCase(type)) {
             // root
@@ -78,12 +83,12 @@ public class PostService {
             // market
             example.createCriteria()
                     .andEqualTo("type", PoConstant.Post.Type.Market)
-                    .andEqualTo("marketAddress", marketAddress);
+                    .andEqualTo("marketId", marketId);
         }
         example.orderBy("createTime").asc();
         Page page = PageHelper.startPage(pageNumb, pageSize);
         postMapper.selectByExample(example);
-        likeService.queryFillLike(userAddress, marketAddress, page.getResult());
+        likeService.queryFillLike(userAddress, marketId, page.getResult());
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
     }
 

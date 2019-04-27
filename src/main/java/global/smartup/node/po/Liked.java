@@ -10,8 +10,8 @@ public class Liked {
     @Column(name = "user_address")
     private String userAddress;
 
-    @Column(name = "market_address")
-    private String marketAddress;
+    @Column(name = "market_Id")
+    private String marketId;
 
     @Column(name = "type")
     private String type;
@@ -43,12 +43,12 @@ public class Liked {
         this.userAddress = userAddress;
     }
 
-    public String getMarketAddress() {
-        return marketAddress;
+    public String getMarketId() {
+        return marketId;
     }
 
-    public void setMarketAddress(String marketAddress) {
-        this.marketAddress = marketAddress;
+    public void setMarketId(String marketId) {
+        this.marketId = marketId;
     }
 
     public String getType() {

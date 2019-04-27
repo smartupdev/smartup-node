@@ -153,7 +153,7 @@ public class MarketController extends BaseController {
     @RequestMapping("/market/one/by/id")
     public Object marketOneById(HttpServletRequest request, String marketId) {
         try {
-            Market market = marketService.queryById(marketId);
+            Market market = marketService.queryWithDataById(marketId);
             marketService.queryUserCollect(getLoginUserAddress(request), market);
             return Wrapper.success(market);
         } catch (Exception e) {

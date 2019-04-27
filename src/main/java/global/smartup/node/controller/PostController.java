@@ -45,7 +45,7 @@ public class PostController extends BaseController {
     private MarketService marketService;
 
     @ApiOperation(value = "发布主题", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：type(root=系统讨论区, market=市场讨论区), marketAddress(如果type=root marketAddress为空), title, description\n" +
+                notes = "参数：type(root=系统讨论区, market=市场讨论区), marketId(如果type=root marketId为空), title, description, photo\n" +
                         "返回：是否成功")
     @RequestMapping("/user/post/add")
     public Object add(HttpServletRequest request, Post post) {
@@ -56,15 +56,12 @@ public class PostController extends BaseController {
             if (err != null) {
                 return Wrapper.alert(err);
             }
-            if (!Checker.isAddress(post.getUserAddress())) {
-                return Wrapper.alert(getLocaleMsg(LangHandle.AddressFormatError));
-            }
-            if (!userService.isExist(post.getUserAddress())) {
-                return Wrapper.alert(getLocaleMsg(LangHandle.UserAddressNotExist));
-            }
-            if (!PoConstant.Post.Type.Root.equals(post.getType())
-                    && !PoConstant.Post.Type.Market.equals(post.getType())) {
+            if (!PoConstant.Post.Type.isType(post.getType())) {
                 return Wrapper.alert(getLocaleMsg(LangHandle.PostTypeError));
+            }
+            if (PoConstant.Post.Type.Market.equals(post.getType())
+                    && !marketService.isMarketIdExist(post.getMarketId())) {
+                return Wrapper.alert(getLocaleMsg(LangHandle.MarketIdNotExist));
             }
             postService.create(post);
             return Wrapper.success();
@@ -77,7 +74,7 @@ public class PostController extends BaseController {
     @ApiOperation(value = "主题详情", httpMethod = "POST", response = Wrapper.class,
                 notes = "参数：postId\n" +
                         "返回：obj = {\n" +
-                        "　postId, type, marketAddress, userAddress, title, description, createTime\n" +
+                        "　postId, type, marketId, marketAddress, userAddress, title, description, createTime\n" +
                         "}")
     @RequestMapping("/post/one")
     public Object one(HttpServletRequest request, Long postId) {
@@ -94,15 +91,15 @@ public class PostController extends BaseController {
     }
 
     @ApiOperation(value = "查询主题列表", httpMethod = "POST", response = Wrapper.class,
-            notes = "参数：type(root/market), marketAddress(如果type=root marketAddress为空), pageNumb, pageSize\n" +
+            notes = "参数：type(root/market), marketId(如果type=root marketId为空), pageNumb, pageSize\n" +
                     "返回： obj = {\n" +
                     "list = [ {见/api/post/one}, {} ... ]\n" +
                     "}\n")
     @RequestMapping("/post/list")
-    public Object list(HttpServletRequest request, String type, String marketAddress, Integer pageNumb, Integer pageSize) {
+    public Object list(HttpServletRequest request, String type, String marketId, Integer pageNumb, Integer pageSize) {
         try {
             String userAddress = getLoginUserAddress(request);
-            Pagination page = postService.queryPage(userAddress, type, marketAddress, pageNumb, pageSize);
+            Pagination page = postService.queryPage(userAddress, type, marketId, pageNumb, pageSize);
             return Wrapper.success(page);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -211,9 +208,9 @@ public class PostController extends BaseController {
                 Post post = postService.query(id);
                 if (post != null) {
                     if (isMark) {
-                        likeService.addMark(userAddress, post.getMarketAddress(), type, isLike, String.valueOf(id));
+                        likeService.addMark(userAddress, post.getMarketId(), type, isLike, String.valueOf(id));
                     } else {
-                        likeService.delMark(userAddress, post.getMarketAddress(), type, String.valueOf(id));
+                        likeService.delMark(userAddress, post.getMarketId(), type, String.valueOf(id));
                     }
                 }
             } else if (PoConstant.Liked.Type.Reply.equals(type)) {
@@ -222,9 +219,9 @@ public class PostController extends BaseController {
                     Post post = postService.query(reply.getPostId());
                     if (post != null) {
                         if (isMark) {
-                            likeService.addMark(userAddress, post.getMarketAddress(), type, isLike, String.valueOf(id));
+                            likeService.addMark(userAddress, post.getMarketId(), type, isLike, String.valueOf(id));
                         } else {
-                            likeService.delMark(userAddress, post.getMarketAddress(), type, String.valueOf(id));
+                            likeService.delMark(userAddress, post.getMarketId(), type, String.valueOf(id));
                         }
                     }
                 }

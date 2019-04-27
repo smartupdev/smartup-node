@@ -39,6 +39,8 @@ public class LangHandle {
 
 	public static final String MarketNameLengthError = "market_name_length_error";
 
+	public static final String PostMarketIdEmptyError = "post_market_id_empty_error";
+
 	public static final String KlineSegmentFormatError = "kline_segment_format_error";
 
 	public static final String UserAvatarIpfsHashMaxSizeError = "user_avatar_ipfs_hash_max_size_error";
@@ -48,6 +50,8 @@ public class LangHandle {
 	public static final String Language = "language";
 
 	public static final String KlineTimeIdFormatError = "kline_time_id_format_error";
+
+	public static final String MarketIdNotExist = "market_id_not_exist";
 
 	public static final String ReplyContentLengthError = "reply_content_length_error";
 

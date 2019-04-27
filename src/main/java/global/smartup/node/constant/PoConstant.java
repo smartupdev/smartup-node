@@ -51,13 +51,20 @@ public class PoConstant {
 
     }
 
-    public class Post {
+    public static class Post {
 
-        public class Type {
+        public static class Type {
 
             public static final String Root = "root";
 
             public static final String Market = "market";
+
+            public static boolean isType(String type) {
+                if (Root.equals(type) || Market.equals(type)) {
+                    return true;
+                }
+                return false;
+            }
 
         }
 

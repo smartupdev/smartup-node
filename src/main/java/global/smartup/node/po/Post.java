@@ -22,9 +22,14 @@ public class Post {
     @Column(name="type")
     private String type;
 
-    @Size(max = 42, min = 42, message = "{post_market_address_format_error}", groups = Post.Add.class)
+    @Column(name="photo")
+    private String photo;
+
     @Column(name="market_address")
     private String marketAddress;
+
+    @Column(name = "market_id")
+    private String marketId;
 
     @NotNull(message = "{post_user_address_format_error}", groups = Post.Add.class)
     @NotEmpty(message = "{post_user_address_format_error}", groups = Post.Add.class)
@@ -56,6 +61,23 @@ public class Post {
     private Boolean isDisliked;
 
 
+
+
+    public String getPhoto() {
+        return photo;
+    }
+
+    public void setPhoto(String photo) {
+        this.photo = photo;
+    }
+
+    public String getMarketId() {
+        return marketId;
+    }
+
+    public void setMarketId(String marketId) {
+        this.marketId = marketId;
+    }
 
     public Boolean getIsLiked() {
         return isLiked;
