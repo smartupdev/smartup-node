@@ -92,7 +92,7 @@ public class LikeService {
         Example example = new Example(Liked.class);
         example.createCriteria()
                 .andEqualTo("userAddress", userAddress)
-                .andEqualTo("marketAddress", marketId)
+                .andEqualTo("marketId", marketId)
                 .andEqualTo("type", type)
                 .andIn("objectMark", ids);
         return likedMapper.selectByExample(example);
