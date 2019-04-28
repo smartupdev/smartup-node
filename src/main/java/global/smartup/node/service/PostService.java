@@ -7,10 +7,7 @@ import global.smartup.node.constant.BuConstant;
 import global.smartup.node.constant.PoConstant;
 import global.smartup.node.mapper.PostDataMapper;
 import global.smartup.node.mapper.PostMapper;
-import global.smartup.node.po.Liked;
-import global.smartup.node.po.Market;
-import global.smartup.node.po.Post;
-import global.smartup.node.po.PostData;
+import global.smartup.node.po.*;
 import global.smartup.node.util.Common;
 import global.smartup.node.util.Pagination;
 import org.apache.commons.lang3.StringUtils;
@@ -20,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -185,10 +183,53 @@ public class PostService {
         fillPostData(page.getResult());
         userService.fillUserForPost(page.getResult());
         collectService.fillCollectForPosts(userAddress, page.getResult());
-        likeService.queryFillLikeForPosts(userAddress, marketId, page.getResult());
+        likeService.queryFillLikeForPosts(userAddress, page.getResult());
         replyService.fillLastReply(page.getResult());
 
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
+    }
+
+    public Pagination<Post> queryUserCreated(String userAddress, Integer pageNumb, Integer pageSize) {
+        Example example = new Example(Post.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("userAddress", userAddress);
+        example.orderBy("createTime").desc();
+        Page<Post> page = PageHelper.startPage(pageNumb, pageSize);
+        postMapper.selectByExample(example);
+
+        fillPostData(page.getResult());
+        userService.fillUserForPost(page.getResult());
+        collectService.fillCollectForPosts(userAddress, page.getResult());
+        likeService.queryFillLikeForPosts(userAddress, page.getResult());
+        replyService.fillLastReply(page.getResult());
+
+        return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
+    }
+
+    public Pagination<Post> queryUserCollected(String userAddress, Integer pageNumb, Integer pageSize) {
+        Pagination<Collect> page = collectService.queryPage(userAddress, PoConstant.Collect.Type.Post, pageNumb, pageSize);
+        if (page.getRowCount() <= 0) {
+            return Pagination.blank();
+        }
+        List<String> postIds = page.getList().stream().map(Collect::getObjectMark).collect(Collectors.toList());
+
+        Example postExample = new Example(Post.class);
+        Example.Criteria criteria = postExample.createCriteria();
+        criteria.andIn("postId", postIds);
+        List<Post> list = postMapper.selectByExample(postExample);
+        list.forEach(post -> post.setIsCollected(true));
+
+        List<Post> ret = new ArrayList<>();
+        postIds.forEach(id -> {
+            ret.add(list.stream().filter(p -> id.equals(String.valueOf(p.getPostId()))).findFirst().orElse(null));
+        });
+
+        fillPostData(ret);
+        userService.fillUserForPost(ret);
+        likeService.queryFillLikeForPosts(userAddress, ret);
+        replyService.fillLastReply(ret);
+
+        return Pagination.init(page.getRowCount(), page.getPageNumb(), page.getPageSize(), ret);
     }
 
     public Integer queryLatelyReplyCount() {

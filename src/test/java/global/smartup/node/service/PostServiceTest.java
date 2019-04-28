@@ -24,4 +24,17 @@ public class PostServiceTest {
                 1, 10);
         System.out.println(JSON.toJSONString(page));
     }
+
+    @Test
+    public void queryUserCreated() {
+        Pagination page = postService.queryUserCreated("1", 1, 10);
+        System.out.println(JSON.toJSONString(page));
+    }
+
+    @Test
+    public void queryUserCollected() {
+        Pagination page = postService.queryUserCollected("1", 1, 10);
+        System.out.println(JSON.toJSONString(page));
+    }
+
 }
