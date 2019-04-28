@@ -225,23 +225,6 @@ public class MarketController extends BaseController {
         }
     }
 
-    @ApiOperation(value = "用户创建的市场", httpMethod = "POST", response = Wrapper.class,
-            notes = "参数：pageNumb, pageSize\n" +
-                    "返回：obj = {\n" +
-                    "　list = [ {见/api/market/one}, {}, ...]\n" +
-                    "}")
-    @RequestMapping("/user/market/created")
-    public Object creatorCreated(HttpServletRequest request, Integer pageNumb, Integer pageSize) {
-        try {
-            String creatorAddress = getLoginUserAddress(request);
-            Pagination page = marketService.queryByCreator(creatorAddress, pageNumb, pageSize);
-            return Wrapper.success(page);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            return Wrapper.sysError();
-        }
-    }
-
     @ApiOperation(value = "全部市场数据", httpMethod = "POST", response = Wrapper.class,
                 notes = "参数：无\n" +
                         "返回：sutAmount, marketCount, latelyPostCount")

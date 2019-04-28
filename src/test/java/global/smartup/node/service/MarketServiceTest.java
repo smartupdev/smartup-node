@@ -56,4 +56,10 @@ public class MarketServiceTest {
         System.out.println(JSON.toJSONString(page));
     }
 
+    @Test
+    public void queryUserTraded() {
+        Pagination page  =marketService.queryUserTraded("1", 1, 10);
+        System.out.println(JSON.toJSONString(page));
+    }
+
 }

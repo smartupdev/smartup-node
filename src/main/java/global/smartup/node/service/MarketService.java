@@ -60,6 +60,9 @@ public class MarketService {
     @Autowired
     private TransactionService transactionService;
 
+    @Autowired
+    private CTAccountService ctAccountService;
+
 
     public Market save(Market market) {
         Market current = queryCurrentCreating(market.getCreatorAddress());
@@ -337,7 +340,6 @@ public class MarketService {
         Example example = new Example(Market.class);
         example.createCriteria().andEqualTo("stage", PoConstant.TxStage.Success);
         example.orderBy("createTime").asc();
-        example.excludeProperties("txHash", "creatorAddress", "name", "description", "type", "stage", "createTime");
         List<Market> markets = marketMapper.selectByExample(example);
         markets.forEach(m -> ret.add(m.getMarketAddress()));
         return ret;
@@ -441,6 +443,28 @@ public class MarketService {
             boolean is = collectService.isCollected(userAddress, PoConstant.Collect.Type.Market, market.getMarketId());
             market.setIsCollect(is);
         }
+    }
+
+    public Pagination<Market> queryUserTraded(String userAddress, Integer pageNumb, Integer pageSize) {
+        Pagination<String> page = ctAccountService.queryUserTradeMarket(userAddress, pageNumb, pageSize);
+        if (page.getRowCount() <= 0) {
+            return Pagination.blank();
+        }
+
+        Example example = new Example(Market.class);
+        example.createCriteria().andIn("marketAddress", page.getList());
+        List<Market> markets = marketMapper.selectByExample(example);
+
+        List<Market> ret = new ArrayList<>();
+        for (String add : page.getList()) {
+            ret.add(markets.stream().filter(m -> add.equals(m.getMarketAddress())).findFirst().orElse(null));
+        }
+
+        fillMarketData(ret);
+        queryUserCollect(userAddress, ret);
+        querySevenDayNode(ret);
+
+        return Pagination.init(page.getRowCount(), page.getPageNumb(), page.getPageSize(), ret);
     }
 
     private void queryUserCollect(String userAddress, List<Market> list) {

@@ -11,9 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CTAccountService {
@@ -89,6 +92,18 @@ public class CTAccountService {
         Page<CTAccountWithMarket> page =  PageHelper.startPage(pageNumb, pageSize);
         ctAccountMapper.selectWidthMarket(userAddress);
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
+    }
+
+    public Pagination<String> queryUserTradeMarket(String userAddress, Integer pageNumb, Integer pageSize) {
+        Example example = new Example(CTAccount.class);
+        example.createCriteria()
+                .andEqualTo("userAddress", userAddress)
+                .andGreaterThan("amount", BigDecimal.ZERO);
+        example.orderBy("lastUpdateTime").desc();
+        Page<CTAccount> page = PageHelper.startPage(pageNumb, pageSize);
+        ctAccountMapper.selectByExample(example);
+        List<String> ret = page.getResult().stream().map(CTAccount::getMarketAddress).collect(Collectors.toList());
+        return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), ret);
     }
 
 }

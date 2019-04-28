@@ -6,6 +6,7 @@ import global.smartup.node.constant.LangHandle;
 import global.smartup.node.constant.RedisKey;
 import global.smartup.node.eth.EthClient;
 import global.smartup.node.po.User;
+import global.smartup.node.service.MarketService;
 import global.smartup.node.service.TransactionService;
 import global.smartup.node.service.UserService;
 import global.smartup.node.util.Checker;
@@ -47,6 +48,10 @@ public class UserController extends BaseController {
 
     @Autowired
     private Validator validator;
+
+    @Autowired
+    private MarketService marketService;
+
 
     @ApiOperation(value = "登录", httpMethod = "POST", response = Wrapper.class,
                 notes = "参数：address\n" +
@@ -171,5 +176,41 @@ public class UserController extends BaseController {
             return Wrapper.sysError();
         }
     }
+
+    @ApiOperation(value = "用户创建的市场", httpMethod = "POST", response = Wrapper.class,
+            notes = "参数：pageNumb, pageSize\n" +
+                    "返回：obj = {\n" +
+                    "　list = [ {见/api/market/one}, {}, ...]\n" +
+                    "}")
+    @RequestMapping("/user/market/created")
+    public Object userCreatedMarket(HttpServletRequest request, Integer pageNumb, Integer pageSize) {
+        try {
+            String userAddress = getLoginUserAddress(request);
+            Pagination page = marketService.queryByCreator(userAddress, pageNumb, pageSize);
+            return Wrapper.success(page);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return Wrapper.sysError();
+        }
+    }
+
+    @ApiOperation(value = "用户交易的市场", httpMethod = "POST", response = Wrapper.class,
+            notes = "参数：pageNumb, pageSize\n" +
+                    "返回：obj = {\n" +
+                    "　list = [ {见/api/market/one}, {}, ...]\n" +
+                    "}")
+    @RequestMapping("/user/market/traded")
+    public Object userTradedMarket(HttpServletRequest request, Integer pageNumb, Integer pageSize) {
+        try {
+            String userAddress = getLoginUserAddress(request);
+            Pagination page = marketService.queryUserTraded(userAddress, pageNumb, pageSize);
+            return Wrapper.success(page);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return Wrapper.sysError();
+        }
+    }
+
+
 
 }
