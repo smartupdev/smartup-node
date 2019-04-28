@@ -1,21 +1,26 @@
 package global.smartup.node.po;
 
 import javax.persistence.Column;
+import javax.persistence.Id;
 import javax.persistence.Table;
 import java.util.Date;
 
 @Table(name = "liked")
 public class Liked {
 
+    @Id
     @Column(name = "user_address")
     private String userAddress;
 
+    @Id
     @Column(name = "market_Id")
     private String marketId;
 
+    @Id
     @Column(name = "type")
     private String type;
 
+    @Id
     @Column(name = "object_mark")
     private String objectMark;
 

@@ -25,7 +25,6 @@ public class LikeService {
     private LikedMapper likedMapper;
 
     public void addMark(String userAddress, String marketId, String type, boolean isLike, String objMark) {
-        delMark(userAddress, marketId, type, objMark);
         Liked liked = new Liked();
         liked.setUserAddress(userAddress);
         liked.setMarketId(marketId);
@@ -34,6 +33,10 @@ public class LikeService {
         liked.setObjectMark(objMark);
         liked.setCreateTime(new Date());
         likedMapper.insert(liked);
+    }
+
+    public void mod(Liked liked) {
+        likedMapper.updateByPrimaryKey(liked);
     }
 
     public void delMark(String userAddress, String marketId, String type, String objectMark) {
@@ -45,7 +48,30 @@ public class LikeService {
         likedMapper.delete(cdt);
     }
 
-    public void queryFillLike(String userAddress, String marketId, List<Post> list) {
+    public Liked queryLiked(String userAddress, String marketId, String type, String objMark) {
+        Liked liked = new Liked();
+        liked.setUserAddress(userAddress);
+        liked.setMarketId(marketId);
+        liked.setType(type);
+        liked.setObjectMark(objMark);
+        return likedMapper.selectOne(liked);
+    }
+
+    public void queryFillLikeForPost(String userAddress, String marketId, Post post) {
+        if (StringUtils.isBlank(userAddress)) {
+            return;
+        }
+        Liked liked = queryLiked(userAddress, marketId, PoConstant.Liked.Type.Post, String.valueOf(post.getPostId()));
+        if (liked != null) {
+            if (liked.getIsLike()) {
+                post.setIsLiked(true);
+            } else {
+                post.setIsDisliked(true);
+            }
+        }
+    }
+
+    public void queryFillLikeForPosts(String userAddress, String marketId, List<Post> list) {
         if (StringUtils.isAnyBlank(userAddress, marketId) || list == null || list.size() <= 0) {
             return;
         }
@@ -66,7 +92,7 @@ public class LikeService {
         });
     }
 
-    public void queryFillLikeForReply(String userAddress, String marketId, List<Reply> list) {
+    public void queryFillLikeForReplies(String userAddress, String marketId, List<Reply> list) {
         if (StringUtils.isAnyBlank(userAddress, marketId) || list == null || list.size() <= 0) {
             return;
         }

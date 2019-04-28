@@ -74,7 +74,10 @@ public class PostController extends BaseController {
     @ApiOperation(value = "主题详情", httpMethod = "POST", response = Wrapper.class,
                 notes = "参数：postId\n" +
                         "返回：obj = {\n" +
-                        "　postId, type, marketId, marketAddress, userAddress, title, description, createTime\n" +
+                        "　postId, type, photo, marketAddress, marketId, userAddress, title, description, createTime, isLiked, isDisliked, isCollected\n" +
+                        "　data = {postId, replyCount, likeCount, dislikeCount, lastReplyTime, lastReplyId}\n" +
+                        "　user = { 见/api/user/current }\n" +
+                        "　lastReply = { 见/api/post/reply/one }\n" +
                         "}")
     @RequestMapping("/post/one")
     public Object one(HttpServletRequest request, Long postId) {
@@ -82,7 +85,7 @@ public class PostController extends BaseController {
             if (!postService.isExist(postId)) {
                 return Wrapper.alert(getLocaleMsg(LangHandle.PostNotExist));
             }
-            Post post = postService.query(postId);
+            Post post = postService.queryWithData(getLoginUserAddress(request), postId);
             return Wrapper.success(post);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -144,7 +147,8 @@ public class PostController extends BaseController {
     @ApiOperation(value = "回复详情", httpMethod = "POST", response = Wrapper.class,
                 notes = "参数：replyId\n" +
                         "返回：obj = {\n" +
-                        "　replyId, postId, fatherId, userAddress, content, createTime, \n" +
+                        "　replyId, postId, fatherId, userAddress, content, createTime, isLiked, isDisliked, isCollected\n" +
+                        "　user = { 见/api/user/current }\n" +
                         "　childrenPage = {\n" +
                         "　　list = [ {见此obj}, ... ]\n" +
                         "　}\n" +
@@ -189,7 +193,7 @@ public class PostController extends BaseController {
             if (!replyService.isExist(fatherId)) {
                 return Wrapper.alert(getLocaleMsg(LangHandle.ReplyNotExist));
             }
-            Pagination page = replyService.queryChildren(fatherId, pageNumb, pageSize);
+            Pagination page = replyService.queryChildren(getLoginUserAddress(request), fatherId, pageNumb, pageSize);
             return Wrapper.success(page);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -205,20 +209,15 @@ public class PostController extends BaseController {
         try {
             String userAddress = getLoginUserAddress(request);
             if (PoConstant.Liked.Type.Post.equals(type)) {
-                Post post = postService.query(id);
-                if (post != null) {
-                    if (isMark) {
-                        likeService.addMark(userAddress, post.getMarketId(), type, isLike, String.valueOf(id));
-                    } else {
-                        likeService.delMark(userAddress, post.getMarketId(), type, String.valueOf(id));
-                    }
-                }
+                postService.modLike(userAddress, id, isMark, isLike);
+
             } else if (PoConstant.Liked.Type.Reply.equals(type)) {
                 Reply reply = replyService.query(id);
                 if (reply != null) {
                     Post post = postService.query(reply.getPostId());
                     if (post != null) {
                         if (isMark) {
+                            likeService.delMark(userAddress, post.getMarketId(), type, String.valueOf(id));
                             likeService.addMark(userAddress, post.getMarketId(), type, isLike, String.valueOf(id));
                         } else {
                             likeService.delMark(userAddress, post.getMarketId(), type, String.valueOf(id));

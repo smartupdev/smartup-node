@@ -26,10 +26,11 @@ public class CollectController extends BaseController {
 
 
     @ApiOperation(value = "添加收藏", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：type(market/post), \n" +
+                notes = "参数：type(market/post/reply), \n" +
                         "　objectMark:\n" +
                         "　　type=market objectMark=marketId\n" +
                         "　　type=post objectMark=postId\n" +
+                        "　　type=reply objectMark=replyId\n" +
                         "返回：是否成功")
     @RequestMapping("/add")
     public Object add(HttpServletRequest request, String type, String objectMark) {
@@ -37,7 +38,7 @@ public class CollectController extends BaseController {
             if (!collectService.isType(type)) {
                 return Wrapper.alert(getLocaleMsg(LangHandle.CollectTypeError));
             }
-            if (!collectService.isObjectMarkExist(type, objectMark)) {
+            if (!collectService.isObjectExist(type, objectMark)) {
                 return Wrapper.alert(getLocaleMsg(LangHandle.CollectObjectNotExist));
             }
             collectService.add(getLoginUserAddress(request), type, objectMark);

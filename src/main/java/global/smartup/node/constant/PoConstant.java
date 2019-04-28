@@ -120,7 +120,9 @@ public class PoConstant {
 
             public static final String Post = "post";
 
-            public static final String[] All = new String[]{Market, Post};
+            public static final String Reply = "reply";
+
+            public static final String[] All = new String[]{Market, Post, Reply};
 
         }
 

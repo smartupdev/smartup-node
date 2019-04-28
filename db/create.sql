@@ -77,9 +77,8 @@ create table post_data(
   reply_count int,
   like_count int,
   dislike_count int,
-  share_count int,
-  collect_count int,
-  last_reply_time datetime
+  last_reply_time datetime,
+  last_reply_id bigint
 );
 
 drop table if exists reply;

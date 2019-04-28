@@ -19,6 +19,7 @@ import tk.mybatis.mapper.entity.Example;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ReplyService {
@@ -40,18 +41,26 @@ public class ReplyService {
     @Autowired
     private LikeService likeService;
 
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private CollectService collectService;
+
 
     public void add(Reply reply) {
+        Long id = idGenerator.getId();
         if (reply.getFatherId() == null) {
             reply.setFatherId(0L);
         }
-        reply.setReplyId(idGenerator.getId());
+        reply.setReplyId(id);
         reply.setCreateTime(new Date());
         replyMapper.insert(reply);
 
         PostData data = postDataMapper.selectByPrimaryKey(reply.getPostId());
         data.setReplyCount(data.getReplyCount() + 1);
         data.setLastReplyTime(new Date());
+        data.setLastReplyId(id);
         postDataMapper.updateByPrimaryKey(data);
     }
 
@@ -72,29 +81,58 @@ public class ReplyService {
         example.orderBy("createTime").asc();
         Page<Reply> page = PageHelper.startPage(pageNumb, pageSize);
         replyMapper.selectByExample(example);
-        likeService.queryFillLikeForReply(userAddress, post.getMarketAddress(), page.getResult());
-        fillChildren(userAddress, post.getMarketAddress(), page.getResult());
+
+        userService.fillUserForReply(page.getResult());
+        likeService.queryFillLikeForReplies(userAddress, post.getMarketId(), page.getResult());
+        collectService.fillCollectForReplies(userAddress, page.getResult());
+        fillChildren(userAddress, page.getResult());
+
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
     }
 
-    public Pagination<Reply> queryChildren(Long fatherId, Integer pageNumb, Integer pageSize) {
+    public Pagination<Reply> queryChildren(String userAddress, Long fatherId, Integer pageNumb, Integer pageSize) {
+        Reply reply = replyMapper.selectByPrimaryKey(fatherId);
+        if (reply == null) {
+            return null;
+        }
+        Post post = postMapper.selectByPrimaryKey(reply.getPostId());
+        if (post == null) {
+            return null;
+        }
+
         Example example = new Example(Reply.class);
         example.createCriteria().andEqualTo("fatherId", fatherId);
         example.orderBy("createTime").asc();
         Page<Reply> page = PageHelper.startPage(pageNumb, pageSize);
         replyMapper.selectByExample(example);
+
+        userService.fillUserForReply(page.getResult());
+        likeService.queryFillLikeForReplies(userAddress, post.getMarketId(), page.getResult());
+        collectService.fillCollectForReplies(userAddress, page.getResult());
+
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
     }
 
-    public void fillChildren(String userAddress, String marketAddress, List<Reply> list) {
+    public void fillChildren(String userAddress, List<Reply> list) {
         if (list == null || list.size() == 0) {
             return;
         }
         list.stream().forEach(i -> {
-            i.setChildrenPage(queryChildren(i.getReplyId(), 1, BuConstant.DefaultPageSize));
-            likeService.queryFillLikeForReply(userAddress, marketAddress, i.getChildrenPage().getList());
+            i.setChildrenPage(queryChildren(userAddress, i.getReplyId(), 1, BuConstant.DefaultPageSize));
         });
 
+    }
+
+    public void fillLastReply(List<Post> posts) {
+        if (posts == null || posts.size() <= 0) {
+            return;
+        }
+        List<Long> replyIds = posts.stream().map(p -> p.getData().getLastReplyId()).collect(Collectors.toList());
+        Example example = new Example(Reply.class);
+        example.createCriteria().andIn("replyId", replyIds);
+        List<Reply> replyList = replyMapper.selectByExample(example);
+        userService.fillUserForReply(replyList);
+        posts.forEach(p -> p.setLastReply(replyList.stream().filter(r -> r.getReplyId().equals(p.getData().getLastReplyId())).findFirst().orElse(null)));
     }
 
 }

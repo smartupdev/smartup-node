@@ -41,6 +41,9 @@ public class Reply {
 
 
     @Transient
+    private User user;
+
+    @Transient
     private Pagination<Reply> childrenPage;
 
     @Transient
@@ -49,7 +52,25 @@ public class Reply {
     @Transient
     private Boolean isDisliked;
 
+    @Transient
+    private Boolean isCollected;
 
+
+    public Boolean getIsCollected() {
+        return isCollected;
+    }
+
+    public void setIsCollected(Boolean collected) {
+        isCollected = collected;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 
     public Boolean getIsLiked() {
         return isLiked;

@@ -22,17 +22,28 @@ public class PostData {
     @Column(name = "dislike_count")
     private Integer dislikeCount;
 
-    @Column(name = "share_count")
-    private Integer shareCount;
-
-    @Column(name = "collect_count")
-    private Integer collectCount;
-
     @Column(name = "last_reply_time")
     private Date lastReplyTime;
 
+    @Column(name = "last_reply_id")
+    private Long lastReplyId;
 
 
+    public Date getLastReplyTime() {
+        return lastReplyTime;
+    }
+
+    public void setLastReplyTime(Date lastReplyTime) {
+        this.lastReplyTime = lastReplyTime;
+    }
+
+    public Long getLastReplyId() {
+        return lastReplyId;
+    }
+
+    public void setLastReplyId(Long lastReplyId) {
+        this.lastReplyId = lastReplyId;
+    }
 
     public Long getPostId() {
         return postId;
@@ -66,27 +77,5 @@ public class PostData {
         this.dislikeCount = dislikeCount;
     }
 
-    public Integer getShareCount() {
-        return shareCount;
-    }
 
-    public void setShareCount(Integer shareCount) {
-        this.shareCount = shareCount;
-    }
-
-    public Integer getCollectCount() {
-        return collectCount;
-    }
-
-    public void setCollectCount(Integer collectCount) {
-        this.collectCount = collectCount;
-    }
-
-    public Date getLastReplyTime() {
-        return lastReplyTime;
-    }
-
-    public void setLastReplyTime(Date lastReplyTime) {
-        this.lastReplyTime = lastReplyTime;
-    }
 }

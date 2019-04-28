@@ -6,6 +6,7 @@ import global.smartup.node.compoment.IdGenerator;
 import global.smartup.node.constant.PoConstant;
 import global.smartup.node.mapper.PostDataMapper;
 import global.smartup.node.mapper.PostMapper;
+import global.smartup.node.po.Liked;
 import global.smartup.node.po.Market;
 import global.smartup.node.po.Post;
 import global.smartup.node.po.PostData;
@@ -18,7 +19,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PostService {
@@ -35,11 +39,19 @@ public class PostService {
     private PostDataMapper postDataMapper;
 
     @Autowired
+    private ReplyService replyService;
+
+    @Autowired
     private MarketService marketService;
 
     @Autowired
     private LikeService likeService;
 
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private CollectService collectService;
 
     public void create(Post post) {
         Long id = idGenerator.getId();
@@ -54,10 +66,9 @@ public class PostService {
         PostData postData = new PostData();
         postData.setPostId(id);
         postData.setReplyCount(0);
-        postData.setShareCount(0);
-        postData.setCollectCount(0);
         postData.setLikeCount(0);
         postData.setDislikeCount(0);
+        postData.setLastReplyId(null);
         postDataMapper.insert(postData);
 
         // update market data
@@ -66,12 +77,88 @@ public class PostService {
         }
     }
 
+    public void modLike(String userAddress, Long postId, boolean isMark, boolean isLike) {
+        Post post = postMapper.selectByPrimaryKey(postId);
+        if (post == null) {
+            return;
+        }
+        Liked like = likeService.queryLiked(userAddress, post.getMarketId(), PoConstant.Liked.Type.Post, String.valueOf(postId));
+        if (isMark) {
+            if (like == null) {
+                likeService.addMark(userAddress, post.getMarketId(), PoConstant.Liked.Type.Post, isLike, String.valueOf(postId));
+                modLikeCount(postId, isLike, true);
+            } else {
+                // 判断重复
+                if (like.getIsLike() != isLike) {
+                    // 修改like, 修改post data
+                    like.setIsLike(isLike);
+                    likeService.mod(like);
+                    modLikeCount(postId, isLike);
+                }
+            }
+        } else {
+            if (like != null) {
+                likeService.delMark(userAddress, post.getMarketId(), PoConstant.Liked.Type.Post, String.valueOf(postId));
+                modLikeCount(postId, isLike, false);
+            }
+        }
+    }
+
+    private void modLikeCount(Long postId, boolean newIsLike) {
+        PostData data = postDataMapper.selectByPrimaryKey(postId);
+        if (data == null) {
+            return;
+        }
+        if (newIsLike) {
+            data.setLikeCount(data.getLikeCount() + 1);
+            Integer count = data.getDislikeCount() - 1;
+            data.setDislikeCount(count >= 0 ? count : 0);
+        } else {
+            data.setDislikeCount(data.getDislikeCount() + 1);
+            Integer count = data.getLikeCount() - 1;
+            data.setLikeCount(count >= 0 ? count : 0);
+        }
+        postDataMapper.updateByPrimaryKey(data);
+    }
+
+    private void modLikeCount(Long postId, boolean isLike, boolean addOrSubtract) {
+        PostData data = postDataMapper.selectByPrimaryKey(postId);
+        if (data == null) {
+            return;
+        }
+        if (isLike) {
+            Integer count = data.getLikeCount() + (addOrSubtract ? 1 : -1);
+            if (count.compareTo(0) < 0) {
+                count = 0;
+            }
+            data.setLikeCount(count);
+        } else {
+            Integer count = data.getDislikeCount() + (addOrSubtract ? 1 : -1);
+            if (count.compareTo(0) < 0) {
+                count = 0;
+            }
+            data.setDislikeCount(count);
+        }
+        postDataMapper.updateByPrimaryKey(data);
+    }
+
     public boolean isExist(Long postId) {
         return postMapper.selectByPrimaryKey(postId) != null;
     }
 
     public Post query(Long postId) {
         return postMapper.selectByPrimaryKey(postId);
+    }
+
+    public Post queryWithData(String userAddress, Long postId) {
+        Post post = postMapper.selectByPrimaryKey(postId);
+        if (post != null) {
+            post.setData(postDataMapper.selectByPrimaryKey(postId));
+        }
+        post.setUser(userService.query(post.getUserAddress()));
+        likeService.queryFillLikeForPost(userAddress, post.getMarketId(), post);
+        collectService.fillCollectForPosts(userAddress, Arrays.asList(post));
+        return post;
     }
 
     public Pagination<Post> queryPage(String userAddress, String type, String marketId, Integer pageNumb, Integer pageSize) {
@@ -86,9 +173,15 @@ public class PostService {
                     .andEqualTo("marketId", marketId);
         }
         example.orderBy("createTime").asc();
-        Page page = PageHelper.startPage(pageNumb, pageSize);
+        Page<Post> page = PageHelper.startPage(pageNumb, pageSize);
         postMapper.selectByExample(example);
-        likeService.queryFillLike(userAddress, marketId, page.getResult());
+
+        fillPostData(page.getResult());
+        userService.fillUserForPost(page.getResult());
+        collectService.fillCollectForPosts(userAddress, page.getResult());
+        likeService.queryFillLikeForPosts(userAddress, marketId, page.getResult());
+        replyService.fillLastReply(page.getResult());
+
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
     }
 
@@ -99,5 +192,15 @@ public class PostService {
         return postDataMapper.selectCountByExample(example);
     }
 
+    private void fillPostData(List<Post> posts) {
+        if (posts == null || posts.size() <= 0) {
+            return;
+        }
+        List<Long> postIds = posts.stream().map(Post::getPostId).collect(Collectors.toList());
+        Example example = new Example(PostData.class);
+        example.createCriteria().andIn("postId", postIds);
+        List<PostData> dataList = postDataMapper.selectByExample(example);
+        posts.forEach(p -> p.setData(dataList.stream().filter(d -> d.getPostId().equals(p.getPostId())).findFirst().orElse(null)));
+    }
 
 }

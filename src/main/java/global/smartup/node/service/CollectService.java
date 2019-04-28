@@ -5,7 +5,10 @@ import com.github.pagehelper.PageHelper;
 import global.smartup.node.constant.PoConstant;
 import global.smartup.node.mapper.CollectMapper;
 import global.smartup.node.po.Collect;
+import global.smartup.node.po.Post;
+import global.smartup.node.po.Reply;
 import global.smartup.node.util.Pagination;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +33,9 @@ public class CollectService {
 
     @Autowired
     private PostService postService;
+
+    @Autowired
+    private ReplyService replyService;
 
     public void add(String userAddress, String type, String objectMark) {
         if (isCollected(userAddress, type, objectMark)) {
@@ -59,14 +65,19 @@ public class CollectService {
         return true;
     }
 
-    public boolean isObjectMarkExist(String type, String objectMark) {
+    public boolean isObjectExist(String type, String objectMark) {
         if (PoConstant.Collect.Type.Market.equals(type)) {
             if (marketService.isMarketIdExist(objectMark)) {
                 return true;
             }
-        } else if (PoConstant.Collect.Type.Market.equals(type)) {
+        } else if (PoConstant.Collect.Type.Post.equals(type)) {
             Long id = Long.valueOf(objectMark);
             if (postService.isExist(id)) {
+                return true;
+            }
+        } else if (PoConstant.Collect.Type.Reply.equals(type)) {
+            Long id = Long.valueOf(objectMark);
+            if (replyService.isExist(id)) {
                 return true;
             }
         }
@@ -106,6 +117,48 @@ public class CollectService {
         }
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
 
+    }
+
+    public void fillCollectForPosts(String userAddress, List<Post> posts) {
+        if (posts == null || posts.size() <= 0) {
+            return;
+        }
+        List<String> postIds = posts.stream().map(p -> String.valueOf(p.getPostId())).collect(Collectors.toList());
+        Example example = new Example(Collect.class);
+        example.createCriteria()
+                .andEqualTo("userAddress", userAddress)
+                .andEqualTo("type", PoConstant.Collect.Type.Post)
+                .andIn("objectMark", postIds);
+        List<String> cIds = collectMapper.selectByExample(example)
+                .stream().map(Collect::getObjectMark).collect(Collectors.toList());
+        posts.forEach(p -> {
+            if (cIds.contains(String.valueOf(p.getPostId()))) {
+                p.setIsCollected(true);
+            } else {
+                p.setIsCollected(false);
+            }
+        });
+    }
+
+    public void fillCollectForReplies(String userAddress, List<Reply> replies) {
+        if (StringUtils.isBlank(userAddress) || replies == null || replies.size() <= 0) {
+            return;
+        }
+        List<String> replayIds = replies.stream().map(p -> String.valueOf(p.getReplyId())).collect(Collectors.toList());
+        Example example = new Example(Collect.class);
+        example.createCriteria()
+                .andEqualTo("userAddress", userAddress)
+                .andEqualTo("type", PoConstant.Collect.Type.Reply)
+                .andIn("objectMark", replayIds);
+        List<String> cIds = collectMapper.selectByExample(example)
+                .stream().map(Collect::getObjectMark).collect(Collectors.toList());
+        replies.forEach(r -> {
+            if (cIds.contains(String.valueOf(r.getReplyId()))) {
+                r.setIsCollected(true);
+            } else {
+                r.setIsCollected(false);
+            }
+        });
     }
 
 }

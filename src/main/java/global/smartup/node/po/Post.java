@@ -53,6 +53,14 @@ public class Post {
     private Date createTime;
 
 
+    @Transient
+    private User user;
+
+    @Transient
+    private PostData data;
+
+    @Transient
+    private Reply lastReply;
 
     @Transient
     private Boolean isLiked;
@@ -60,8 +68,42 @@ public class Post {
     @Transient
     private Boolean isDisliked;
 
+    @Transient
+    private Boolean isCollected;
 
 
+
+    public Boolean getIsCollected() {
+        return isCollected;
+    }
+
+    public void setIsCollected(Boolean collected) {
+        isCollected = collected;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Reply getLastReply() {
+        return lastReply;
+    }
+
+    public void setLastReply(Reply lastReply) {
+        this.lastReply = lastReply;
+    }
+
+    public PostData getData() {
+        return data;
+    }
+
+    public void setData(PostData data) {
+        this.data = data;
+    }
 
     public String getPhoto() {
         return photo;
