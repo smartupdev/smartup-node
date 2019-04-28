@@ -50,4 +50,10 @@ public class MarketServiceTest {
         System.out.println(JSON.toJSONString(list));
     }
 
+    @Test
+    public void queryByCreator() {
+        Pagination page  =marketService.queryByCreator("0xB44940Be0eeA81a3D0dA22CC15208AF4744BeA8E", 1, 10);
+        System.out.println(JSON.toJSONString(page));
+    }
+
 }

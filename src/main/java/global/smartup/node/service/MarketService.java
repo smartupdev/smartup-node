@@ -324,6 +324,11 @@ public class MarketService {
         example.orderBy("createTime").desc();
         Page<Market> page = PageHelper.startPage(pageNumb, pageSize);
         marketMapper.selectByExample(example);
+
+        fillMarketData(page.getResult());
+        queryUserCollect(address, page.getResult());
+        querySevenDayNode(page.getResult());
+
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
     }
 
@@ -460,6 +465,17 @@ public class MarketService {
             List<BigDecimal> ns = klineNodeService.querySevenDayNode(market.getMarketAddress());
             market.setSevenDayNode(ns);
         }
+    }
+
+    private void fillMarketData(List<Market> markets) {
+        if (markets == null || markets.size() <= 0) {
+            return;
+        }
+        List<String> addressList = markets.stream().map(Market::getMarketAddress).collect(Collectors.toList());
+        Example example = new Example(MarketData.class);
+        example.createCriteria().andIn("marketAddress", addressList);
+        List<MarketData> dataList = marketDataMapper.selectByExample(example);
+        markets.forEach(m -> m.setData(dataList.stream().filter(d -> d.getMarketAddress().equals(m.getMarketAddress())).findFirst().orElse(null)));
     }
 
 }
