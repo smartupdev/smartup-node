@@ -249,7 +249,7 @@ public class UserController extends BaseController {
         }
     }
 
-    @ApiOperation(value = "/user/reply/created", httpMethod = "POST", response = Wrapper.class,
+    @ApiOperation(value = "用户创建回复", httpMethod = "POST", response = Wrapper.class,
             notes = "参数：pageNumb, pageSize\n" +
                     "返回：obj = {\n" +
                     "　list = [ {见/api/reply/one}, {}, ...]\n" +
@@ -266,7 +266,7 @@ public class UserController extends BaseController {
         }
     }
 
-    @ApiOperation(value = "/user/reply/collected", httpMethod = "POST", response = Wrapper.class,
+    @ApiOperation(value = "用户收藏的回复", httpMethod = "POST", response = Wrapper.class,
             notes = "参数：pageNumb, pageSize\n" +
                     "返回：obj = {\n" +
                     "　list = [ {见/api/reply/one}, {}, ...]\n" +
