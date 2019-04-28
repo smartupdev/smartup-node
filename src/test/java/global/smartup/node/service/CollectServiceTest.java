@@ -20,7 +20,7 @@ public class CollectServiceTest {
 
     @Test
     public void queryPage() {
-        Pagination page = collectService.queryPage("0xB44940Be0eeA81a3D0dA22CC15208AF4744BeA8E", "post", 1, 10);
+        Pagination page = collectService.queryTypePage("0xB44940Be0eeA81a3D0dA22CC15208AF4744BeA8E", "post", 1, 10);
         System.out.println(JSON.toJSONString(page));
     }
 

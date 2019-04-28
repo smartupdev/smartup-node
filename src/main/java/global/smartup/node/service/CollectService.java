@@ -106,7 +106,8 @@ public class CollectService {
         return collectMapper.selectByPrimaryKey(collect);
     }
 
-    public Pagination queryPage(String userAddress, String type, Integer pageNumb, Integer pageSize) {
+    @Deprecated
+    public Pagination queryTypePage(String userAddress, String type, Integer pageNumb, Integer pageSize) {
         Page page = null;
         if (PoConstant.Collect.Type.Market.equals(type)) {
             page = PageHelper.startPage(pageNumb, pageSize);
@@ -116,7 +117,16 @@ public class CollectService {
             collectMapper.selectCollectedPost(userAddress);
         }
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
+    }
 
+    public Pagination<Collect> queryPage(String userAddress, String type, Integer pageNumb, Integer pageSize) {
+        Example example = new Example(Collect.class);
+        example.createCriteria().andEqualTo("type", type)
+                .andEqualTo("userAddress", userAddress);
+        example.orderBy("createTime").desc();
+        Page<Collect> page = PageHelper.startPage(pageNumb, pageSize);
+        collectMapper.selectByExample(example);
+        return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
     }
 
     public void fillCollectForPosts(String userAddress, List<Post> posts) {

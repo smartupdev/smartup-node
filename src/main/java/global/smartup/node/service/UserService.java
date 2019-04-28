@@ -82,6 +82,9 @@ public class UserService {
     }
 
     public void fillUserForPost(List<Post> posts) {
+        if (posts == null || posts.size() <= 0) {
+            return;
+        }
         List<String> addressList = posts.stream().map(Post::getUserAddress).collect(Collectors.toList());
         List<User> users = queryByAddressList(addressList);
         posts.forEach(p -> p.setUser(users.stream().filter(u -> u.getUserAddress().equals(p.getUserAddress())).findFirst().orElse(null)));

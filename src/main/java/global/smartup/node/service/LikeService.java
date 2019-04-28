@@ -71,12 +71,12 @@ public class LikeService {
         }
     }
 
-    public void queryFillLikeForPosts(String userAddress, String marketId, List<Post> list) {
-        if (StringUtils.isAnyBlank(userAddress, marketId) || list == null || list.size() <= 0) {
+    public void queryFillLikeForPosts(String userAddress, List<Post> list) {
+        if (StringUtils.isBlank(userAddress) || list == null || list.size() <= 0) {
             return;
         }
         List<String> ids = list.stream().map(p -> String.valueOf(p.getPostId())).collect(Collectors.toList());
-        List<Liked> likes = queryList(userAddress, marketId, PoConstant.Liked.Type.Post, ids);
+        List<Liked> likes = queryList(userAddress, PoConstant.Liked.Type.Post, ids);
         if (likes.size() <= 0) {
             return;
         }
@@ -92,18 +92,17 @@ public class LikeService {
         });
     }
 
-    public void queryFillLikeForReplies(String userAddress, String marketId, List<Reply> list) {
-        if (StringUtils.isAnyBlank(userAddress, marketId) || list == null || list.size() <= 0) {
+    public void queryFillLikeForReplies(String userAddress, List<Reply> list) {
+        if (StringUtils.isBlank(userAddress) || list == null || list.size() <= 0) {
             return;
         }
         List<String> ids = list.stream().map(p -> String.valueOf(p.getReplyId())).collect(Collectors.toList());
-        List<Liked> likes = queryList(userAddress, marketId, PoConstant.Liked.Type.Reply, ids);
+        List<Liked> likes = queryList(userAddress, PoConstant.Liked.Type.Reply, ids);
         if (likes.size() <= 0) {
             return;
         }
         List<Long> ls = likes.stream().map(l -> l.getIsLike() ? Long.valueOf(l.getObjectMark()) : 0L).collect(Collectors.toList());
         List<Long> dls = likes.stream().map(l -> l.getIsLike() ? 0L : Long.valueOf(l.getObjectMark())).collect(Collectors.toList());
-        System.out.println("");
         list.forEach(r -> {
             if (ls.contains(r.getReplyId())) {
                 r.setIsLiked(true);
@@ -114,11 +113,10 @@ public class LikeService {
         });
     }
 
-    private List<Liked> queryList(String userAddress, String marketId, String type, List<String> ids) {
+    private List<Liked> queryList(String userAddress, String type, List<String> ids) {
         Example example = new Example(Liked.class);
         example.createCriteria()
                 .andEqualTo("userAddress", userAddress)
-                .andEqualTo("marketId", marketId)
                 .andEqualTo("type", type)
                 .andIn("objectMark", ids);
         return likedMapper.selectByExample(example);

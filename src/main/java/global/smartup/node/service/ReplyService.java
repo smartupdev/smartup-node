@@ -74,7 +74,6 @@ public class ReplyService {
     }
 
     public Pagination<Reply> queryPage(String query, String userAddress, Long postId, Integer pageNumb, Integer pageSize) {
-        Post post = postMapper.selectByPrimaryKey(postId);
         Example example = new Example(Reply.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("postId", postId);
@@ -91,7 +90,7 @@ public class ReplyService {
         replyMapper.selectByExample(example);
 
         userService.fillUserForReply(page.getResult());
-        likeService.queryFillLikeForReplies(userAddress, post.getMarketId(), page.getResult());
+        likeService.queryFillLikeForReplies(userAddress, page.getResult());
         collectService.fillCollectForReplies(userAddress, page.getResult());
         fillChildren(userAddress, page.getResult());
 
@@ -115,7 +114,7 @@ public class ReplyService {
         replyMapper.selectByExample(example);
 
         userService.fillUserForReply(page.getResult());
-        likeService.queryFillLikeForReplies(userAddress, post.getMarketId(), page.getResult());
+        likeService.queryFillLikeForReplies(userAddress, page.getResult());
         collectService.fillCollectForReplies(userAddress, page.getResult());
 
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
