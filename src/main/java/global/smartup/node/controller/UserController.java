@@ -6,10 +6,7 @@ import global.smartup.node.constant.LangHandle;
 import global.smartup.node.constant.RedisKey;
 import global.smartup.node.eth.EthClient;
 import global.smartup.node.po.User;
-import global.smartup.node.service.MarketService;
-import global.smartup.node.service.PostService;
-import global.smartup.node.service.TransactionService;
-import global.smartup.node.service.UserService;
+import global.smartup.node.service.*;
 import global.smartup.node.util.Checker;
 import global.smartup.node.util.Pagination;
 import global.smartup.node.util.Wrapper;
@@ -55,6 +52,9 @@ public class UserController extends BaseController {
 
     @Autowired
     private PostService postService;
+
+    @Autowired
+    private ReplyService replyService;
 
 
     @ApiOperation(value = "登录", httpMethod = "POST", response = Wrapper.class,
@@ -242,6 +242,40 @@ public class UserController extends BaseController {
         try {
             String userAddress = getLoginUserAddress(request);
             Pagination page = postService.queryUserCollected(userAddress, pageNumb, pageSize);
+            return Wrapper.success(page);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return Wrapper.sysError();
+        }
+    }
+
+    @ApiOperation(value = "/user/reply/created", httpMethod = "POST", response = Wrapper.class,
+            notes = "参数：pageNumb, pageSize\n" +
+                    "返回：obj = {\n" +
+                    "　list = [ {见/api/reply/one}, {}, ...]\n" +
+                    "}")
+    @RequestMapping("/user/reply/created")
+    public Object userReplyCreated(HttpServletRequest request, Integer pageNumb, Integer pageSize) {
+        try {
+            String userAddress = getLoginUserAddress(request);
+            Pagination page = replyService.queryUserCreated(userAddress, pageNumb, pageSize);
+            return Wrapper.success(page);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return Wrapper.sysError();
+        }
+    }
+
+    @ApiOperation(value = "/user/reply/collected", httpMethod = "POST", response = Wrapper.class,
+            notes = "参数：pageNumb, pageSize\n" +
+                    "返回：obj = {\n" +
+                    "　list = [ {见/api/reply/one}, {}, ...]\n" +
+                    "}")
+    @RequestMapping("//user/reply/collected")
+    public Object userReplyCollected(HttpServletRequest request, Integer pageNumb, Integer pageSize) {
+        try {
+            String userAddress = getLoginUserAddress(request);
+            Pagination page = replyService.queryUserCollected(userAddress, pageNumb, pageSize);
             return Wrapper.success(page);
         } catch (Exception e) {
             log.error(e.getMessage(), e);

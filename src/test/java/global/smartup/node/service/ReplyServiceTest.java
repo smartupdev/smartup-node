@@ -24,4 +24,16 @@ public class ReplyServiceTest {
         System.out.println(JSON.toJSONString(page));
     }
 
+    @Test
+    public void queryUserCreated() {
+        Pagination page = replyService.queryUserCreated("1", 1, 10);
+        System.out.println(JSON.toJSONString(page));
+    }
+
+    @Test
+    public void queryUserCollected() {
+        Pagination page = replyService.queryUserCollected("1", 1, 10);
+        System.out.println(JSON.toJSONString(page));
+    }
+
 }

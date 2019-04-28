@@ -4,9 +4,11 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import global.smartup.node.compoment.IdGenerator;
 import global.smartup.node.constant.BuConstant;
+import global.smartup.node.constant.PoConstant;
 import global.smartup.node.mapper.PostDataMapper;
 import global.smartup.node.mapper.PostMapper;
 import global.smartup.node.mapper.ReplyMapper;
+import global.smartup.node.po.Collect;
 import global.smartup.node.po.Post;
 import global.smartup.node.po.PostData;
 import global.smartup.node.po.Reply;
@@ -120,7 +122,43 @@ public class ReplyService {
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
     }
 
-    public void fillChildren(String userAddress, List<Reply> list) {
+    public Pagination<Reply> queryUserCreated(String userAddress, Integer pageNumb, Integer pageSize) {
+        Example example = new Example(Reply.class);
+        example.createCriteria().andEqualTo("userAddress", userAddress);
+        example.orderBy("createTime").desc();
+        Page<Reply> page = PageHelper.startPage(pageNumb, pageSize);
+        replyMapper.selectByExample(example);
+
+        userService.fillUserForReply(page.getResult());
+        likeService.queryFillLikeForReplies(userAddress, page.getResult());
+        collectService.fillCollectForReplies(userAddress, page.getResult());
+        fillChildren(userAddress, page.getResult());
+
+        return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
+    }
+
+    public Pagination<Reply> queryUserCollected(String userAddress, Integer pageNumb, Integer pageSize) {
+        Pagination<Collect> cPage = collectService.queryPage(userAddress, PoConstant.Collect.Type.Reply, pageNumb, pageSize);
+        if (cPage.getRowCount() <= 0) {
+            return Pagination.blank();
+        }
+        List<String> replyIds = cPage.getList().stream().map(Collect::getObjectMark).collect(Collectors.toList());
+
+        Example example = new Example(Reply.class);
+        example.createCriteria().andIn("replyId", replyIds);
+        example.orderBy("createTime").desc();
+        Page<Reply> page = PageHelper.startPage(pageNumb, pageSize);
+        replyMapper.selectByExample(example);
+
+        userService.fillUserForReply(page.getResult());
+        likeService.queryFillLikeForReplies(userAddress, page.getResult());
+        collectService.fillCollectForReplies(userAddress, page.getResult());
+        fillChildren(userAddress, page.getResult());
+
+        return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
+    }
+
+    private void fillChildren(String userAddress, List<Reply> list) {
         if (list == null || list.size() == 0) {
             return;
         }
