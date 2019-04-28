@@ -339,6 +339,9 @@ public class MarketService {
     }
 
     public List<String> queryNames(List<String> marketIds) {
+        if (marketIds == null || marketIds.size() <= 0) {
+            return new ArrayList<>();
+        }
         List<String> ret = new ArrayList<>();
         Example example = new Example(Market.class);
         example.createCriteria().andIn("marketId", marketIds);
