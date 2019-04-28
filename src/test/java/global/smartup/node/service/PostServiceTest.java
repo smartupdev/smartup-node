@@ -20,8 +20,8 @@ public class PostServiceTest {
 
     @Test
     public void queryPage() {
-        Pagination page = postService.queryPage(null, "market",
-                "2l05arkk3r4", 1, 10);
+        Pagination page = postService.queryPage("t", null, "market","2l05arkk3r4",
+                1, 10);
         System.out.println(JSON.toJSONString(page));
     }
 }

@@ -20,7 +20,7 @@ public class ReplyServiceTest {
 
     @Test
     public void queryPage() {
-        Pagination page = replyService.queryPage("0xB44940Be0eeA81a3D0dA22CC15208AF4744BeA8E", 8424213186613248L, 1, 10);
+        Pagination page = replyService.queryPage("a", "0xB44940Be0eeA81a3D0dA22CC15208AF4744BeA8E", 9446206937763840L, 1, 10);
         System.out.println(JSON.toJSONString(page));
     }
 

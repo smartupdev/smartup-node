@@ -10,4 +10,7 @@ public class BuConstant {
 
     public static final String KlineIdFormatWeek = "yyyy_MM_dd";
 
+
+    public static final Integer QueryMaxLength = 100;
+
 }

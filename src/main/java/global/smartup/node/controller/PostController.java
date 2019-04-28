@@ -94,15 +94,15 @@ public class PostController extends BaseController {
     }
 
     @ApiOperation(value = "查询主题列表", httpMethod = "POST", response = Wrapper.class,
-            notes = "参数：type(root/market), marketId(如果type=root marketId为空), pageNumb, pageSize\n" +
-                    "返回： obj = {\n" +
+            notes = "参数：query(搜索词), type(root/market), marketId(如果type=root marketId为空), pageNumb, pageSize\n" +
+                    "返回：obj = {\n" +
                     "list = [ {见/api/post/one}, {} ... ]\n" +
                     "}\n")
     @RequestMapping("/post/list")
-    public Object list(HttpServletRequest request, String type, String marketId, Integer pageNumb, Integer pageSize) {
+    public Object list(HttpServletRequest request, String query, String type, String marketId, Integer pageNumb, Integer pageSize) {
         try {
             String userAddress = getLoginUserAddress(request);
-            Pagination page = postService.queryPage(userAddress, type, marketId, pageNumb, pageSize);
+            Pagination page = postService.queryPage(query, userAddress, type, marketId, pageNumb, pageSize);
             return Wrapper.success(page);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -167,16 +167,16 @@ public class PostController extends BaseController {
     }
 
     @ApiOperation(value = "主题下回复列表", httpMethod = "POST", response = Wrapper.class,
-            notes = "参数：postId, pageNumb, pageSize\n" +
+            notes = "参数：query(搜索词), postId, pageNumb, pageSize\n" +
                     "返回：obj = { list = [ {见/api/post/reply/one}, {} ... ] }")
     @RequestMapping("/post/reply/list")
-    public Object replyList(HttpServletRequest request, Long postId, Integer pageNumb, Integer pageSize) {
+    public Object replyList(HttpServletRequest request, String query, Long postId, Integer pageNumb, Integer pageSize) {
         try {
             if (!postService.isExist(postId)) {
                 return Wrapper.alert(getLocaleMsg(LangHandle.PostNotExist));
             }
             String userAddress = getLoginUserAddress(request);
-            Pagination page = replyService.queryPage(userAddress, postId, pageNumb, pageSize);
+            Pagination page = replyService.queryPage(query, userAddress, postId, pageNumb, pageSize);
             return Wrapper.success(page);
         } catch (Exception e) {
             log.error(e.getMessage(), e);

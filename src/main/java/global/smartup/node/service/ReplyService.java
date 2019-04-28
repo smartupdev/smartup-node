@@ -11,6 +11,7 @@ import global.smartup.node.po.Post;
 import global.smartup.node.po.PostData;
 import global.smartup.node.po.Reply;
 import global.smartup.node.util.Pagination;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,12 +73,19 @@ public class ReplyService {
         return replyMapper.selectByPrimaryKey(replyId);
     }
 
-    public Pagination<Reply> queryPage(String userAddress, Long postId, Integer pageNumb, Integer pageSize) {
+    public Pagination<Reply> queryPage(String query, String userAddress, Long postId, Integer pageNumb, Integer pageSize) {
         Post post = postMapper.selectByPrimaryKey(postId);
         Example example = new Example(Reply.class);
-        example.createCriteria()
-                .andEqualTo("postId", postId)
-                .andEqualTo("fatherId", 0);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("postId", postId);
+        if (StringUtils.isBlank(query)) {
+            criteria.andEqualTo("fatherId", 0);
+        }
+        if (StringUtils.isNotBlank(query)) {
+            query = query.trim();
+            query = query.length() > BuConstant.QueryMaxLength ? query.substring(0, BuConstant.QueryMaxLength) : query;
+            criteria.andLike("content", "%" + query + "%");
+        }
         example.orderBy("createTime").desc();
         Page<Reply> page = PageHelper.startPage(pageNumb, pageSize);
         replyMapper.selectByExample(example);
@@ -118,9 +126,10 @@ public class ReplyService {
             return;
         }
         list.stream().forEach(i -> {
-            i.setChildrenPage(queryChildren(userAddress, i.getReplyId(), 1, BuConstant.DefaultPageSize));
+            if (i.getFatherId() == 0) {
+                i.setChildrenPage(queryChildren(userAddress, i.getReplyId(), 1, BuConstant.DefaultPageSize));
+            }
         });
-
     }
 
     public void fillLastReply(List<Post> posts) {

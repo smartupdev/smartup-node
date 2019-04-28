@@ -3,6 +3,7 @@ package global.smartup.node.service;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import global.smartup.node.compoment.IdGenerator;
+import global.smartup.node.constant.BuConstant;
 import global.smartup.node.constant.PoConstant;
 import global.smartup.node.mapper.PostDataMapper;
 import global.smartup.node.mapper.PostMapper;
@@ -161,16 +162,21 @@ public class PostService {
         return post;
     }
 
-    public Pagination<Post> queryPage(String userAddress, String type, String marketId, Integer pageNumb, Integer pageSize) {
+    public Pagination<Post> queryPage(String query, String userAddress, String type, String marketId, Integer pageNumb, Integer pageSize) {
         Example example = new Example(Post.class);
+        Example.Criteria criteria = example.createCriteria();
         if (StringUtils.isBlank(type) || PoConstant.Post.Type.Root.equalsIgnoreCase(type)) {
             // root
-            example.createCriteria().andEqualTo("type", PoConstant.Post.Type.Root);
+            criteria.andEqualTo("type", PoConstant.Post.Type.Root);
         } else {
             // market
-            example.createCriteria()
-                    .andEqualTo("type", PoConstant.Post.Type.Market)
+            criteria.andEqualTo("type", PoConstant.Post.Type.Market)
                     .andEqualTo("marketId", marketId);
+        }
+        if (StringUtils.isNotBlank(query)) {
+            query = query.trim();
+            query = query.length() > BuConstant.QueryMaxLength ? query.substring(0, BuConstant.QueryMaxLength) : query;
+            criteria.andLike("title", "%" + query + "%");
         }
         example.orderBy("createTime").asc();
         Page<Post> page = PageHelper.startPage(pageNumb, pageSize);
