@@ -78,7 +78,7 @@ public class ReplyService {
         example.createCriteria()
                 .andEqualTo("postId", postId)
                 .andEqualTo("fatherId", 0);
-        example.orderBy("createTime").asc();
+        example.orderBy("createTime").desc();
         Page<Reply> page = PageHelper.startPage(pageNumb, pageSize);
         replyMapper.selectByExample(example);
 
