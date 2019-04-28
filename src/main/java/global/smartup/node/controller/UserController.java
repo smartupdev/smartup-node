@@ -133,7 +133,7 @@ public class UserController extends BaseController {
     }
 
     @ApiOperation(value = "更新用户", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：name(可以空), avatarIpfsHash(可以空)\n" +
+                notes = "参数：name, avatarIpfsHash\n" +
                         "返回：是否成功")
     @RequestMapping("/user/update")
     public Object update(HttpServletRequest request, User user) {

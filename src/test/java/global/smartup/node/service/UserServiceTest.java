@@ -26,16 +26,6 @@ public class UserServiceTest {
     private IdGenerator idGenerator;
 
     @Test
-    public void add() {
-        User user = new User();
-        user.setUserAddress(String.valueOf(idGenerator.getId()));
-        user.setAvatarIpfsHash("hash..");
-        user.setName("test");
-        user.setCreateTime(new Date());
-        userService.add(user);
-    }
-
-    @Test
     public void query() {
         User user = userService.query("123");
         System.out.println(DateFormatUtils.ISO_8601_EXTENDED_DATETIME_FORMAT.format(user.getCreateTime()));

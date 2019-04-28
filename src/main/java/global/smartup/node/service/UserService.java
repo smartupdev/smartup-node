@@ -22,24 +22,9 @@ public class UserService {
     @Autowired
     private UserMapper userMapper;
 
-    public User add(User user) {
-        String address = Keys.toChecksumAddress(user.getUserAddress());
-        user.setUserAddress(address);
-        if (StringUtils.isBlank(user.getName())) {
-            user.setName(address);
-        }
-        user.setCreateTime(new Date());
-        user.setCode(generateCode());
-        userMapper.insert(user);
-        return user;
-    }
-
     public User add(String address) {
         address = Keys.toChecksumAddress(address);
         User user = new User();
-        if (StringUtils.isBlank(user.getName())) {
-            user.setName(address);
-        }
         user.setUserAddress(address);
         user.setCreateTime(new Date());
         user.setCode(generateCode());
@@ -50,7 +35,9 @@ public class UserService {
     public void update(User user) {
         User db = userMapper.selectByPrimaryKey(user.getUserAddress());
         if (db != null) {
-            db.setName(user.getName());
+            if (StringUtils.isBlank(db.getName())) {
+                db.setName(user.getName());
+            }
             db.setAvatarIpfsHash(user.getAvatarIpfsHash());
             userMapper.updateByPrimaryKey(db);
         }
