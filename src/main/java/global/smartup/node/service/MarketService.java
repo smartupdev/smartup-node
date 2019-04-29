@@ -441,7 +441,7 @@ public class MarketService {
     public void queryUserCollect(String userAddress, Market market) {
         if (StringUtils.isNotBlank(userAddress) && market != null) {
             boolean is = collectService.isCollected(userAddress, PoConstant.Collect.Type.Market, market.getMarketId());
-            market.setIsCollect(is);
+            market.setIsCollected(is);
         }
     }
 
@@ -476,9 +476,9 @@ public class MarketService {
             List<String> collected = collectService.isCollected(userAddress, PoConstant.Collect.Type.Market, marketIds);
             list.forEach(m -> {
                 if (collected.contains(m.getMarketId())) {
-                    m.setIsCollect(true);
+                    m.setIsCollected(true);
                 } else {
-                    m.setIsCollect(false);
+                    m.setIsCollected(false);
                 }
             });
         }

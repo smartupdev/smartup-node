@@ -77,7 +77,7 @@ public class Market {
     private MarketData data;
 
     @Transient
-    private Boolean isCollect;
+    private Boolean isCollected;
 
     @Transient
     private List<BigDecimal> sevenDayNode;
@@ -137,12 +137,12 @@ public class Market {
         this.sevenDayNode = sevenDayNode;
     }
 
-    public Boolean getIsCollect() {
-        return isCollect;
+    public Boolean getIsCollected() {
+        return isCollected;
     }
 
-    public void setIsCollect(Boolean collect) {
-        isCollect = collect;
+    public void setIsCollected(Boolean collect) {
+        isCollected = collect;
     }
 
     public MarketData getData() {
