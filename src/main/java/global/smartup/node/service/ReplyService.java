@@ -61,6 +61,12 @@ public class ReplyService {
         reply.setCreateTime(new Date());
         replyMapper.insert(reply);
 
+        ReplyData replyData = new ReplyData();
+        replyData.setReplyId(id);
+        replyData.setLikeCount(0);
+        replyData.setDislikeCount(0);
+        replyDataMapper.insert(replyData);
+
         PostData data = postDataMapper.selectByPrimaryKey(reply.getPostId());
         data.setReplyCount(data.getReplyCount() + 1);
         data.setLastReplyTime(new Date());
