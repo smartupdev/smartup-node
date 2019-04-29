@@ -28,10 +28,38 @@ public class DictService {
         }
     }
 
+    public void save(String name, String value) {
+        Dict dict = dictMapper.selectByPrimaryKey(name);
+        if (dict == null) {
+            dict = new Dict();
+            dict.setName(name);
+            dict.setValue(value);
+            dictMapper.insert(dict);
+        } else {
+            dict.setValue(value);
+            dictMapper.updateByPrimaryKey(dict);
+        }
+    }
+
+    public void del(String name) {
+        dictMapper.deleteByPrimaryKey(name);
+    }
+
     public BigInteger getParseBlockNumber() {
         Dict dict = dictMapper.selectByPrimaryKey(BlockNumber);
         Long l = Long.valueOf(dict.getValue());
         return BigInteger.valueOf(l);
     }
+
+    public String query(String name) {
+        Dict dict = dictMapper.selectByPrimaryKey(name);
+        if (dict != null) {
+            return dict.getValue();
+        }
+        return null;
+    }
+
+
+
 
 }

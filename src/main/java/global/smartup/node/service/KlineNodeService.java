@@ -62,7 +62,7 @@ public class KlineNodeService {
         }
         String marketAddress = info.getEventMarketAddress();
         BigDecimal sut = info.getEventSUT();
-        BigDecimal ct = info.getInputCT();
+        BigDecimal ct = info.getEventCT();
         Date time = info.getBlockTime();
         updateNodeByChain(marketAddress, sut, ct, time);
     }
@@ -73,7 +73,7 @@ public class KlineNodeService {
         }
         String marketAddress = info.getEventMarketAddress();
         BigDecimal sut = info.getEventSUT();
-        BigDecimal ct = info.getInputCT();
+        BigDecimal ct = info.getEventCT();
         Date time = info.getBlockTime();
         updateNodeByChain(marketAddress, sut, ct, time);
     }

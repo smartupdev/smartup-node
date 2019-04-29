@@ -123,7 +123,7 @@ create table market_data (
 drop table if exists dict;
 create table dict (
   name varchar(32) primary key,
-  value varchar(128)
+  value varchar(1024)
 );
 insert into dict values ('block_number', '0');
 
