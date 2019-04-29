@@ -44,6 +44,9 @@ public class Reply {
     private User user;
 
     @Transient
+    private ReplyData data;
+
+    @Transient
     private Pagination<Reply> childrenPage;
 
     @Transient
@@ -55,6 +58,15 @@ public class Reply {
     @Transient
     private Boolean isCollected;
 
+
+
+    public ReplyData getData() {
+        return data;
+    }
+
+    public void setData(ReplyData data) {
+        this.data = data;
+    }
 
     public Boolean getIsCollected() {
         return isCollected;

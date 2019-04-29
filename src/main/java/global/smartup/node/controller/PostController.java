@@ -149,6 +149,7 @@ public class PostController extends BaseController {
                         "返回：obj = {\n" +
                         "　replyId, postId, fatherId, userAddress, content, createTime, isLiked, isDisliked, isCollected\n" +
                         "　user = { 见/api/user/current }\n" +
+                        "　data = { replyId, likeCount, dislikeCount }\n" +
                         "　childrenPage = {\n" +
                         "　　list = [ {见此obj}, ... ]\n" +
                         "　}\n" +
@@ -212,18 +213,7 @@ public class PostController extends BaseController {
                 postService.modLike(userAddress, id, isMark, isLike);
 
             } else if (PoConstant.Liked.Type.Reply.equals(type)) {
-                Reply reply = replyService.query(id);
-                if (reply != null) {
-                    Post post = postService.query(reply.getPostId());
-                    if (post != null) {
-                        if (isMark) {
-                            likeService.delMark(userAddress, post.getMarketId(), type, String.valueOf(id));
-                            likeService.addMark(userAddress, post.getMarketId(), type, isLike, String.valueOf(id));
-                        } else {
-                            likeService.delMark(userAddress, post.getMarketId(), type, String.valueOf(id));
-                        }
-                    }
-                }
+                replyService.modLike(userAddress, id, isMark, isLike);
             }
             return Wrapper.success();
         } catch (Exception e) {

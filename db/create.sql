@@ -91,6 +91,13 @@ create table reply (
   create_time datetime
 );
 
+drop table if exists reply_data;
+create table reply_data(
+  reply_id bigint primary key,
+  like_count int,
+  dislike_count int
+);
+
 drop table if exists kline_node;
 create table kline_node (
   market_address varchar(42),
