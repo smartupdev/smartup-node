@@ -63,7 +63,6 @@ public class CollectController extends BaseController {
         }
     }
 
-    @Deprecated
     @ApiOperation(value = "收藏列表", httpMethod = "POST", response = Wrapper.class,
                 notes = "参数：type, pageNumb, pageSize\n" +
                         "返回：obj = {\n" +
@@ -75,7 +74,7 @@ public class CollectController extends BaseController {
     @RequestMapping("/list")
     public Object list(HttpServletRequest request, String type, Integer pageNumb, Integer pageSize) {
         try {
-            Pagination page = collectService.queryTypePage(getLoginUserAddress(request), type, pageNumb, pageSize);
+            Pagination page = collectService.queryPageWithObj(getLoginUserAddress(request), type, pageNumb, pageSize);
             return Wrapper.success(page);
         } catch (Exception e) {
             log.error(e.getMessage(), e);

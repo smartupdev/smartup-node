@@ -106,8 +106,7 @@ public class CollectService {
         return collectMapper.selectByPrimaryKey(collect);
     }
 
-    @Deprecated
-    public Pagination queryTypePage(String userAddress, String type, Integer pageNumb, Integer pageSize) {
+    public Pagination queryPageWithObj(String userAddress, String type, Integer pageNumb, Integer pageSize) {
         Page page = null;
         if (PoConstant.Collect.Type.Market.equals(type)) {
             page = PageHelper.startPage(pageNumb, pageSize);
