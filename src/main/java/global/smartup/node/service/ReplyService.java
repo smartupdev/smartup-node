@@ -234,6 +234,7 @@ public class ReplyService {
         userService.fillUserForReply(page.getResult());
         likeService.queryFillLikeForReplies(userAddress, page.getResult());
         collectService.fillCollectForReplies(userAddress, page.getResult());
+        fillData(page.getResult());
         fillChildren(userAddress, page.getResult());
 
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
