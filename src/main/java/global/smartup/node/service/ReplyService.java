@@ -212,6 +212,7 @@ public class ReplyService {
         userService.fillUserForReply(page.getResult());
         likeService.queryFillLikeForReplies(userAddress, page.getResult());
         collectService.fillCollectForReplies(userAddress, page.getResult());
+        fillMarketId(page.getResult());
         fillData(page.getResult());
         fillChildren(userAddress, page.getResult());
 
