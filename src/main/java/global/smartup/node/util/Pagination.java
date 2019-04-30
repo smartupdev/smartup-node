@@ -64,7 +64,7 @@ public class Pagination<T>{
         this.pageNumb = pageNumb;
         this.list = list;
         this.pageCount = pageCount(rowCount, pageSize);
-        this.hasNextPage = pageNumb < pageCount ? true : false;
+        this.hasNextPage = pageNumb * pageSize > rowCount ? true : false;
     }
 
     public Long getRowCount() {
