@@ -22,7 +22,7 @@ public class User {
     private String userAddress;
 
     @Column(name = "name")
-    @Size(max = 42, message = "{user_name_max_size_error}", groups = User.Add.class)
+    @Size(max = 15, min=6, message = "{user_name_size_error}", groups = User.Add.class)
     private String name;
 
     @Column(name = "avatar_ipfs_hash")

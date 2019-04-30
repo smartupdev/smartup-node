@@ -57,8 +57,8 @@ public class UserService {
     public void update(User user) {
         User db = userMapper.selectByPrimaryKey(user.getUserAddress());
         if (db != null) {
-            if (StringUtils.isBlank(db.getName())) {
-                db.setName(user.getName());
+            if (db.getName() == null && user.getName() != null) {
+                db.setName(user.getName() );
             }
             db.setAvatarIpfsHash(user.getAvatarIpfsHash());
             userMapper.updateByPrimaryKey(db);
@@ -132,6 +132,12 @@ public class UserService {
     public User query(String address) {
         address = Keys.toChecksumAddress(address);
         return userMapper.selectByPrimaryKey(address);
+    }
+
+    public boolean isNameExist(String name) {
+        User cdt = new User();
+        cdt.setName(name);
+        return userMapper.selectOne(cdt) != null;
     }
 
     public boolean isExist(String address) {
