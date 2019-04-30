@@ -63,6 +63,11 @@ public class MarketServiceTest {
         System.out.println(JSON.toJSONString(page));
     }
 
+    @Test
+    public void queryUserCollected() {
+        Pagination page = marketService.queryUserCollected("0xB44940Be0eeA81a3D0dA22CC15208AF4744BeA8E", 1, 10);
+        System.out.println(JSON.toJSONString(page));
+    }
 
     @Test
     public void queryTopCTUser() {

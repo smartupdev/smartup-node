@@ -204,6 +204,23 @@ public class UserController extends BaseController {
         }
     }
 
+    @ApiOperation(value = "用户收藏的市场", httpMethod = "POST", response = Wrapper.class,
+            notes = "参数：pageNumb, pageSize\n" +
+                    "返回：obj = {\n" +
+                    "　list = [ {见/api/market/one}, {}, ...]\n" +
+                    "}")
+    @RequestMapping("/user/market/collected")
+    public Object userCollectedMarket(HttpServletRequest request, Integer pageNumb, Integer pageSize) {
+        try {
+            String userAddress = getLoginUserAddress(request);
+            Pagination page = marketService.queryUserCollected(userAddress, pageNumb, pageSize);
+            return Wrapper.success(page);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return Wrapper.sysError();
+        }
+    }
+
     @ApiOperation(value = "用户交易的市场", httpMethod = "POST", response = Wrapper.class,
             notes = "参数：pageNumb, pageSize\n" +
                     "返回：obj = {\n" +

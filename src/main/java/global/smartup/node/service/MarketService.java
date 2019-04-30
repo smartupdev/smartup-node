@@ -11,6 +11,7 @@ import global.smartup.node.eth.info.CTSellInfo;
 import global.smartup.node.eth.info.MarketCreateInfo;
 import global.smartup.node.mapper.MarketDataMapper;
 import global.smartup.node.mapper.MarketMapper;
+import global.smartup.node.po.Collect;
 import global.smartup.node.po.Market;
 import global.smartup.node.po.MarketData;
 import global.smartup.node.po.User;
@@ -466,6 +467,27 @@ public class MarketService {
         for (String add : page.getList()) {
             ret.add(markets.stream().filter(m -> add.equals(m.getMarketAddress())).findFirst().orElse(null));
         }
+
+        fillMarketData(ret);
+        queryUserCollect(userAddress, ret);
+        querySevenDayNode(ret);
+
+        return Pagination.init(page.getRowCount(), page.getPageNumb(), page.getPageSize(), ret);
+    }
+
+    public Pagination<Market> queryUserCollected(String userAddress, Integer pageNumb, Integer pageSize) {
+        Pagination<Collect> page = collectService.queryPage(userAddress, PoConstant.Collect.Type.Market, pageNumb, pageSize);
+        if (page.getRowCount() <= 0) {
+            return Pagination.blank();
+        }
+        List<String> marketIds = page.getList().stream().map(Collect::getObjectMark).collect(Collectors.toList());
+
+
+        Example example = new Example(Market.class);
+        example.createCriteria().andIn("marketId", marketIds);
+        List<Market> markets = marketMapper.selectByExample(example);
+        List<Market> ret = new ArrayList<>();
+        marketIds.forEach(mId -> markets.stream().filter(m -> mId.equals(m.getMarketId())).findFirst().ifPresent(k -> ret.add(k)));
 
         fillMarketData(ret);
         queryUserCollect(userAddress, ret);
