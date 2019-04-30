@@ -19,6 +19,11 @@ public class PostServiceTest {
     private PostService postService;
 
     @Test
+    public void modLike() {
+        postService.modLike("0xB44940Be0eeA81a3D0dA22CC15208AF4744BeA8E", 10160495323516928L, false, true);
+    }
+
+    @Test
     public void queryPage() {
         Pagination page = postService.queryPage("t", null, "market","2l05arkk3r4",
                 1, 10);

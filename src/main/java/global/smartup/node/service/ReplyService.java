@@ -72,6 +72,11 @@ public class ReplyService {
         data.setLastReplyTime(new Date());
         data.setLastReplyId(id);
         postDataMapper.updateByPrimaryKey(data);
+
+        Post post = postMapper.selectByPrimaryKey(reply.getPostId());
+        if (post != null) {
+            userService.updateReplyCount(reply.getUserAddress(), post.getMarketId());
+        }
     }
 
     public void modLike(String userAddress, Long replyId, boolean isMark, boolean isLike) {

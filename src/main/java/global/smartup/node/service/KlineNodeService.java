@@ -249,14 +249,14 @@ public class KlineNodeService {
         if (val == null) {
             node = queryNodeByTimeId(marketAddress, segment, timeId);
             if (node == null) {
-                redisTemplate.opsForValue().set(redisKey, RedisKey.KlineNoDataFlag, RedisKey.KlineExpire, TimeUnit.MILLISECONDS);
+                redisTemplate.opsForValue().set(redisKey, RedisKey.NoDataFlag, RedisKey.KlineExpire, TimeUnit.MILLISECONDS);
                 return null;
             } else {
                 redisTemplate.opsForValue().set(redisKey, JSON.toJSONString(node), RedisKey.KlineExpire, TimeUnit.MILLISECONDS);
                 return node;
             }
         }
-        if (RedisKey.KlineNoDataFlag.equals(val.toString())) {
+        if (RedisKey.NoDataFlag.equals(val.toString())) {
             return null;
         } else {
             return JSON.parseObject(val.toString(), KlineNode.class);

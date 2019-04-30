@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
 import java.util.List;
 
 @Api(description = "市场")
@@ -238,6 +239,25 @@ public class MarketController extends BaseController {
         }
     }
 
-
+    @ApiOperation(value = "市场top用户", httpMethod = "POST", response = Wrapper.class,
+                notes = "参数：marketId\n" +
+                        "返回：obj = {\n" +
+                        " topCtList = [ { 见/api/user/current } ] \n" +
+                        " topPostList = [ ... ]\n" +
+                        " topLikedList = [ ... ]\n" +
+                        "}")
+    @RequestMapping("/market/user/top")
+    public Object marketUserTop(HttpServletRequest request, String markId) {
+        try {
+            HashMap<String, Object> ret = new HashMap<>();
+            ret.put("topCtList", marketService.queryTopCTUser(markId));
+            ret.put("topPostList", marketService.queryTopPostUser(markId));
+            ret.put("topLikedList", marketService.queryTopLikedUser(markId));
+            return Wrapper.success(ret);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return Wrapper.sysError();
+        }
+    }
 
 }

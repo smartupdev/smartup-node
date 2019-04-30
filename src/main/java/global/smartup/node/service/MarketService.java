@@ -5,6 +5,7 @@ import com.github.pagehelper.PageHelper;
 import global.smartup.node.Config;
 import global.smartup.node.compoment.IdGenerator;
 import global.smartup.node.constant.PoConstant;
+import global.smartup.node.constant.RedisKey;
 import global.smartup.node.eth.info.CTBuyInfo;
 import global.smartup.node.eth.info.CTSellInfo;
 import global.smartup.node.eth.info.MarketCreateInfo;
@@ -12,11 +13,13 @@ import global.smartup.node.mapper.MarketDataMapper;
 import global.smartup.node.mapper.MarketMapper;
 import global.smartup.node.po.Market;
 import global.smartup.node.po.MarketData;
+import global.smartup.node.po.User;
 import global.smartup.node.util.Pagination;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.Keys;
 import tk.mybatis.mapper.entity.Example;
@@ -24,6 +27,7 @@ import tk.mybatis.mapper.entity.Example;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,6 +51,9 @@ public class MarketService {
 
     @Autowired
     private MarketDataMapper marketDataMapper;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @Autowired
     private KlineNodeService klineNodeService;
@@ -465,6 +472,78 @@ public class MarketService {
         querySevenDayNode(ret);
 
         return Pagination.init(page.getRowCount(), page.getPageNumb(), page.getPageSize(), ret);
+    }
+
+    public List<User> queryTopCTUser(String marketId) {
+        List<User> ret = new ArrayList<>();
+        Market market = marketMapper.selectByPrimaryKey(marketId);
+        if (market == null) {
+            return ret;
+        }
+        String key = RedisKey.MarketTopUser.Prefix + market.getMarketAddress() + RedisKey.MarketTopUser.CTTopPrefix;
+        Object obj = redisTemplate.opsForValue().get(key);
+
+        if (obj == null) {
+            List<String> topAddress = ctAccountService.queryTopUserAddress(market.getMarketAddress(), 5);
+            if (topAddress == null || topAddress.size() <= 0) {
+                redisTemplate.opsForValue().set(key, RedisKey.NoDataFlag, RedisKey.MarketTopUser.Expire);
+                return ret;
+            }
+            List<User> userList = userService.queryUserList(topAddress);
+            topAddress.forEach(add -> userList.stream().filter(u -> u.getUserAddress().equals(add)).findFirst().ifPresent(ret::add));
+            redisTemplate.opsForValue().set(key, ret, RedisKey.MarketTopUser.Expire, TimeUnit.MILLISECONDS);
+            return ret;
+        } else {
+            if (RedisKey.NoDataFlag.equals(obj.toString())) {
+                return ret;
+            } else {
+                return (List<User>) obj;
+            }
+        }
+    }
+
+    public List<User> queryTopPostUser(String marketId) {
+        List<User> ret = new ArrayList<>();
+        Market market = marketMapper.selectByPrimaryKey(marketId);
+        if (market == null) {
+            return ret;
+        }
+        String key = RedisKey.MarketTopUser.Prefix + market.getMarketAddress() + RedisKey.MarketTopUser.PostTopPrefix;
+        Object obj = redisTemplate.opsForValue().get(key);
+
+        if (obj == null) {
+            ret = userService.queryTopUserOnPostCount(marketId, 5);
+            redisTemplate.opsForValue().set(key, ret, RedisKey.MarketTopUser.Expire, TimeUnit.MILLISECONDS);
+            return ret;
+        } else {
+            if (RedisKey.NoDataFlag.equals(obj.toString())) {
+                return ret;
+            } else {
+                return (List<User>) obj;
+            }
+        }
+    }
+
+    public List<User> queryTopLikedUser(String marketId) {
+        List<User> ret = new ArrayList<>();
+        Market market = marketMapper.selectByPrimaryKey(marketId);
+        if (market == null) {
+            return ret;
+        }
+        String key = RedisKey.MarketTopUser.Prefix + market.getMarketAddress() + RedisKey.MarketTopUser.LikeTopPrefix;
+        Object obj = redisTemplate.opsForValue().get(key);
+
+        if (obj == null) {
+            ret = userService.queryTopUserOnReceviedLike(marketId, 5);
+            redisTemplate.opsForValue().set(key, ret, RedisKey.MarketTopUser.Expire, TimeUnit.MILLISECONDS);
+            return ret;
+        } else {
+            if (RedisKey.NoDataFlag.equals(obj.toString())) {
+                return ret;
+            } else {
+                return (List<User>) obj;
+            }
+        }
     }
 
     private void queryUserCollect(String userAddress, List<Market> list) {

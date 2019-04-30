@@ -93,7 +93,10 @@ public class Config {
         RedisTemplate redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(factory);
         RedisSerializer<Object> jacksonSerializer = new GenericJackson2JsonRedisSerializer();
+        redisTemplate.setEnableDefaultSerializer(true);
         redisTemplate.setDefaultSerializer(jacksonSerializer);
+        redisTemplate.setValueSerializer(jacksonSerializer);
+        redisTemplate.setHashValueSerializer(jacksonSerializer);
         RedisSerializer<String> stringSerializer = new StringRedisSerializer();
         redisTemplate.setStringSerializer(stringSerializer);
         redisTemplate.setKeySerializer(stringSerializer);

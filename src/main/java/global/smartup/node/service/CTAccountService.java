@@ -106,4 +106,13 @@ public class CTAccountService {
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), ret);
     }
 
+    public List<String> queryTopUserAddress(String marketAddress, Integer limit) {
+        Example ctExample = new Example(CTAccount.class);
+        ctExample.createCriteria().andEqualTo("marketAddress", marketAddress);
+        ctExample.orderBy("amount").desc();
+        PageHelper.startPage(1, limit, false);
+        List<CTAccount> ctAccountList = ctAccountMapper.selectByExample(ctExample);
+        return ctAccountList.stream().map(CTAccount::getUserAddress).collect(Collectors.toList());
+    }
+
 }

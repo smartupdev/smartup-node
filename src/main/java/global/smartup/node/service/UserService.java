@@ -1,9 +1,11 @@
 package global.smartup.node.service;
 
 import global.smartup.node.mapper.UserMapper;
+import global.smartup.node.mapper.UserMarketDataMapper;
 import global.smartup.node.po.Post;
 import global.smartup.node.po.Reply;
 import global.smartup.node.po.User;
+import global.smartup.node.po.UserMarketData;
 import global.smartup.node.util.Common;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,10 @@ public class UserService {
     @Autowired
     private UserMapper userMapper;
 
+    @Autowired
+    private UserMarketDataMapper userMarketDataMapper;
+
+
     public User add(String address) {
         address = Keys.toChecksumAddress(address);
         User user = new User();
@@ -30,6 +36,22 @@ public class UserService {
         user.setCode(generateCode());
         userMapper.insert(user);
         return user;
+    }
+
+    public UserMarketData addMarketData(UserMarketData marketData) {
+        if (!StringUtils.isAnyBlank(marketData.getMarketId(), marketData.getUserAddress())) {
+            if (marketData.getPostCount() == null) {
+                marketData.setPostCount(0);
+            }
+            if (marketData.getReplyCount() == null) {
+                marketData.setReplyCount(0);
+            }
+            if (marketData.getReceivedLikeCount() == null) {
+                marketData.setReceivedLikeCount(0);
+            }
+            userMarketDataMapper.insert(marketData);
+        }
+        return marketData;
     }
 
     public void update(User user) {
@@ -48,6 +70,59 @@ public class UserService {
         User user = userMapper.selectByPrimaryKey(address);
         user.setCode(generateCode());
         userMapper.updateByPrimaryKey(user);
+    }
+
+    public void updatePostCount(String userAddress, String marketId) {
+        UserMarketData marketData = queryMarketDataById(userAddress, marketId);
+        if (marketData == null) {
+            marketData = new UserMarketData();
+            marketData.setMarketId(marketId);
+            marketData.setUserAddress(userAddress);
+            marketData.setPostCount(1);
+            addMarketData(marketData);
+        } else {
+            marketData.setPostCount(marketData.getPostCount() + 1);
+            userMarketDataMapper.updateByPrimaryKey(marketData);
+        }
+    }
+
+    public void updateReplyCount(String userAddress, String marketId) {
+        UserMarketData marketData = queryMarketDataById(userAddress, marketId);
+        if (marketData == null) {
+            marketData = new UserMarketData();
+            marketData.setMarketId(marketId);
+            marketData.setUserAddress(userAddress);
+            marketData.setReplyCount(1);
+            addMarketData(marketData);
+        } else {
+            marketData.setReplyCount(marketData.getReplyCount() + 1);
+            userMarketDataMapper.updateByPrimaryKey(marketData);
+        }
+    }
+
+    public void updateReceivedLikeCount(String userAddress, String marketId, Integer addend) {
+        UserMarketData marketData = queryMarketDataById(userAddress, marketId);
+        if (marketData == null) {
+            if (addend > 0) {
+                marketData = new UserMarketData();
+                marketData.setMarketId(marketId);
+                marketData.setUserAddress(userAddress);
+                marketData.setReceivedLikeCount(addend);
+                addMarketData(marketData);
+            }
+        } else {
+            Integer likeCount = marketData.getReceivedLikeCount() + addend;
+            likeCount = likeCount > 0 ? likeCount : 0;
+            marketData.setReceivedLikeCount(likeCount);
+            userMarketDataMapper.updateByPrimaryKey(marketData);
+        }
+    }
+
+    public UserMarketData queryMarketDataById(String userAddress, String marketId) {
+        UserMarketData dataId = new UserMarketData();
+        dataId.setMarketId(marketId);
+        dataId.setUserAddress(userAddress);
+        return userMarketDataMapper.selectByPrimaryKey(dataId);
     }
 
     public List<User> queryPage(Integer pageNumb, Integer pageSize) {
@@ -91,6 +166,49 @@ public class UserService {
         example.createCriteria().andIn("userAddress", addressList);
         example.excludeProperties("code");
         return userMapper.selectByExample(example);
+    }
+
+    public List<User> queryUserList(List<String> addressList) {
+        Example userExample = new Example(User.class);
+        userExample.createCriteria().andIn("userAddress", addressList);
+        userExample.excludeProperties("code");
+        return userMapper.selectByExample(userExample);
+    }
+
+    public List<User> queryTopUserOnPostCount(String marketId, Integer limit) {
+        List<User> ret = new ArrayList<>();
+        if (StringUtils.isBlank(marketId) || limit <= 0) {
+            return ret;
+        }
+        List<String> addresses = userMapper.selectTopUserOnPostAndReply(marketId, limit);
+        if (addresses == null || addresses.size() <= 0) {
+            return ret;
+        }
+        Example example = new Example(User.class);
+        example.createCriteria().andIn("userAddress", addresses);
+        List<User> userList = userMapper.selectByExample(example);
+        addresses.forEach(a -> {
+            ret.add(userList.stream().filter(u -> a.equals(u.getUserAddress())).findFirst().orElse(null));
+        });
+        return ret;
+    }
+
+    public List<User> queryTopUserOnReceviedLike(String marketId, Integer limit) {
+        List<User> ret = new ArrayList<>();
+        if (StringUtils.isBlank(marketId) || limit <= 0) {
+            return ret;
+        }
+        List<String> addresses = userMapper.selectTopUserOnReceivedLike(marketId, limit);
+        if (addresses == null || addresses.size() <= 0) {
+            return ret;
+        }
+        Example example = new Example(User.class);
+        example.createCriteria().andIn("userAddress", addresses);
+        List<User> userList = userMapper.selectByExample(example);
+        addresses.forEach(a -> {
+            ret.add(userList.stream().filter(u -> a.equals(u.getUserAddress())).findFirst().orElse(null));
+        });
+        return ret;
     }
 
 }

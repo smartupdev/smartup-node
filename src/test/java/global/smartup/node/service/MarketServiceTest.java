@@ -6,6 +6,7 @@ import global.smartup.node.Starter;
 import global.smartup.node.compoment.IdGenerator;
 import global.smartup.node.constant.PoConstant;
 import global.smartup.node.po.Market;
+import global.smartup.node.po.User;
 import global.smartup.node.util.Pagination;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,14 +53,33 @@ public class MarketServiceTest {
 
     @Test
     public void queryByCreator() {
-        Pagination page  =marketService.queryByCreator("0xB44940Be0eeA81a3D0dA22CC15208AF4744BeA8E", 1, 10);
+        Pagination page = marketService.queryByCreator("0xB44940Be0eeA81a3D0dA22CC15208AF4744BeA8E", 1, 10);
         System.out.println(JSON.toJSONString(page));
     }
 
     @Test
     public void queryUserTraded() {
-        Pagination page  =marketService.queryUserTraded("1", 1, 10);
+        Pagination page = marketService.queryUserTraded("1", 1, 10);
         System.out.println(JSON.toJSONString(page));
+    }
+
+
+    @Test
+    public void queryTopCTUser() {
+        List<User> ret = marketService.queryTopCTUser("2l05arkk3r4");
+        System.out.println(JSON.toJSONString(ret));
+    }
+
+    @Test
+    public void queryTopPostUser() {
+        List<User> ret = marketService.queryTopPostUser("2l05arkk3r4");
+        System.out.println(JSON.toJSONString(ret));
+    }
+
+    @Test
+    public void queryTopLikedUser() {
+        List<User> ret = marketService.queryTopLikedUser("2l05arkk3r4");
+        System.out.println(JSON.toJSONString(ret));
     }
 
 }

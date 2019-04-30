@@ -70,9 +70,12 @@ public class PostService {
         postData.setLastReplyId(null);
         postDataMapper.insert(postData);
 
-        // update market data
         if (StringUtils.isNotBlank(post.getMarketId())) {
+            // update market data
             marketService.updatePostCountAddOne(post.getMarketAddress());
+
+            // update user market data
+            userService.updatePostCount(post.getUserAddress(), post.getMarketId());
         }
     }
 
@@ -86,6 +89,9 @@ public class PostService {
             if (like == null) {
                 likeService.addMark(userAddress, post.getMarketId(), PoConstant.Liked.Type.Post, isLike, String.valueOf(postId));
                 modLikeCount(postId, isLike, true);
+                if (isLike) {
+                    userService.updateReceivedLikeCount(post.getUserAddress(), post.getMarketId(), 1);
+                }
             } else {
                 // 判断重复
                 if (like.getIsLike() != isLike) {
@@ -93,12 +99,18 @@ public class PostService {
                     like.setIsLike(isLike);
                     likeService.mod(like);
                     modLikeCount(postId, isLike);
+                    if (isLike) {
+                        userService.updateReceivedLikeCount(post.getUserAddress(), post.getMarketId(), 1);
+                    }
                 }
             }
         } else {
             if (like != null) {
                 likeService.delMark(userAddress, post.getMarketId(), PoConstant.Liked.Type.Post, String.valueOf(postId));
                 modLikeCount(postId, isLike, false);
+                if (isLike) {
+                    userService.updateReceivedLikeCount(post.getUserAddress(), post.getMarketId(), -1);
+                }
             }
         }
     }
