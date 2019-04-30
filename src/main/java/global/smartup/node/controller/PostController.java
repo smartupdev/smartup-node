@@ -147,7 +147,7 @@ public class PostController extends BaseController {
     @ApiOperation(value = "回复详情", httpMethod = "POST", response = Wrapper.class,
                 notes = "参数：replyId\n" +
                         "返回：obj = {\n" +
-                        "　replyId, postId, fatherId, userAddress, content, createTime, isLiked, isDisliked, isCollected\n" +
+                        "　replyId, postId, fatherId, userAddress, content, createTime, isLiked, isDisliked, isCollected, marketId\n" +
                         "　user = { 见/api/user/current }\n" +
                         "　data = { replyId, likeCount, dislikeCount }\n" +
                         "　childrenPage = {\n" +

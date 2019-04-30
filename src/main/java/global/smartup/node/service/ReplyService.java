@@ -234,6 +234,7 @@ public class ReplyService {
         userService.fillUserForReply(page.getResult());
         likeService.queryFillLikeForReplies(userAddress, page.getResult());
         collectService.fillCollectForReplies(userAddress, page.getResult());
+        fillMarketId(page.getResult());
         fillData(page.getResult());
         fillChildren(userAddress, page.getResult());
 
@@ -272,6 +273,17 @@ public class ReplyService {
         example.createCriteria().andIn("replyId", ids);
         List<ReplyData> dataList = replyDataMapper.selectByExample(example);
         list.forEach(r -> r.setData(dataList.stream().filter(d -> r.getReplyId().equals(d.getReplyId())).findFirst().orElse(null)));
+    }
+
+    private void fillMarketId(List<Reply> list) {
+        if (list == null || list.size() <= 0) {
+            return;
+        }
+        List<Long> postIds = list.stream().map(Reply::getPostId).distinct().collect(Collectors.toList());
+        Example example = new Example(Post.class);
+        example.createCriteria().andIn("postId", postIds);
+        List<Post> postList = postMapper.selectByExample(example);
+        list.forEach(r -> postList.stream().filter(p -> p.getPostId().equals(r.getPostId())).findFirst().ifPresent(p -> r.setMarketId(p.getMarketId())));
     }
 
 }

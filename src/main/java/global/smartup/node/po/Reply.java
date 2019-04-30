@@ -58,7 +58,18 @@ public class Reply {
     @Transient
     private Boolean isCollected;
 
+    @Transient
+    private String marketId;
 
+
+    
+    public String getMarketId() {
+        return marketId;
+    }
+
+    public void setMarketId(String marketId) {
+        this.marketId = marketId;
+    }
 
     public ReplyData getData() {
         return data;
