@@ -70,23 +70,20 @@ public class PoConstant {
 
     }
 
-    public class Trade {
+    public static class Trade {
 
-        public class Stage {
-
-            // public static final String Padding = "pending";
-            //
-            // public static final String Success = "success";
-            //
-            // public static final String Fail = "fail";
-
-        }
-
-        public class Type {
+        public static class Type {
 
             public static final String Buy = "buy";
 
             public static final String Sell = "sell";
+
+            public static boolean isRight(String type) {
+                if (Buy.equals(type) || Sell.equals(type)) {
+                    return true;
+                }
+                return false;
+            }
 
         }
 

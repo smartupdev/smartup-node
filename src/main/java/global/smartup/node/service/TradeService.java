@@ -5,7 +5,9 @@ import com.github.pagehelper.PageHelper;
 import global.smartup.node.constant.PoConstant;
 import global.smartup.node.eth.info.CTBuyInfo;
 import global.smartup.node.eth.info.CTSellInfo;
+import global.smartup.node.mapper.MarketMapper;
 import global.smartup.node.mapper.TradeMapper;
+import global.smartup.node.po.Market;
 import global.smartup.node.po.Trade;
 import global.smartup.node.util.Pagination;
 import org.apache.commons.lang3.StringUtils;
@@ -26,49 +28,111 @@ public class TradeService {
     @Autowired
     private TradeMapper tradeMapper;
 
-    public void saveBuyTxByChain(CTBuyInfo info) {
-        //save
+    @Autowired
+    private MarketMapper marketMapper;
+
+    @Autowired
+    private TransactionService transactionService;
+
+    public void savePendingTrade(String userAddress, String txHash, String type, String marketId, BigDecimal sut, BigDecimal ct) {
+        if (isTxHashExist(txHash)) {
+            return;
+        }
+        Market market = marketMapper.selectByPrimaryKey(marketId);
         Trade trade = new Trade();
-        trade.setTxHash(info.getTxHash());
-        trade.setMarketAddress(info.getEventMarketAddress());
-        trade.setUserAddress(info.getEventUserAddress());
-        trade.setStage(PoConstant.TxStage.Success);
+        trade.setTxHash(txHash);
+        trade.setMarketAddress(market.getMarketAddress());
+        trade.setUserAddress(userAddress);
+        trade.setType(type);
+        trade.setSutOffer(sut);
+        trade.setSutAmount(sut);
+        trade.setCtAmount(ct);
         trade.setCreateTime(new Date());
-        trade.setBlockTime(info.getBlockTime());
-        trade.setType(PoConstant.Trade.Type.Buy);
-        trade.setSutOffer(info.getEventSUTOffer());
-        trade.setSutAmount(info.getEventSUT());
-        trade.setCtAmount(info.getEventCT());
+        trade.setStage(PoConstant.TxStage.Pending);
         tradeMapper.insert(trade);
+
+        // save transaction
+        transactionService.addTrade(txHash, type, userAddress, marketId, market.getMarketAddress(), sut, ct);
+    }
+
+    public void saveBuyTxByChain(CTBuyInfo info) {
+        Trade trade = queryByTxHash(info.getTxHash());
+        if (trade == null) {
+            trade = new Trade();
+            trade.setTxHash(info.getTxHash());
+            trade.setMarketAddress(info.getEventMarketAddress());
+            trade.setUserAddress(info.getEventUserAddress());
+            trade.setStage(PoConstant.TxStage.Success);
+            trade.setCreateTime(new Date());
+            trade.setBlockTime(info.getBlockTime());
+            trade.setType(PoConstant.Trade.Type.Buy);
+            trade.setSutOffer(info.getEventSUTOffer());
+            trade.setSutAmount(info.getEventSUT());
+            trade.setCtAmount(info.getEventCT());
+            tradeMapper.insert(trade);
+        } else {
+            trade.setMarketAddress(info.getEventMarketAddress());
+            trade.setUserAddress(info.getEventUserAddress());
+            trade.setStage(PoConstant.TxStage.Success);
+            trade.setBlockTime(info.getBlockTime());
+            trade.setType(PoConstant.Trade.Type.Buy);
+            trade.setSutOffer(info.getEventSUTOffer());
+            trade.setSutAmount(info.getEventSUT());
+            trade.setCtAmount(info.getEventCT());
+            tradeMapper.updateByPrimaryKey(trade);
+        }
+
     }
 
     public void saveSellTxByChain(CTSellInfo info) {
-        //save
-        Trade trade = new Trade();
-        trade.setTxHash(info.getTxHash());
-        trade.setMarketAddress(info.getEventMarketAddress());
-        trade.setUserAddress(info.getEventUserAddress());
-        trade.setStage(PoConstant.TxStage.Success);
-        trade.setCreateTime(new Date());
-        trade.setBlockTime(info.getBlockTime());
-        trade.setType(PoConstant.Trade.Type.Sell);
-        trade.setSutAmount(info.getEventSUT());
-        trade.setCtAmount(info.getEventCT());
-        tradeMapper.insert(trade);
+        Trade trade = queryByTxHash(info.getTxHash());
+        if (trade == null) {
+            trade = new Trade();
+            trade.setTxHash(info.getTxHash());
+            trade.setMarketAddress(info.getEventMarketAddress());
+            trade.setUserAddress(info.getEventUserAddress());
+            trade.setStage(PoConstant.TxStage.Success);
+            trade.setCreateTime(new Date());
+            trade.setBlockTime(info.getBlockTime());
+            trade.setType(PoConstant.Trade.Type.Sell);
+            trade.setSutAmount(info.getEventSUT());
+            trade.setCtAmount(info.getEventCT());
+            tradeMapper.insert(trade);
+        } else {
+            trade.setMarketAddress(info.getEventMarketAddress());
+            trade.setUserAddress(info.getEventUserAddress());
+            trade.setStage(PoConstant.TxStage.Success);
+            trade.setBlockTime(info.getBlockTime());
+            trade.setType(PoConstant.Trade.Type.Sell);
+            trade.setSutAmount(info.getEventSUT());
+            trade.setCtAmount(info.getEventCT());
+            tradeMapper.updateByPrimaryKey(trade);
+        }
+
     }
 
     public void saveFailTradeTxByChain(String txHash, String type, String userAddress, String marketAddress, BigDecimal sut, BigDecimal ct, Date blockTime) {
-        Trade trade = new Trade();
-        trade.setTxHash(txHash);
-        trade.setMarketAddress(marketAddress);
-        trade.setUserAddress(userAddress);
-        trade.setStage(PoConstant.TxStage.Fail);
-        trade.setCreateTime(new Date());
-        trade.setBlockTime(blockTime);
-        trade.setType(type);
-        trade.setSutAmount(sut);
-        trade.setCtAmount(ct);
-        tradeMapper.insert(trade);
+        Trade trade = queryByTxHash(txHash);
+        if (trade == null) {
+            trade = new Trade();
+            trade.setTxHash(txHash);
+            trade.setMarketAddress(marketAddress);
+            trade.setUserAddress(userAddress);
+            trade.setStage(PoConstant.TxStage.Fail);
+            trade.setCreateTime(new Date());
+            trade.setBlockTime(blockTime);
+            trade.setType(type);
+            trade.setSutAmount(sut);
+            trade.setCtAmount(ct);
+            tradeMapper.insert(trade);
+        } else {
+            trade.setMarketAddress(marketAddress);
+            trade.setUserAddress(userAddress);
+            trade.setStage(PoConstant.TxStage.Fail);
+            trade.setBlockTime(blockTime);
+            trade.setType(type);
+            tradeMapper.updateByPrimaryKey(trade);
+        }
     }
 
     public boolean isTxHashHandled(String txHash) {

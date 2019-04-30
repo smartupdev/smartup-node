@@ -17,6 +17,8 @@ public class LangHandle {
 
 	public static final String UserNameRepeatError = "user_name_repeat_error";
 
+	public static final String TradeTypeError = "trade_type_error";
+
 	public static final String UserAddressNotExist = "user_address_not_exist";
 
 	public static final String MarketDescriptionLengthError = "market_description_length_error";

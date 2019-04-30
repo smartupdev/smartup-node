@@ -1,7 +1,11 @@
 package global.smartup.node.controller;
 
+import global.smartup.node.constant.LangHandle;
+import global.smartup.node.constant.PoConstant;
 import global.smartup.node.po.Trade;
+import global.smartup.node.service.MarketService;
 import global.smartup.node.service.TradeService;
+import global.smartup.node.util.Checker;
 import global.smartup.node.util.Pagination;
 import global.smartup.node.util.Wrapper;
 import io.swagger.annotations.Api;
@@ -13,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 
 @Api(description = "交易")
 @RestController
@@ -24,6 +29,8 @@ public class TradeController extends BaseController {
     @Autowired
     private TradeService tradeService;
 
+    @Autowired
+    private MarketService marketService;
 
     @ApiOperation(value = "查询交易", httpMethod = "POST", response = Wrapper.class,
                 notes = "参数：txHash\n" +
@@ -72,5 +79,28 @@ public class TradeController extends BaseController {
         }
     }
 
+    @ApiOperation(value = "保存用户交易", httpMethod = "POST", response = Wrapper.class,
+                notes = "参数：txHash, type(buy/sell), marketId, sut, ct\n" +
+                        "返回：是否成功")
+    @RequestMapping("/user/trade/save")
+    public Object userTradeSave(HttpServletRequest request, String txHash, String type, String marketId, BigDecimal sut, BigDecimal ct) {
+        try {
+            String userAddress = getLoginUserAddress(request);
+            if (!Checker.isTxHash(txHash)) {
+                Wrapper.alert(getLocaleMsg(LangHandle.TradeTxHashFormatError));
+            }
+            if (!PoConstant.Trade.Type.isRight(type)) {
+                Wrapper.alert(getLocaleMsg(LangHandle.TradeTypeError));
+            }
+            if (!marketService.isMarketIdExist(marketId)) {
+                Wrapper.alert(getLocaleMsg(LangHandle.MarketIdNotExist));
+            }
+            tradeService.savePendingTrade(userAddress, txHash, type, marketId, sut, ct);
+            return Wrapper.success();
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return Wrapper.sysError();
+        }
+    }
 
 }
