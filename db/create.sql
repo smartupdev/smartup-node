@@ -16,11 +16,12 @@ create table user (
 
 drop table if exists user_market_data;
 create table user (
-  user_address varchar(42) primary key,
+  user_address varchar(42),
   market_id varchar(32),
   post_count int(11),
   reply_count int(11),
-  received_like_count int(11)
+  received_like_count int(11),
+  primary key (user_address, market_id)
 );
 
 drop table if exists `transaction`;
