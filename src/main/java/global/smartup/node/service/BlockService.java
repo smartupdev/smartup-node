@@ -237,14 +237,14 @@ public class BlockService {
             transactionService.modTradeFinish(tx.getHash(), PoConstant.TxStage.Success, PoConstant.Transaction.Type.BuyCT,
                     from, market.getMarketId(), market.getMarketAddress(), info.getEventSUT(), info.getEventCT(), blockTime);
 
+            // update ct account
+            ctAccountService.updateFromChain(info.getEventMarketAddress(), info.getEventUserAddress());
+
             // update kline
             klineNodeService.updateNodeForBuyTxByChain(info);
 
             // update market data
             marketService.updateBuyTradeByChain(info);
-
-            // update ct account
-            ctAccountService.updateFromChain(info.getEventMarketAddress(), info.getEventUserAddress());
 
             // send ntfc
             notificationService.sendTradeFinish(info.getTxHash(), true, from, PoConstant.Trade.Type.Buy,
@@ -296,14 +296,14 @@ public class BlockService {
             transactionService.modTradeFinish(tx.getHash(), PoConstant.TxStage.Success, PoConstant.Transaction.Type.SellCT,
                     from, market.getMarketId(), to, info.getEventSUT(), info.getEventCT(), blockTime);
 
+            // update ct account
+            ctAccountService.updateFromChain(info.getEventMarketAddress(), info.getEventUserAddress());
+
             // update kline
             klineNodeService.updateNodeForSellTxByChain(info);
 
             // update market data
             marketService.updateSellTradeByChain(info);
-
-            // update ct account
-            ctAccountService.updateFromChain(info.getEventMarketAddress(), info.getEventUserAddress());
 
             // send ntfc
             notificationService.sendTradeFinish(info.getTxHash(), true, from, PoConstant.Trade.Type.Sell,
