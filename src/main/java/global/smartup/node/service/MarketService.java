@@ -124,14 +124,15 @@ public class MarketService {
         // create market data
         MarketData data = new MarketData();
         data.setMarketAddress(info.getEventMarketAddress());
+        data.setLast(null);
         data.setLatelyChange(null);
-        data.setLatelyVolume(BigDecimal.ZERO);
-        data.setAmount(BigDecimal.ZERO);
-        data.setCtAmount(BigDecimal.ZERO);
-        data.setCtTopAmount(BigDecimal.ZERO);
-        data.setCount(0L);
-        data.setPostCount(0);
-        data.setUserCount(0);
+        data.setLatelyVolume(null);
+        data.setAmount(null);
+        data.setCtAmount(null);
+        data.setCtTopAmount(null);
+        data.setCount(null);
+        data.setPostCount(null);
+        data.setUserCount(null);
         marketDataMapper.insert(data);
 
         // clear cache
@@ -164,13 +165,26 @@ public class MarketService {
         data.setLatelyChange(klineNodeService.queryLatelyChange(marketAddress, price, 24));
         data.setLatelyVolume(klineNodeService.queryLatelyVolume(info.getEventMarketAddress(), 24));
         data.setLast(price);
-        data.setAmount(data.getAmount().add(info.getEventSUT()));
-        data.setCtAmount(data.getCtAmount().add(info.getEventCT()));
-        // ctAmount 变大，重新计算ctTopAmount
-        if (data.getCtAmount().compareTo(data.getCtTopAmount()) > 0) {
-            data.setCtTopAmount(data.getCtAmount());
+        if (data.getAmount() == null) {
+            data.setAmount(info.getEventSUT());
+        } else {
+            data.setAmount(data.getAmount().add(info.getEventSUT()));
         }
-        data.setCount(data.getCount() + 1);
+        if (data.getCtAmount() == null) {
+            data.setCtAmount(info.getEventCT());
+            data.setCtTopAmount(info.getEventCT());
+        } else {
+            data.setCtAmount(data.getCtAmount().add(info.getEventCT()));
+            // ctAmount 变大，重新计算ctTopAmount
+            if (data.getCtAmount().compareTo(data.getCtTopAmount()) > 0) {
+                data.setCtTopAmount(data.getCtAmount());
+            }
+        }
+        if (data.getCount() == null) {
+            data.setCount(1L);
+        } else {
+            data.setCount(data.getCount() + 1);
+        }
         Integer userAccount = ctAccountService.queryUserCountInMarket(marketAddress);
         data.setUserCount(userAccount);
         marketDataMapper.updateByPrimaryKey(data);
@@ -190,9 +204,21 @@ public class MarketService {
         data.setLatelyChange(klineNodeService.queryLatelyChange(marketAddress, price, 24));
         data.setLatelyVolume(klineNodeService.queryLatelyVolume(info.getEventMarketAddress(), 24));
         data.setLast(price);
-        data.setAmount(data.getAmount().subtract(info.getEventSUT()));
-        data.setCtAmount(data.getCtAmount().subtract(info.getEventCT()));
-        data.setCount(data.getCount() + 1);
+        if (data.getAmount() == null) {
+            data.setAmount(info.getEventSUT());
+        } else {
+            data.setAmount(data.getAmount().subtract(info.getEventSUT()));
+        }
+        if (data.getCtAmount() == null) {
+            data.setCtAmount(info.getEventCT());
+        } else {
+            data.setCtAmount(data.getCtAmount().subtract(info.getEventCT()));
+        }
+        if (data.getCount() == null) {
+            data.setCount(1L);
+        } else {
+            data.setCount(data.getCount() + 1);
+        }
         Integer userAccount = ctAccountService.queryUserCountInMarket(marketAddress);
         data.setUserCount(userAccount);
         marketDataMapper.updateByPrimaryKey(data);
@@ -201,6 +227,9 @@ public class MarketService {
     public void updateUserCount(String marketAddress, Integer addend) {
         MarketData data = marketDataMapper.selectByPrimaryKey(marketAddress);
         if (data != null) {
+            if (data.getUserCount() == null) {
+                data.setUserCount(0);
+            }
             if (Math.max(data.getUserCount() + addend, 0) == 0) {
                 data.setPostCount(0);
             } else {
