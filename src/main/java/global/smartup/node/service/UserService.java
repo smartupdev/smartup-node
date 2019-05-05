@@ -60,7 +60,9 @@ public class UserService {
             if (db.getName() == null && user.getName() != null) {
                 db.setName(user.getName() );
             }
-            db.setAvatarIpfsHash(user.getAvatarIpfsHash());
+            if (user.getAvatarIpfsHash() != null) {
+                db.setAvatarIpfsHash(user.getAvatarIpfsHash());
+            }
             userMapper.updateByPrimaryKey(db);
         }
     }
