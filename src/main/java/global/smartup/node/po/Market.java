@@ -36,7 +36,7 @@ public class Market {
 
     @NotNull(message = "{market_name_empty_error}", groups = {Market.Add.class, Market.CheckName.class})
     @NotEmpty(message = "{market_name_empty_error}", groups = {Market.Add.class, Market.CheckName.class})
-    @Size(max = 30, min = 2, message = "{market_name_length_error}", groups = {Market.Add.class, Market.CheckName.class})
+    @Size(max = 40, min = 3, message = "{market_name_length_error}", groups = {Market.Add.class, Market.CheckName.class})
     @Column(name="name")
     private String name;
 
@@ -46,7 +46,7 @@ public class Market {
     @Column(name="photo")
     private String photo;
 
-    @Size(max = 300, min = 5, message = "{market_description_length_error}", groups = Market.Add.class)
+    @Size(max = 150, min = 1, message = "{market_description_length_error}", groups = Market.Add.class)
     @Column(name="description")
     private String description;
 

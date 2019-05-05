@@ -43,7 +43,7 @@ create table market (
   tx_hash varchar(66),
   creator_address varchar(42) not null,
   market_address varchar(42),
-  name varchar(32) not null ,
+  name varchar(64) not null ,
   cover varchar(64),
   photo varchar(64),
   description varchar(512),
