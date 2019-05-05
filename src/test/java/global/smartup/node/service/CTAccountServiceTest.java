@@ -31,5 +31,10 @@ public class CTAccountServiceTest {
         System.out.println(JSON.toJSONString(page));
     }
 
+    @Test
+    public void queryUserCountInMarket() {
+        Integer i = ctAccountService.queryUserCountInMarket("0x2831E5316B80b907FbbBe363038998dd03801dA8");
+        System.out.println(i);
+    }
 
 }

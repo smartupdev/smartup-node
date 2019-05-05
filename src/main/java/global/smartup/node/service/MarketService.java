@@ -171,6 +171,8 @@ public class MarketService {
             data.setCtTopAmount(data.getCtAmount());
         }
         data.setCount(data.getCount() + 1);
+        Integer userAccount = ctAccountService.queryUserCountInMarket(marketAddress);
+        data.setUserCount(userAccount);
         marketDataMapper.updateByPrimaryKey(data);
     }
 
@@ -191,6 +193,8 @@ public class MarketService {
         data.setAmount(data.getAmount().subtract(info.getEventSUT()));
         data.setCtAmount(data.getCtAmount().subtract(info.getEventCT()));
         data.setCount(data.getCount() + 1);
+        Integer userAccount = ctAccountService.queryUserCountInMarket(marketAddress);
+        data.setUserCount(userAccount);
         marketDataMapper.updateByPrimaryKey(data);
     }
 

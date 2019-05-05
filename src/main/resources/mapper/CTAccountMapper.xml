@@ -26,4 +26,8 @@
         order by ca.last_update_time desc
     </select>
 
+    <select id="selectCountUserInMarket" resultType="java.lang.Integer">
+        select count(*) from ct_account where market_address = #{marketAddress} and amount > 0
+    </select>
+
 </mapper>

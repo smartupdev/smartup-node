@@ -115,4 +115,8 @@ public class CTAccountService {
         return ctAccountList.stream().map(CTAccount::getUserAddress).collect(Collectors.toList());
     }
 
+    public Integer queryUserCountInMarket(String marketAddress) {
+        return ctAccountMapper.selectCountUserInMarket(marketAddress);
+    }
+
 }

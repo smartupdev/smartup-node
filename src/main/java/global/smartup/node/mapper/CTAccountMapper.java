@@ -12,4 +12,6 @@ public interface CTAccountMapper extends Mapper<CTAccount> {
 
     List<CTAccountWithMarket> selectWidthMarket(@Param("userAddress") String userAddress);
 
+    Integer selectCountUserInMarket(@Param("marketAddress") String marketAddress);
+
 }
