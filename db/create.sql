@@ -75,8 +75,8 @@ create table post (
   market_id varchar(42),
   market_address varchar(42),
   user_address varchar(42),
-  title varchar(32),
-  description varchar(512),
+  title varchar(512),
+  description mediumtext,
   photo varchar(66),
   create_time datetime
 );

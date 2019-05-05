@@ -39,13 +39,11 @@ public class Post {
 
     @NotNull(message = "{post_title_empty_error}", groups = Post.Add.class)
     @NotEmpty(message = "{post_title_empty_error}", groups = Post.Add.class)
-    @Size(max = 30, min = 2, message = "{post_title_length_error}", groups = Post.Add.class)
+    @Size(max = 350, min = 3, message = "{post_title_length_error}", groups = Post.Add.class)
     @Column(name="title")
     private String title;
 
-    @NotNull(message = "{post_description_empty_error}", groups = Post.Add.class)
-    @NotEmpty(message = "{post_description_empty_error}", groups = Post.Add.class)
-    @Size(max = 300, min = 2, message = "{post_description_length_error}", groups = Post.Add.class)
+    @Size(max = 100000, message = "{post_description_length_error}", groups = Post.Add.class)
     @Column(name="description")
     private String description;
 
