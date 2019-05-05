@@ -91,6 +91,7 @@ public class CTAccountService {
     public Pagination<CTAccountWithMarket> queryCTAccountsWithMarket(String userAddress, Integer pageNumb, Integer pageSize) {
         Page<CTAccountWithMarket> page =  PageHelper.startPage(pageNumb, pageSize);
         ctAccountMapper.selectWidthMarket(userAddress);
+        fillMarketName(page.getResult());
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
     }
 
@@ -117,6 +118,17 @@ public class CTAccountService {
 
     public Integer queryUserCountInMarket(String marketAddress) {
         return ctAccountMapper.selectCountUserInMarket(marketAddress);
+    }
+
+    private void fillMarketName(List<CTAccountWithMarket> list) {
+        if (list == null && list.size() <= 0) {
+            return;
+        }
+        List<String> ids = list.stream().map(a -> a.getMarketId()).collect(Collectors.toList());
+        List<String> marketNameList = marketService.queryNames(ids);
+        for (int i = 0; i < list.size(); i++) {
+            list.get(i).setMarketName(marketNameList.get(i));
+        }
     }
 
 }

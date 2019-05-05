@@ -1,5 +1,6 @@
 package global.smartup.node.vo;
 
+import javax.persistence.Transient;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -23,6 +24,19 @@ public class CTAccountWithMarket {
     private Date lastUpdateTime;
 
 
+
+    @Transient
+    private String marketName;
+
+
+
+    public String getMarketName() {
+        return marketName;
+    }
+
+    public void setMarketName(String marketName) {
+        this.marketName = marketName;
+    }
 
     public String getMarketPhoto() {
         return marketPhoto;
