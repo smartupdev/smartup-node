@@ -188,7 +188,7 @@ public class PostService {
             query = query.length() > BuConstant.QueryMaxLength ? query.substring(0, BuConstant.QueryMaxLength) : query;
             criteria.andLike("title", "%" + query + "%");
         }
-        example.orderBy("createTime").asc();
+        example.orderBy("createTime").desc();
         Page<Post> page = PageHelper.startPage(pageNumb, pageSize);
         postMapper.selectByExample(example);
 
