@@ -52,16 +52,16 @@ public class NotificationService {
     private IdGenerator idGenerator;
 
 
-    public void sendMarketCreateFinish(String txHash, boolean isSuccess, String marketId, String userAddress, String marketAddress) {
+    public void sendMarketCreateFinish(String txHash, boolean isSuccess, String marketId, String userAddress, String marketAddress, String name) {
         userAddress = Keys.toChecksumAddress(userAddress);
         Notification ntfc = new Notification();
         HashMap<String, Object> content = new HashMap<>();
         if (isSuccess) {
-            ntfc.setTitle("Create market success!");
-            ntfc.setText("Create market success ... ");
+            ntfc.setTitle("Market Is Created!");
+            ntfc.setText("Used 2500 SmartUp created market “" + name + "”");
         } else {
-            ntfc.setTitle("Create market fail!");
-            ntfc.setText("Create market fail  ... ");
+            ntfc.setTitle("Market Is Not Created!");
+            ntfc.setText("Unable to create market “" + name + "”");
         }
         content.put("txHash", txHash);
         content.put("isSuccess", isSuccess);
@@ -81,25 +81,26 @@ public class NotificationService {
         delNotificationCache(userAddress);
     }
 
-    public void sendTradeFinish(String txHash, boolean isSuccess, String userAddress, String type, String marketId, String marketAddress, BigDecimal sut, BigDecimal ct) {
+    public void sendTradeFinish(String txHash, boolean isSuccess, String userAddress, String type, String marketId,
+                                String marketAddress, String marketName, BigDecimal sut, BigDecimal ct) {
         userAddress = Keys.toChecksumAddress(userAddress);
         Notification ntfc = new Notification();
         HashMap<String, Object> content = new HashMap<>();
         if (PoConstant.Trade.Type.Buy.equals(type)) {
             if (isSuccess) {
-                ntfc.setTitle("Buy ct success!");
-                ntfc.setText("Buy ct success ... ");
+                ntfc.setTitle("Trade (Buy) Completed!");
+                ntfc.setText("Bought " + ct.toPlainString() + " token in " + marketName + ".");
             } else {
-                ntfc.setTitle("Buy ct fail!");
-                ntfc.setText("Buy ct fail ... ");
+                ntfc.setTitle("Trade (Buy) Failed!");
+                ntfc.setText("Unable to buy " + ct.toPlainString() + " token in " + marketName + ".");
             }
         } else {
             if (isSuccess) {
-                ntfc.setTitle("Sell ct success!");
-                ntfc.setText("Sell ct success ... ");
+                ntfc.setTitle("Trade (Sell) Completed!");
+                ntfc.setText("Sold " + ct.toPlainString() + " token in " + marketName + ".");
             } else {
-                ntfc.setTitle("Sell ct fail!");
-                ntfc.setText("Sell ct fail ... ");
+                ntfc.setTitle("Trade (Sell) Failed!");
+                ntfc.setText("Unable to sell " + ct.toPlainString() + " token in " + marketName + "}.");
             }
         }
         content.put("txHash", txHash);

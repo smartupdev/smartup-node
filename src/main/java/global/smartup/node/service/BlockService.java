@@ -168,7 +168,7 @@ public class BlockService {
                     from, market.getMarketId(), null, info.getInputAmount(), blockTime);
 
             // send ntfc
-            notificationService.sendMarketCreateFinish(tx.getHash(), false, market.getMarketId(), from, null);
+            notificationService.sendMarketCreateFinish(tx.getHash(), false, market.getMarketId(), from, null, market.getName());
 
         } else {
             // tx success
@@ -185,7 +185,7 @@ public class BlockService {
 
             // send  ntfc
             notificationService.sendMarketCreateFinish(info.getTxHash(), true, market.getMarketId(), from,
-                    info.getEventMarketAddress());
+                    info.getEventMarketAddress(), market.getName());
         }
 
 
@@ -222,7 +222,7 @@ public class BlockService {
 
             // send ntfc
             notificationService.sendTradeFinish(info.getTxHash(), false, from, PoConstant.Trade.Type.Buy,
-                    market.getMarketId(), info.getInputMarketAddress(), info.getInputSUT(), info.getInputCT());
+                    market.getMarketId(), info.getInputMarketAddress(), market.getName(), info.getInputSUT(), info.getInputCT());
 
         } else {
             // tx success
@@ -248,7 +248,7 @@ public class BlockService {
 
             // send ntfc
             notificationService.sendTradeFinish(info.getTxHash(), true, from, PoConstant.Trade.Type.Buy,
-                    market.getMarketId(), info.getEventMarketAddress(), info.getEventSUT(), info.getEventCT());
+                    market.getMarketId(), info.getEventMarketAddress(), market.getName(), info.getEventSUT(), info.getEventCT());
         }
 
     }
@@ -284,7 +284,7 @@ public class BlockService {
 
             // send ntfc
             notificationService.sendTradeFinish(tx.getHash(), false, from, PoConstant.Trade.Type.Sell,
-                    market.getMarketId(), to,null, info.getInputCT());
+                    market.getMarketId(), to, market.getName(),null, info.getInputCT());
         } else {
             info.parseTransactionReceipt(receipt);
             info.setBlockTime(blockTime);
@@ -307,7 +307,7 @@ public class BlockService {
 
             // send ntfc
             notificationService.sendTradeFinish(info.getTxHash(), true, from, PoConstant.Trade.Type.Sell,
-                    market.getMarketId(), to, info.getEventSUT(), info.getEventCT());
+                    market.getMarketId(), to, market.getName(), info.getEventSUT(), info.getEventCT());
         }
 
     }
