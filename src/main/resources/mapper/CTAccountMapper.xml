@@ -19,7 +19,7 @@
         from (
                  select *
                  from ct_account
-                 where user_address = #{userAddress}
+                 where user_address = #{userAddress} and amount > 0
              ) ca
             left join market m on m.market_address = ca.market_address
             left join market_data md on md.market_address = ca.market_address
