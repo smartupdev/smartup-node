@@ -230,10 +230,10 @@ public class MarketService {
             if (data.getUserCount() == null) {
                 data.setUserCount(0);
             }
-            if (Math.max(data.getUserCount() + addend, 0) == 0) {
-                data.setPostCount(0);
+            if (data.getUserCount() + addend <= 0) {
+                data.setUserCount(0);
             } else {
-                data.setPostCount(data.getUserCount() + addend);
+                data.setUserCount(data.getUserCount() + addend);
             }
             marketDataMapper.updateByPrimaryKey(data);
         }
@@ -243,7 +243,7 @@ public class MarketService {
         MarketData data = marketDataMapper.selectByPrimaryKey(marketAddress);
         if (data != null) {
             if (data.getPostCount() == null) {
-                data.setPostCount(1);
+                data.setPostCount(0);
             }
             data.setPostCount(data.getPostCount() + 1);
             marketDataMapper.updateByPrimaryKey(data);
