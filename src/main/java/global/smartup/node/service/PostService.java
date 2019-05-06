@@ -68,6 +68,7 @@ public class PostService {
         postData.setLikeCount(0);
         postData.setDislikeCount(0);
         postData.setLastReplyId(null);
+        postData.setLastReplyTime(new Date());
         postDataMapper.insert(postData);
 
         if (StringUtils.isNotBlank(post.getMarketId())) {
