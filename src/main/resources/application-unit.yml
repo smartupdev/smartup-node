@@ -34,6 +34,7 @@ spring:
       initial-size: 1
       max-active: 20
       min-idle: 5
+      connection-init-sqls: set names utf8mb4
 
   redis:
     host: 192.168.1.192
