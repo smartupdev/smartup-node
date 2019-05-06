@@ -242,6 +242,9 @@ public class MarketService {
     public void updatePostCountAddOne(String marketAddress) {
         MarketData data = marketDataMapper.selectByPrimaryKey(marketAddress);
         if (data != null) {
+            if (data.getPostCount() == null) {
+                data.setPostCount(1);
+            }
             data.setPostCount(data.getPostCount() + 1);
             marketDataMapper.updateByPrimaryKey(data);
         }
