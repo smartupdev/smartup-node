@@ -106,14 +106,17 @@ public class CollectService {
         return collectMapper.selectByPrimaryKey(collect);
     }
 
-    public Pagination queryPageWithObj(String userAddress, String type, Integer pageNumb, Integer pageSize) {
+    public Pagination queryPageWithObj(String userAddress, String type, Boolean asc, Integer pageNumb, Integer pageSize) {
         Page page = null;
+        if (asc == null) {
+            asc = false;
+        }
         if (PoConstant.Collect.Type.Market.equals(type)) {
             page = PageHelper.startPage(pageNumb, pageSize);
-            collectMapper.selectCollectedMarket(userAddress);
+            collectMapper.selectCollectedMarket(userAddress, asc);
         } else if (PoConstant.Collect.Type.Post.equals(type)) {
             page = PageHelper.startPage(pageNumb, pageSize);
-            collectMapper.selectCollectedPost(userAddress);
+            collectMapper.selectCollectedPost(userAddress, asc);
         }
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
     }

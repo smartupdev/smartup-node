@@ -64,7 +64,7 @@ public class CollectController extends BaseController {
     }
 
     @ApiOperation(value = "收藏列表", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：type, pageNumb, pageSize\n" +
+                notes = "参数：type, asc(true/false), pageNumb, pageSize\n" +
                         "返回：obj = {\n" +
                         "　list = [\n" +
                         "　　{type=market, 见/api/market/one}\n" +
@@ -72,9 +72,9 @@ public class CollectController extends BaseController {
                         "　]\n" +
                         "}")
     @RequestMapping("/list")
-    public Object list(HttpServletRequest request, String type, Integer pageNumb, Integer pageSize) {
+    public Object list(HttpServletRequest request, String type, Boolean asc, Integer pageNumb, Integer pageSize) {
         try {
-            Pagination page = collectService.queryPageWithObj(getLoginUserAddress(request), type, pageNumb, pageSize);
+            Pagination page = collectService.queryPageWithObj(getLoginUserAddress(request), type, asc, pageNumb, pageSize);
             return Wrapper.success(page);
         } catch (Exception e) {
             log.error(e.getMessage(), e);

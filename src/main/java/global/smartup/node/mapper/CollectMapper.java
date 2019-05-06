@@ -9,8 +9,8 @@ import java.util.List;
 
 public interface CollectMapper extends Mapper<Collect> {
 
-    List<Market> selectCollectedMarket(@Param("userAddress") String userAddress);
+    List<Market> selectCollectedMarket(@Param("userAddress") String userAddress, @Param("asc") Boolean asc);
 
-    List<Market> selectCollectedPost(@Param("userAddress") String userAddress);
+    List<Market> selectCollectedPost(@Param("userAddress") String userAddress, @Param("asc") Boolean asc);
 
 }
