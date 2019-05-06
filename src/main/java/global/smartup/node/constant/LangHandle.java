@@ -67,6 +67,8 @@ public class LangHandle {
 
 	public static final String CollectObjectNotExist = "collect_object_not_exist";
 
+	public static final String TradeTxHashRepeat = "trade_tx_hash_repeat";
+
 	public static final String UserAvatarIpfsHashMaxSizeError = "user_avatar_ipfs_hash_max_size_error";
 
 	public static final String MarketNameEmptyError = "market_name_empty_error";

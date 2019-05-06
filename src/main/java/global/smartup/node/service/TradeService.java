@@ -34,10 +34,7 @@ public class TradeService {
     @Autowired
     private TransactionService transactionService;
 
-    public void savePendingTrade(String userAddress, String txHash, String type, String marketId, BigDecimal sut, BigDecimal ct) {
-        if (isTxHashExist(txHash)) {
-            return;
-        }
+    public Trade savePendingTrade(String userAddress, String txHash, String type, String marketId, BigDecimal sut, BigDecimal ct) {
         Market market = marketMapper.selectByPrimaryKey(marketId);
         Trade trade = new Trade();
         trade.setTxHash(txHash);
@@ -53,6 +50,8 @@ public class TradeService {
 
         // save transaction
         transactionService.addTrade(txHash, type, userAddress, marketId, market.getMarketAddress(), sut, ct);
+
+        return trade;
     }
 
     public void saveBuyTxByChain(CTBuyInfo info) {

@@ -81,22 +81,25 @@ public class TradeController extends BaseController {
 
     @ApiOperation(value = "保存用户交易", httpMethod = "POST", response = Wrapper.class,
                 notes = "参数：txHash, type(buy/sell), marketId, sut, ct\n" +
-                        "返回：是否成功")
+                        "返回：obj = { 见/api/user/trade/one }")
     @RequestMapping("/user/trade/save")
     public Object userTradeSave(HttpServletRequest request, String txHash, String type, String marketId, BigDecimal sut, BigDecimal ct) {
         try {
             String userAddress = getLoginUserAddress(request);
             if (!Checker.isTxHash(txHash)) {
-                Wrapper.alert(getLocaleMsg(LangHandle.TradeTxHashFormatError));
+                return Wrapper.alert(getLocaleMsg(LangHandle.TradeTxHashFormatError));
             }
             if (!PoConstant.Trade.Type.isRight(type)) {
-                Wrapper.alert(getLocaleMsg(LangHandle.TradeTypeError));
+                return Wrapper.alert(getLocaleMsg(LangHandle.TradeTypeError));
             }
             if (!marketService.isMarketIdExist(marketId)) {
-                Wrapper.alert(getLocaleMsg(LangHandle.MarketIdNotExist));
+                return Wrapper.alert(getLocaleMsg(LangHandle.MarketIdNotExist));
             }
-            tradeService.savePendingTrade(userAddress, txHash, type, marketId, sut, ct);
-            return Wrapper.success();
+            if (tradeService.isTxHashExist(txHash)) {
+                return Wrapper.alert(getLocaleMsg(LangHandle.TradeTxHashRepeat));
+            }
+            Trade trade = tradeService.savePendingTrade(userAddress, txHash, type, marketId, sut, ct);
+            return Wrapper.success(trade);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return Wrapper.sysError();
