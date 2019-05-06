@@ -1,6 +1,6 @@
 
-# drop database if exists smartup_node;
-# create database smartup_node character set utf8 collate utf8_general_ci;
+drop database if exists smartup_node;
+create database smartup_node character set utf8mb4 collate utf8mb4_general_ci;
 -- ===================================================================================
 use smartup_node;
 -- ===================================================================================
@@ -15,7 +15,7 @@ create table user (
 );
 
 drop table if exists user_market_data;
-create table user (
+create table user_market_data (
   user_address varchar(42),
   market_id varchar(32),
   post_count int(11),
