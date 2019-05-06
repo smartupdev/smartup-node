@@ -427,6 +427,9 @@ public class MarketService {
     public Pagination<Market> querySearchPage(String userAddress, String name, String orderBy, Boolean asc, Integer pageNumb, Integer pageSize) {
         if (StringUtils.isBlank(name)) {
             name = null;
+        } else {
+            name = name.replace("_", "\\_");
+            name = name.replace("%", "\\%");
         }
         List<String> orders = Arrays.asList("lately_change", "last", "lately_volume", "amount", "count");
         if (StringUtils.isBlank(orderBy)|| !orders.contains(orderBy)) {
