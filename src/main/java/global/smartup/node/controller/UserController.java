@@ -151,10 +151,13 @@ public class UserController extends BaseController {
             if (err != null) {
                 return Wrapper.alert(err);
             }
-            if (!userService.isExist(user.getUserAddress())) {
+            User db = userService.query(user.getUserAddress());
+            if (db == null) {
                 return Wrapper.alert(getLocaleMsg(LangHandle.UserAddressNotExist));
             }
-            User db = userService.query(user.getUserAddress());
+            if (db.getName() != null && user.getName() != null) {
+                return Wrapper.alert(getLocaleMsg(LangHandle.UserNameCanNotChange));
+            }
             if (db.getName() == null && user.getName() != null) {
                 if (userService.isNameExist(user.getName())) {
                     return Wrapper.alert(getLocaleMsg(LangHandle.UserNameRepeatError));

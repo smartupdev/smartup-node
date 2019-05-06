@@ -35,6 +35,8 @@ public class LangHandle {
 
 	public static final String PostUserAddressFormatError = "post_user_address_format_error";
 
+	public static final String UserNameCanNotChange = "user_name_can_not_change";
+
 	public static final String MarketTxHashRepeatError = "market_tx_hash_repeat_error";
 
 	public static final String MarketNameLengthError = "market_name_length_error";
