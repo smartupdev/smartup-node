@@ -49,7 +49,13 @@ public class TradeService {
         tradeMapper.insert(trade);
 
         // save transaction
-        transactionService.addTrade(txHash, type, userAddress, marketId, market.getMarketAddress(), sut, ct);
+        String transType;
+        if (PoConstant.Trade.Type.Buy.equals(type)) {
+            transType = PoConstant.Transaction.Type.BuyCT;
+        } else {
+            transType = PoConstant.Transaction.Type.SellCT;
+        }
+        transactionService.addTrade(txHash, transType, userAddress, marketId, market.getMarketAddress(), sut, ct);
 
         return trade;
     }
