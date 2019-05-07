@@ -252,6 +252,17 @@ public class PostService {
         return postDataMapper.selectCountByExample(example);
     }
 
+    public void fillPostForReply(List<Reply> replies) {
+        if (replies == null || replies.size() <= 0) {
+            return;
+        }
+        List<Long> postIds = replies.stream().map(Reply::getPostId).collect(Collectors.toList());
+        Example example = new Example(Post.class);
+        example.createCriteria().andIn("postId", postIds);
+        List<Post> postList = postMapper.selectByExample(example);
+        replies.forEach(r -> r.setPost(postList.stream().filter(p -> p.getPostId().equals(r.getPostId())).findFirst().orElse(null)));
+    }
+
     private void fillPostData(List<Post> posts) {
         if (posts == null || posts.size() <= 0) {
             return;

@@ -51,6 +51,9 @@ public class ReplyService {
     @Autowired
     private CollectService collectService;
 
+    @Autowired
+    private PostService postService;
+
 
     public void add(Reply reply) {
         Long id = idGenerator.getId();
@@ -209,6 +212,7 @@ public class ReplyService {
         Page<Reply> page = PageHelper.startPage(pageNumb, pageSize);
         replyMapper.selectByExample(example);
 
+        postService.fillPostForReply(page.getResult());
         userService.fillUserForReply(page.getResult());
         likeService.queryFillLikeForReplies(userAddress, page.getResult());
         collectService.fillCollectForReplies(userAddress, page.getResult());
@@ -232,6 +236,7 @@ public class ReplyService {
         Page<Reply> page = PageHelper.startPage(pageNumb, pageSize);
         replyMapper.selectByExample(example);
 
+        postService.fillPostForReply(page.getResult());
         userService.fillUserForReply(page.getResult());
         likeService.queryFillLikeForReplies(userAddress, page.getResult());
         collectService.fillCollectForReplies(userAddress, page.getResult());

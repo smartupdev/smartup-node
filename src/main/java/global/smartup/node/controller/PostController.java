@@ -150,6 +150,7 @@ public class PostController extends BaseController {
                         "　replyId, postId, fatherId, userAddress, content, createTime, isLiked, isDisliked, isCollected, marketId\n" +
                         "　user = { 见/api/user/current }\n" +
                         "　data = { replyId, likeCount, dislikeCount }\n" +
+                        "　post = { 见/api/post/one }\n" +
                         "　childrenPage = {\n" +
                         "　　list = [ {见此obj}, ... ]\n" +
                         "　}\n" +
