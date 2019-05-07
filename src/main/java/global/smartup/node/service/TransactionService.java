@@ -36,6 +36,17 @@ public class TransactionService {
     @Autowired
     private MarketService marketService;
 
+    public void addPending(String txHash, String type) {
+        Transaction tx = transactionMapper.selectByPrimaryKey(txHash);
+        if (tx == null) {
+            tx = new Transaction();
+            tx.setTxHash(txHash);
+            tx.setStage(PoConstant.TxStage.Pending);
+            tx.setType(type);
+            tx.setCreateTime(new Date());
+            transactionMapper.insert(tx);
+        }
+    }
 
     public void addCreateMarket(String txHash, String marketId, String userAddress) {
         Transaction ts = query(txHash);
@@ -122,6 +133,14 @@ public class TransactionService {
         example.createCriteria().andGreaterThan("blockTime", time).andLessThanOrEqualTo("blockTime", end);
         int count = transactionMapper.selectCountByExample(example);
         return count == 0;
+    }
+
+    public List<Transaction> queryPendingList() {
+        Example example = new Example(Transaction.class);
+        example.createCriteria()
+                .andEqualTo("stage", PoConstant.TxStage.Pending)
+                .andGreaterThan("createTime", Common.getSomeHoursAgo(new Date(), 24));
+        return transactionMapper.selectByExample(example);
     }
 
     public Transaction query(String txHash) {

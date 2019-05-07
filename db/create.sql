@@ -29,7 +29,7 @@ create table `transaction` (
   tx_hash varchar(66) primary key ,
   stage varchar(16),
   type varchar(32) not null,
-  user_address varchar(42) not null,
+  user_address varchar(42),
   market_id varchar(42),
   market_address varchar(42),
   detail varchar(1024),

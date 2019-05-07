@@ -16,6 +16,7 @@ import org.web3j.protocol.core.methods.response.Transaction;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class BlockService {
@@ -57,7 +58,7 @@ public class BlockService {
         try {
             for (EthBlock.TransactionResult tx : block.getTransactions()) {
                 Transaction transaction = (Transaction) tx.get();
-                parseTx(block, transaction);
+                parseTx(transaction);
             }
         } catch (Exception e) {
             log.error("Handle block exception, number = {}", block.getNumber().toString());
@@ -65,7 +66,8 @@ public class BlockService {
         }
     }
 
-    public void parseTx(EthBlock.Block block, Transaction tx) {
+    // 解析区块中的交易，放置到数据库中，作为pending待处理
+    private void parseTx(Transaction tx) {
         if (tx == null || tx.getTo() == null) {
             return;
         }
@@ -79,12 +81,15 @@ public class BlockService {
 
                 //  call create market
                 if (input.endsWith(MarketCreateInfo.ByteLastFlag)) {
-                    handleCreateMarket(block, tx);
+                    // handleCreateMarket(block, tx);
+                    transactionService.addPending(tx.getHash(), PoConstant.Transaction.Type.CreateMarket);
+
                 }
 
                 // call buy CT
                 if (CTBuyInfo.isBuyCTTransaction(input, config.ethSmartupContract)) {
-                    handleBuyCT(block, tx);
+                    // handleBuyCT(block, tx);
+                    transactionService.addPending(tx.getHash(), PoConstant.Transaction.Type.BuyCT);
                 }
 
                 // appeal
@@ -98,7 +103,8 @@ public class BlockService {
 
             // call sell CT
             if (input.startsWith(Constant.CT.Sell)) {
-                handleSellCT(block, tx);
+                // handleSellCT(block, tx);
+                transactionService.addPending(tx.getHash(), PoConstant.Transaction.Type.SellCT);
             }
 
             // // call sut proposal
@@ -143,13 +149,38 @@ public class BlockService {
 
     }
 
+    // 处理数据库中pending中的交易
+    public void handlePendingTransaction() {
+        List<global.smartup.node.po.Transaction> transactionList = transactionService.queryPendingList();
+        for (global.smartup.node.po.Transaction tr : transactionList) {
+            Transaction tx = ethClient.getTx(tr.getTxHash());
+            TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
+            EthBlock.Block block = ethClient.getBlockByNumber(tx.getBlockNumber(), false);
+            if (tx == null || receipt == null || block == null) {
+                // 有可能节点还没有同步到收据，放置到下一次处理
+                continue;
+            }
+            Date blockTime = new Date(block.getTimestamp().longValue() * 1000);
 
-    private void handleCreateMarket(EthBlock.Block block, Transaction tx) {
+            if (PoConstant.Transaction.Type.CreateMarket.equals(tr.getType())) {
+                handleCreateMarket(blockTime, tx, receipt);
+            }
+
+            if (PoConstant.Transaction.Type.BuyCT.equals(tr.getType())) {
+                handleBuyCT(blockTime, tx, receipt);
+            }
+
+            if (PoConstant.Transaction.Type.SellCT.equals(tr.getType())) {
+                handleSellCT(blockTime, tx, receipt);
+            }
+        }
+    }
+
+
+    private void handleCreateMarket(Date blockTime, Transaction tx, TransactionReceipt receipt) {
         log.info("Handle create market txHash = {}", tx.getHash());
 
-        Date blockTime = new Date(block.getTimestamp().longValue() * 1000);
         String from = Keys.toChecksumAddress(tx.getFrom());
-        TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
 
         Market market = marketService.queryCurrentCreating(from);
         if (market == null) {
@@ -191,19 +222,17 @@ public class BlockService {
 
     }
 
-    private void handleBuyCT(EthBlock.Block block, Transaction tx) {
+    private void handleBuyCT(Date blockTime, Transaction tx, TransactionReceipt receipt) {
         log.info("Handle buy CT txHash = {}", tx.getHash());
 
         if (tradeService.isTxHashHandled(tx.getHash())) {
             return;
         }
 
-        Date blockTime = new Date(block.getTimestamp().longValue() * 1000);
         String from = Keys.toChecksumAddress(tx.getFrom());
 
         CTBuyInfo info = new CTBuyInfo();
         info.parseTransaction(tx);
-        TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
 
         Market market = marketService.queryByAddress(info.getInputMarketAddress());
         if (market == null) {
@@ -253,14 +282,13 @@ public class BlockService {
 
     }
 
-    private void handleSellCT(EthBlock.Block block, Transaction tx) {
+    private void handleSellCT(Date blockTime, Transaction tx, TransactionReceipt receipt) {
         log.info("Handle sell CT txHash = {}", tx.getHash());
 
         if (tradeService.isTxHashHandled(tx.getHash())) {
             return;
         }
 
-        Date blockTime = new Date(block.getTimestamp().longValue() * 1000);
         String from = Keys.toChecksumAddress(tx.getFrom());
         String to = Keys.toChecksumAddress(tx.getTo());
         Market market = marketService.queryByAddress(to);
@@ -271,7 +299,6 @@ public class BlockService {
 
         CTSellInfo info = new CTSellInfo();
         info.parseTransaction(tx);
-        TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
 
         if (ethClient.isTransactionFail(receipt)) {
             // save

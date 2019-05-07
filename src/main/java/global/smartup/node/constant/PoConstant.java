@@ -5,6 +5,7 @@ public class PoConstant {
 
     public static class TxStage {
 
+        @Deprecated
         public static final String Creating = "creating";
 
         public static final String Pending = "pending";
