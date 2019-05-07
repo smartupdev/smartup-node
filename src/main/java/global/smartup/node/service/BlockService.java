@@ -178,7 +178,13 @@ public class BlockService {
 
 
     private void handleCreateMarket(Date blockTime, Transaction tx, TransactionReceipt receipt) {
+
+        if (transactionService.isTxHashHandled(tx.getHash())) {
+            return;
+        }
+
         log.info("Handle create market txHash = {}", tx.getHash());
+
 
         String from = Keys.toChecksumAddress(tx.getFrom());
 
@@ -223,11 +229,12 @@ public class BlockService {
     }
 
     private void handleBuyCT(Date blockTime, Transaction tx, TransactionReceipt receipt) {
-        log.info("Handle buy CT txHash = {}", tx.getHash());
 
-        if (tradeService.isTxHashHandled(tx.getHash())) {
+        if (transactionService.isTxHashHandled(tx.getHash())) {
             return;
         }
+
+        log.info("Handle buy CT txHash = {}", tx.getHash());
 
         String from = Keys.toChecksumAddress(tx.getFrom());
 
@@ -283,11 +290,12 @@ public class BlockService {
     }
 
     private void handleSellCT(Date blockTime, Transaction tx, TransactionReceipt receipt) {
-        log.info("Handle sell CT txHash = {}", tx.getHash());
 
-        if (tradeService.isTxHashHandled(tx.getHash())) {
+        if (transactionService.isTxHashHandled(tx.getHash())) {
             return;
         }
+
+        log.info("Handle sell CT txHash = {}", tx.getHash());
 
         String from = Keys.toChecksumAddress(tx.getFrom());
         String to = Keys.toChecksumAddress(tx.getTo());

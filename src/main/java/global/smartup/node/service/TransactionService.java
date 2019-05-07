@@ -137,6 +137,17 @@ public class TransactionService {
         return count == 0;
     }
 
+    public boolean isTxHashHandled(String txHash) {
+        Transaction t = transactionMapper.selectByPrimaryKey(txHash);
+        if (t == null) {
+            return false;
+        }
+        if (t.getStage().equals(PoConstant.TxStage.Pending)) {
+            return false;
+        }
+        return true;
+    }
+
     public List<Transaction> queryPendingList() {
         Example example = new Example(Transaction.class);
         example.createCriteria()
