@@ -91,9 +91,6 @@ public class KlineNodeService {
             String timeId = Common.getTimeId(segment, blockTime);
             KlineNode node = queryNodeByTimeId(marketAddress, segment, timeId);
 
-            // 判断是否是插入的交易
-            boolean isLastTrade = transactionService.isLastTradeTransactionInSegment(blockTime, segment);
-
             if (node == null) {
                 BigDecimal start = queryLastPrice(marketAddress, segment, blockTime);
                 start = start != null ? start : price;
@@ -105,6 +102,11 @@ public class KlineNodeService {
                 if (price.compareTo(node.getLow()) < 0) {
                     node.setLow(price);
                 }
+
+                // 判断是否是一个阶段的最后一笔的交易
+                boolean isLastTrade = transactionService.isLastTradeTransactionInSegment(marketAddress, blockTime, segment);
+
+                // 如果是最后一笔才能修改end，因为有可能后来插入的交易
                 if (isLastTrade) {
                     node.setEnd(price);
                 }

@@ -127,10 +127,12 @@ public class TransactionService {
         transactionMapper.insert(ts);
     }
 
-    public boolean isLastTradeTransactionInSegment(Date time, String segment) {
+    public boolean isLastTradeTransactionInSegment(String marketAddress, Date time, String segment) {
         Date end = Common.getEndTimeInSegment(segment, time);
         Example example = new Example(Transaction.class);
-        example.createCriteria().andGreaterThan("blockTime", time).andLessThanOrEqualTo("blockTime", end);
+        example.createCriteria()
+                .andEqualTo("marketAddress", marketAddress)
+                .andGreaterThan("blockTime", time).andLessThanOrEqualTo("blockTime", end);
         int count = transactionMapper.selectCountByExample(example);
         return count == 0;
     }
