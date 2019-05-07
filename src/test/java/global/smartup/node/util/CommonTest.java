@@ -75,4 +75,16 @@ public class CommonTest {
         }
     }
 
+    @Test
+    public void getNextTimeId() {
+        String nextTimeId = Common.getNextTimeId(PoConstant.KLineNode.Segment.Week, new Date());
+        System.out.println(nextTimeId);
+    }
+
+    @Test
+    public void getEndTimeInSegment() {
+        Date date = Common.getEndTimeInSegment(PoConstant.KLineNode.Segment.Week, Common.parseSimpleTime("2018-12-30 00:00:00"));
+        System.out.println(DateFormatUtils.format(date, Common.SimpleFormatter));
+    }
+
 }

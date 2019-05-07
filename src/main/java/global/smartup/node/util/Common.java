@@ -16,6 +16,21 @@ public class Common {
 
     public static final String letters = "abcdefghijklmnopqrstuvwxyz";
 
+    public static final String SimpleFormatter = "yyyy-MM-dd HH:mm:ss";
+
+    public static String formatSimpleTime(Date time) {
+        return DateFormatUtils.format(time, SimpleFormatter);
+    }
+
+    public static Date parseSimpleTime(String time) {
+        try {
+            return DateUtils.parseDate(time, SimpleFormatter);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     public static long bytes2Long(byte[] byteNum) {
         long num = 0;
         for (int ix = 0; ix < 8; ++ix) {
@@ -62,6 +77,36 @@ public class Common {
             return c.getTime();
         }
         return date;
+    }
+
+    public static String getNextTimeId(String segment, Date date) {
+        String nextTimeId = null;
+        if (segment == null || date == null) {
+            return nextTimeId;
+        }
+        try {
+            if (segment.equals(PoConstant.KLineNode.Segment.Hour)) {
+                Calendar c = Calendar.getInstance();
+                c.setTime(date);
+                c.add(Calendar.HOUR_OF_DAY, 1);
+                nextTimeId = DateFormatUtils.format(c.getTime(), BuConstant.KlineIdFormatHour);
+            } else if (segment.equals(PoConstant.KLineNode.Segment.Day)) {
+                Calendar c = Calendar.getInstance();
+                c.setTime(date);
+                c.add(Calendar.DAY_OF_MONTH, 1);
+                nextTimeId = DateFormatUtils.format(c.getTime(), BuConstant.KlineIdFormatDay);
+            } else if (segment.equals(PoConstant.KLineNode.Segment.Week)) {
+                Calendar c = Calendar.getInstance();
+                c.setTime(date);
+                c.setFirstDayOfWeek(Calendar.SUNDAY);
+                c.set(Calendar.DAY_OF_WEEK, c.getFirstDayOfWeek());
+                c.add(Calendar.DAY_OF_YEAR, 7);
+                nextTimeId = DateFormatUtils.format(c.getTime(), BuConstant.KlineIdFormatWeek);
+            }
+        } catch (Exception e) {
+            return nextTimeId;
+        }
+        return nextTimeId;
     }
 
     public static String getLastTimeId(String segment, Date date) {
@@ -173,7 +218,36 @@ public class Common {
         return list;
     }
 
-
+    public static Date getEndTimeInSegment(String segment, Date time) {
+        if (segment == null) {
+            return null;
+        }
+        if (segment.equals(PoConstant.KLineNode.Segment.Hour)) {
+            Calendar c = Calendar.getInstance();
+            c.setTime(time);
+            c.set(Calendar.MINUTE, 59);
+            c.set(Calendar.SECOND, 59);
+            return c.getTime();
+        } else if (segment.equals(PoConstant.KLineNode.Segment.Day)) {
+            Calendar c = Calendar.getInstance();
+            c.setTime(time);
+            c.set(Calendar.HOUR_OF_DAY, 23);
+            c.set(Calendar.MINUTE, 59);
+            c.set(Calendar.SECOND, 59);
+            return c.getTime();
+        } else if (segment.equals(PoConstant.KLineNode.Segment.Week)) {
+            Calendar c = Calendar.getInstance();
+            c.setTime(time);
+            c.setFirstDayOfWeek(Calendar.SUNDAY);
+            c.set(Calendar.DAY_OF_WEEK, c.getFirstDayOfWeek());
+            c.set(Calendar.HOUR_OF_DAY, 23);
+            c.set(Calendar.MINUTE, 59);
+            c.set(Calendar.SECOND, 59);
+            c.add(Calendar.DAY_OF_YEAR, 6);
+            return c.getTime();
+        }
+        return null;
+    }
 
     public static Boolean isFuture(String segment, String timeId) {
         try {

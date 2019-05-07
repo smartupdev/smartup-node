@@ -34,6 +34,10 @@ public class KlineNodeService {
     @Autowired
     private RedisTemplate redisTemplate;
 
+    @Autowired
+    private TransactionService transactionService;
+
+
     public synchronized KlineNode createNode(String marketAddress, String segment, Date date,
                                              BigDecimal start, BigDecimal end, BigDecimal amount,  Long count) {
         String timeId = Common.getTimeId(segment, date);
@@ -78,18 +82,22 @@ public class KlineNodeService {
         updateNodeByChain(marketAddress, sut, ct, time);
     }
 
-    public void updateNodeByChain(String marketAddress, BigDecimal sut, BigDecimal ct, Date time) {
+    public void updateNodeByChain(String marketAddress, BigDecimal sut, BigDecimal ct, Date blockTime) {
         // cal price
         BigDecimal price = sut.divide(ct, 20, RoundingMode.DOWN);
 
         // update every segment node
         for (String segment : PoConstant.KLineNode.Segment.All) {
-            String timeId = Common.getTimeId(segment, time);
+            String timeId = Common.getTimeId(segment, blockTime);
             KlineNode node = queryNodeByTimeId(marketAddress, segment, timeId);
+
+            // 判断是否是插入的交易
+            boolean isLastTrade = transactionService.isLastTradeTransactionInSegment(blockTime, segment);
+
             if (node == null) {
-                BigDecimal start = queryLastPrice(marketAddress, segment, time);
+                BigDecimal start = queryLastPrice(marketAddress, segment, blockTime);
                 start = start != null ? start : price;
-                createNode(marketAddress, segment, time, start, price, sut, 1L);
+                node = createNode(marketAddress, segment, blockTime, start, price, sut, 1L);
             } else {
                 if (price.compareTo(node.getHigh()) > 0) {
                     node.setHigh(price);
@@ -97,14 +105,54 @@ public class KlineNodeService {
                 if (price.compareTo(node.getLow()) < 0) {
                     node.setLow(price);
                 }
-                node.setEnd(price);
+                if (isLastTrade) {
+                    node.setEnd(price);
+                }
                 node.setAmount(node.getAmount().add(sut));
                 node.setCount(node.getCount() + 1);
                 klineNodeMapper.updateByPrimaryKey(node);
 
                 // remove cache
                 removeCache(marketAddress, segment, timeId);
+
             }
+
+            // update node already existed
+            KlineNode next = queryNextNode(marketAddress, segment, blockTime);
+            if (next != null) {
+                updateFixExistedNode(node.getEnd(), next);
+            }
+
+        }
+    }
+
+    // 因为插入了新的交易，end price 改变，需要修复已经存在kline
+    public void updateFixExistedNode(BigDecimal end, KlineNode next) {
+        if (end.compareTo(next.getStart()) == 0) {
+            return;
+        }
+        next.setStart(end);
+        if (next.getCount() <= 0) {
+            next.setEnd(end);
+            next.setHigh(end);
+            next.setLow(end);
+        } else {
+            if (end.compareTo(next.getHigh()) > 0) {
+                next.setHigh(end);
+            }
+            if (end.compareTo(next.getLow()) < 0) {
+                next.setLow(end);
+            }
+        }
+        klineNodeMapper.updateByPrimaryKey(next);
+
+        // remove cache
+        removeCache(next.getMarketAddress(), next.getSegment(), next.getTimeId());
+
+        // loop
+        KlineNode next2 = queryNextNode(next.getMarketAddress(), next.getSegment(), next.getTime());
+        if (next2 != null) {
+            updateFixExistedNode(next.getEnd(), next2);
         }
     }
 
@@ -170,6 +218,14 @@ public class KlineNodeService {
         cdt.setSegment(segment);
         cdt.setTimeId(timeId);
         return klineNodeMapper.selectOne(cdt);
+    }
+
+    public KlineNode queryNextNode(String marketAddress, String segment, Date time) {
+        if (StringUtils.isAnyBlank(marketAddress, segment) || time == null) {
+            return null;
+        }
+        String lastId = Common.getNextTimeId(segment, time);
+        return queryNodeByTimeId(marketAddress, segment, lastId);
     }
 
     public KlineNode queryLastNode(String marketAddress, String segment, Date time) {

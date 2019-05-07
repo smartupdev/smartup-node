@@ -8,6 +8,7 @@ import com.github.pagehelper.PageHelper;
 import global.smartup.node.constant.PoConstant;
 import global.smartup.node.mapper.TransactionMapper;
 import global.smartup.node.po.Transaction;
+import global.smartup.node.util.Common;
 import global.smartup.node.util.Pagination;
 import global.smartup.node.vo.Tx;
 import org.apache.commons.lang3.StringUtils;
@@ -113,6 +114,14 @@ public class TransactionService {
         ts.setCreateTime(createTime);
         ts.setBlockTime(blockTime);
         transactionMapper.insert(ts);
+    }
+
+    public boolean isLastTradeTransactionInSegment(Date time, String segment) {
+        Date end = Common.getEndTimeInSegment(segment, time);
+        Example example = new Example(Transaction.class);
+        example.createCriteria().andGreaterThan("blockTime", time).andLessThanOrEqualTo("blockTime", end);
+        int count = transactionMapper.selectCountByExample(example);
+        return count == 0;
     }
 
     public Transaction query(String txHash) {

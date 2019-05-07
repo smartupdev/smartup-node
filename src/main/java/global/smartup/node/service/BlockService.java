@@ -101,45 +101,45 @@ public class BlockService {
                 handleSellCT(block, tx);
             }
 
-            // call sut proposal
-            if (input.startsWith(Constant.CT.SutProposal)) {
-                handleSutProposal(block, tx);
-            }
-
-            // call sut proposal vote
-            if (input.startsWith(Constant.CT.SutProposalVote)) {
-                handleSutProposalVote(block, tx);
-            }
-
-            // call sut proposal finish
-            if (input.startsWith(Constant.CT.SutProposalFinish)) {
-                handleSutProposalFinish(block, tx);
-            }
-
-            //  call suggest proposal
-            if (input.startsWith(Constant.CT.SuggestProposal)) {
-                handleSuggestProposal(block, tx);
-            }
-
-            // call suggest proposal vote
-            if (input.startsWith(Constant.CT.SuggestProposalVote)) {
-                handleSuggestProposalVote(block, tx);
-            }
-
-            // call suggest proposal finish
-            if (input.startsWith(Constant.CT.SuggestProposalFinish)) {
-                handleSuggestProposalFinish(block, tx);
-            }
-
-        }
-
-        // call SmartUp
-        if (to.equals(config.ethSmartupContract)) {
-            // flag
-
-            // flag vote
+            // // call sut proposal
+            // if (input.startsWith(Constant.CT.SutProposal)) {
+            //     handleSutProposal(block, tx);
+            // }
+            //
+            // // call sut proposal vote
+            // if (input.startsWith(Constant.CT.SutProposalVote)) {
+            //     handleSutProposalVote(block, tx);
+            // }
+            //
+            // // call sut proposal finish
+            // if (input.startsWith(Constant.CT.SutProposalFinish)) {
+            //     handleSutProposalFinish(block, tx);
+            // }
+            //
+            // //  call suggest proposal
+            // if (input.startsWith(Constant.CT.SuggestProposal)) {
+            //     handleSuggestProposal(block, tx);
+            // }
+            //
+            // // call suggest proposal vote
+            // if (input.startsWith(Constant.CT.SuggestProposalVote)) {
+            //     handleSuggestProposalVote(block, tx);
+            // }
+            //
+            // // call suggest proposal finish
+            // if (input.startsWith(Constant.CT.SuggestProposalFinish)) {
+            //     handleSuggestProposalFinish(block, tx);
+            // }
 
         }
+
+        // // call SmartUp
+        // if (to.equals(config.ethSmartupContract)) {
+        //     // flag
+        //
+        //     // flag vote
+        //
+        // }
 
     }
 
