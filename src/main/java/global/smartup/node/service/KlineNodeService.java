@@ -1,6 +1,7 @@
 package global.smartup.node.service;
 
 import com.alibaba.fastjson.JSON;
+import com.github.pagehelper.PageHelper;
 import global.smartup.node.constant.PoConstant;
 import global.smartup.node.constant.RedisKey;
 import global.smartup.node.eth.info.CTBuyInfo;
@@ -169,13 +170,72 @@ public class KlineNodeService {
 
                 // remove cache
                 removeCache(marketAddress, segment, timeId);
+            } else {
+                // 判断k线出现了断裂
+                if (hasNode(marketAddress)) {
+                    KlineNode breakNode = queryBreakNode(marketAddress, segment);
+                    if (breakNode != null) {
+                        keepBreakNode(breakNode);
+                    }
+                }
             }
         }
+    }
+
+    public void keepBreakNode(KlineNode node) {
+        if (node == null) {
+            return;
+        }
+        Date nextTime = Common.getNextTime(node.getSegment(), node.getTime());
+        if (nextTime.getTime() > System.currentTimeMillis()) {
+            return;
+        }
+        KlineNode next = queryNextNode(node.getMarketAddress(), node.getSegment(), node.getTime());
+        if (next != null) {
+            return;
+        }
+        next = new KlineNode();
+        next.setMarketAddress(node.getMarketAddress());
+        next.setSegment(node.getSegment());
+        next.setHigh(node.getEnd());
+        next.setLow(node.getEnd());
+        next.setStart(node.getEnd());
+        next.setEnd(node.getEnd());
+        next.setCount(0L);
+        next.setAmount(BigDecimal.ZERO);
+        next.setTimeId(Common.getNextTimeId(node.getSegment(), node.getTime()));
+        next.setTime(nextTime);
+        klineNodeMapper.insert(next);
+
+        // remove cache
+        removeCache(next.getMarketAddress(), next.getSegment(), next.getTimeId());
+
+        // loop
+        keepBreakNode(next);
+    }
+
+    public boolean hasNode(String marketAddress) {
+        KlineNode cdt = new KlineNode();
+        cdt.setMarketAddress(marketAddress);
+        PageHelper.startPage(1, 1, false);
+        List<KlineNode> list = klineNodeMapper.select(cdt);
+        return list.size() > 0;
     }
 
     public void removeCache(String marketAddress, String segment, String timeId) {
         String key = RedisKey.KlinePrefix + marketAddress + ":" + segment + ":" + timeId;
         redisTemplate.delete(key);
+    }
+
+    public KlineNode queryBreakNode(String marketAddress, String segment) {
+        Example example = new Example(KlineNode.class);
+        example.createCriteria()
+                .andEqualTo("marketAddress", marketAddress)
+                .andEqualTo("segment", segment);
+        example.orderBy("time").desc();
+        PageHelper.startPage(1, 1, false);
+        List<KlineNode> list = klineNodeMapper.selectByExample(example);
+        return list.size() > 0 ? list.get(0) : null;
     }
 
     public Map<String, KlineNode> querySegmentNodes(String marketAddress, Date time) {

@@ -22,7 +22,7 @@ public class KlineJob {
     @Autowired
     private MarketService marketService;
 
-    @Scheduled(cron = "0 0 * * * ?")
+    @Scheduled(cron = "1 0 * * * ?")
     public void keepNodeContinue() {
         List<String> markets = marketService.queryBuiltAndHasTrade();
         for (String market : markets) {

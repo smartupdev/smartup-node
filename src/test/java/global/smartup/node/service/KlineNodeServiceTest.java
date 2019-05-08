@@ -43,4 +43,9 @@ public class KlineNodeServiceTest {
                 Common.parseSimpleTime("2019-05-07 15:30:00"));
     }
 
+    @Test
+    public void keepNodeContinue() {
+        klineNodeService.keepNodeContinue("0x05e2394EC62C1A90b8F0a31da120C686344DDdE6", "1hour");
+    }
+
 }

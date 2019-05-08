@@ -109,6 +109,28 @@ public class Common {
         return nextTimeId;
     }
 
+    public static Date getNextTime(String segment, Date date) {
+        if (StringUtils.isBlank(segment) || date == null) {
+            return null;
+        }
+        Calendar c = Calendar.getInstance();
+        if (segment.equals(PoConstant.KLineNode.Segment.Hour)) {
+            c.setTime(date);
+            c.add(Calendar.HOUR_OF_DAY, 1);
+            return c.getTime();
+        } else if (segment.equals(PoConstant.KLineNode.Segment.Day)) {
+            c.setTime(date);
+            c.add(Calendar.DAY_OF_MONTH, 1);
+            return c.getTime();
+        } else if (segment.equals(PoConstant.KLineNode.Segment.Week)) {
+            c.setTime(date);
+            c.setFirstDayOfWeek(Calendar.SUNDAY);
+            c.set(Calendar.DAY_OF_WEEK, c.getFirstDayOfWeek());
+            c.add(Calendar.DAY_OF_YEAR, 7);
+        }
+        return c.getTime();
+    }
+
     public static String getLastTimeId(String segment, Date date) {
         String lastTimeId = null;
         if (segment == null || date == null) {

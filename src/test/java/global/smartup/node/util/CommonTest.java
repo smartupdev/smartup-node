@@ -87,4 +87,10 @@ public class CommonTest {
         System.out.println(DateFormatUtils.format(date, Common.SimpleFormatter));
     }
 
+    @Test
+    public void getNextTime() {
+        Date d = Common.getNextTime("1hour", new Date());
+        System.out.println(Common.formatSimpleTime(d));
+    }
+
 }
