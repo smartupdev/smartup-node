@@ -267,6 +267,14 @@ public class MarketService {
         }
     }
 
+    public void updateLatelyChange() {
+        List<MarketData> dataList = marketDataMapper.selectAll();
+        for (MarketData data : dataList) {
+            data.setLatelyChange(klineNodeService.queryLatelyChange(data.getMarketAddress(), data.getLast(), 24));
+            marketDataMapper.updateByPrimaryKey(data);
+        }
+    }
+
     public boolean isNameRepeat(String userAddress, String name) {
         Market cdt = new Market();
         cdt.setName(name);
