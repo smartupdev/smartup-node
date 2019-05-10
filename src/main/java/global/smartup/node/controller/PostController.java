@@ -3,6 +3,7 @@ package global.smartup.node.controller;
 import global.smartup.node.compoment.Validator;
 import global.smartup.node.constant.LangHandle;
 import global.smartup.node.constant.PoConstant;
+import global.smartup.node.po.Market;
 import global.smartup.node.po.Post;
 import global.smartup.node.po.Reply;
 import global.smartup.node.service.*;
@@ -59,9 +60,14 @@ public class PostController extends BaseController {
             if (!PoConstant.Post.Type.isType(post.getType())) {
                 return Wrapper.alert(getLocaleMsg(LangHandle.PostTypeError));
             }
-            if (PoConstant.Post.Type.Market.equals(post.getType())
-                    && !marketService.isMarketIdExist(post.getMarketId())) {
-                return Wrapper.alert(getLocaleMsg(LangHandle.MarketIdNotExist));
+            if (PoConstant.Post.Type.Market.equals(post.getType())) {
+                Market market = marketService.queryById(post.getMarketId());
+                if (market == null) {
+                    return Wrapper.alert(getLocaleMsg(LangHandle.MarketIdNotExist));
+                }
+                if (!PoConstant.TxStage.Success.equals(market.getStage())) {
+                    return Wrapper.alert(getLocaleMsg(LangHandle.MarketStageIsPending));
+                }
             }
             postService.create(post);
             return Wrapper.success();

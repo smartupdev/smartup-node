@@ -57,6 +57,8 @@ public class LangHandle {
 
 	public static final String MarketIdNotExist = "market_id_not_exist";
 
+	public static final String MarketStageIsFail = "market_stage_is_fail";
+
 	public static final String MarketCreatorAddressFormatError = "market_creator_address_format_error";
 
 	public static final String TradeMarketAddressFormatError = "trade_market_address_format_error";
@@ -64,6 +66,8 @@ public class LangHandle {
 	public static final String ReplyContentLengthError = "reply_content_length_error";
 
 	public static final String MarketNameRepeat = "market_name_repeat";
+
+	public static final String MarketStageIsPending = "market_stage_is_pending";
 
 	public static final String CollectObjectNotExist = "collect_object_not_exist";
 
