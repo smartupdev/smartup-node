@@ -178,19 +178,14 @@ public class BlockService {
 
 
     private void handleCreateMarket(Date blockTime, Transaction tx, TransactionReceipt receipt) {
-
         if (transactionService.isTxHashHandled(tx.getHash())) {
             return;
         }
-
-        log.info("Handle create market txHash = {}", tx.getHash());
-
 
         String from = Keys.toChecksumAddress(tx.getFrom());
 
         Market market = marketService.queryCurrentCreating(from);
         if (market == null) {
-            log.error("Can not find creating market by user address = {}, tx hash = {}", from, tx.getHash());
             return;
         }
         MarketCreateInfo info = new MarketCreateInfo();
@@ -229,12 +224,9 @@ public class BlockService {
     }
 
     private void handleBuyCT(Date blockTime, Transaction tx, TransactionReceipt receipt) {
-
         if (transactionService.isTxHashHandled(tx.getHash())) {
             return;
         }
-
-        log.info("Handle buy CT txHash = {}", tx.getHash());
 
         String from = Keys.toChecksumAddress(tx.getFrom());
 
@@ -243,7 +235,6 @@ public class BlockService {
 
         Market market = marketService.queryByAddress(info.getInputMarketAddress());
         if (market == null) {
-            log.error("Can not find market address = {}", info.getInputMarketAddress());
             return;
         }
 
@@ -290,18 +281,14 @@ public class BlockService {
     }
 
     private void handleSellCT(Date blockTime, Transaction tx, TransactionReceipt receipt) {
-
         if (transactionService.isTxHashHandled(tx.getHash())) {
             return;
         }
-
-        log.info("Handle sell CT txHash = {}", tx.getHash());
 
         String from = Keys.toChecksumAddress(tx.getFrom());
         String to = Keys.toChecksumAddress(tx.getTo());
         Market market = marketService.queryByAddress(to);
         if (market == null) {
-            log.error("Can not find market address = {}", to);
             return;
         }
 
