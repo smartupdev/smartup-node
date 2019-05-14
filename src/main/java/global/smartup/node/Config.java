@@ -1,5 +1,6 @@
 package global.smartup.node;
 
+import global.smartup.node.filter.HeaderLocaleContextResolver;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
@@ -81,11 +82,7 @@ public class Config {
 
     @Bean
     public LocaleResolver localeResolver () {
-        CookieLocaleResolver cookieLocaleResolver = new CookieLocaleResolver();
-        cookieLocaleResolver.setDefaultLocale(Locale.ENGLISH);
-        cookieLocaleResolver.setCookieName("language");
-        cookieLocaleResolver.setCookieMaxAge(-1);
-        return cookieLocaleResolver;
+        return new HeaderLocaleContextResolver();
     }
 
     @Bean

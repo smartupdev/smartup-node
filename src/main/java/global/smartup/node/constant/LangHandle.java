@@ -41,8 +41,6 @@ public class LangHandle {
 
 	public static final String MarketNameLengthError = "market_name_length_error";
 
-	public static final String Language = "language";
-
 	public static final String PostNotExist = "post_not_exist";
 
 	public static final String AddressFormatError = "address_format_error";
@@ -78,6 +76,8 @@ public class LangHandle {
 	public static final String MarketNameEmptyError = "market_name_empty_error";
 
 	public static final String PostDescriptionEmptyError = "post_description_empty_error";
+
+	public static final String TestLanguage = "test_language";
 
 	public static final String CollectTypeError = "collect_type_error";
 
