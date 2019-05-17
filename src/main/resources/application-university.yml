@@ -27,7 +27,7 @@ spring:
     driver-class-name: com.mysql.jdbc.Driver
     url: jdbc:mysql://127.0.0.1/smartup_node?useSSL=false
     username: root
-    password: %0IuW@o^DGrcWeea
+    password: '%0IuW@o^DGrcWeea'
     sql-script-encoding: UTF-8
 
     druid:
@@ -39,7 +39,7 @@ spring:
   redis:
     host: 127.0.0.1
     port: 6379
-    password: %0IuW@o^DGrcWeea
+    password: '%0IuW@o^DGrcWeea'
     pool:
       max-active: 2
       min-idle: 1
