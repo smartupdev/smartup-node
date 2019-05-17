@@ -375,7 +375,9 @@ public class MarketService {
 
     public Pagination<Market> queryByCreator(String address, Integer pageNumb, Integer pageSize) {
         Example example = new Example(Market.class);
-        example.createCriteria().andEqualTo("creatorAddress", address);
+        example.createCriteria()
+                .andEqualTo("creatorAddress", address)
+                .andIn("status", Arrays.asList(PoConstant.Market.Status.Open, PoConstant.Market.Status.Close));
         example.orderBy("createTime").desc();
         Page<Market> page = PageHelper.startPage(pageNumb, pageSize);
         marketMapper.selectByExample(example);
