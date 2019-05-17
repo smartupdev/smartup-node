@@ -12,7 +12,7 @@ app:
 eth:
   protocol: http
   domain: 127.0.0.1
-  port: 80
+  port: 8080
 
   smartupContract: '0xfee003d3cac834b1a8d285252e22c8bb08563b8c'
   sutContract: '0xf1899c6eb6940021c1ae4e9c3a8e29ee93704b03'
