@@ -14,6 +14,14 @@ create table user (
   create_time datetime
 );
 
+drop table if exists user_account;
+create table user_account (
+  user_address varchar(42) primary key ,
+  sut decimal(40,20),
+  sut_amount decimal(40,20),
+  update_time datetime
+);
+
 drop table if exists user_market_data;
 create table user_market_data (
   user_address varchar(42),

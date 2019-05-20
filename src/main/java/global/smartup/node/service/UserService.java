@@ -1,12 +1,12 @@
 package global.smartup.node.service;
 
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import global.smartup.node.mapper.UserMapper;
 import global.smartup.node.mapper.UserMarketDataMapper;
-import global.smartup.node.po.Post;
-import global.smartup.node.po.Reply;
-import global.smartup.node.po.User;
-import global.smartup.node.po.UserMarketData;
+import global.smartup.node.po.*;
 import global.smartup.node.util.Common;
+import global.smartup.node.util.Pagination;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -127,10 +127,6 @@ public class UserService {
         return userMarketDataMapper.selectByPrimaryKey(dataId);
     }
 
-    public List<User> queryPage(Integer pageNumb, Integer pageSize) {
-        return userMapper.selectAll();
-    }
-
     public User query(String address) {
         address = Keys.toChecksumAddress(address);
         return userMapper.selectByPrimaryKey(address);
@@ -164,6 +160,12 @@ public class UserService {
         List<String> addressList = replies.stream().map(Reply::getUserAddress).collect(Collectors.toList());
         List<User> users = queryByAddressList(addressList);
         replies.forEach(p -> p.setUser(users.stream().filter(u -> u.getUserAddress().equals(p.getUserAddress())).findFirst().orElse(null)));
+    }
+
+    public void fillUserForAccount(List<UserAccount> list) {
+        List<String> addressList = list.stream().map(UserAccount::getUserAddress).collect(Collectors.toList());
+        List<User> users = queryByAddressList(addressList);
+        list.forEach(a -> a.setUser(users.stream().filter(u -> u.getUserAddress().equals(a.getUserAddress())).findFirst().orElse(null)));
     }
 
     public List<User> queryByAddressList(List<String> addressList) {
@@ -217,6 +219,12 @@ public class UserService {
             ret.add(userList.stream().filter(u -> a.equals(u.getUserAddress())).findFirst().orElse(null));
         });
         return ret;
+    }
+
+    public Pagination<User> queryPage(Integer pageNumb, Integer pageSize) {
+        Page<User> page = PageHelper.startPage(pageNumb, pageSize);
+        userMapper.selectAll();
+        return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
     }
 
 }

@@ -18,6 +18,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
+import javax.xml.soap.Node;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.ParseException;
@@ -296,6 +297,18 @@ public class KlineNodeService {
         }
         String lastId = Common.getLastTimeId(segment, time);
         return queryNodeByTimeId(marketAddress, segment, lastId);
+    }
+
+    public BigDecimal queryCurrentPrice(String marketAddress, String segment, Date time) {
+        String timeId = Common.getTimeId(segment, time);
+        if (timeId == null) {
+            return null;
+        }
+        KlineNode node = queryNodeByTimeId(marketAddress, segment, timeId);
+        if (node == null) {
+            return null;
+        }
+        return node.getEnd();
     }
 
     public BigDecimal queryLastPrice(String marketAddress, String segment, Date time) {

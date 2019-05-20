@@ -120,6 +120,12 @@ public class CTAccountService {
         return ctAccountMapper.selectCountUserInMarket(marketAddress);
     }
 
+    public List<CTAccount> queryUserAll(String userAddress) {
+        CTAccount cdt = new CTAccount();
+        cdt.setUserAddress(userAddress);
+        return ctAccountMapper.select(cdt);
+    }
+
     private void fillMarketName(List<CTAccountWithMarket> list) {
         if (list == null && list.size() <= 0) {
             return;

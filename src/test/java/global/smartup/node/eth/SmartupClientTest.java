@@ -78,4 +78,12 @@ public class SmartupClientTest {
         System.out.println(b.toPlainString());
     }
 
+    @Test
+    public void getSutBalance() {
+        BigDecimal b = smartupClient.getSutBalance("0xB44940Be0eeA81a3D0dA22CC15208AF4744BeA8E");
+        if (b != null) {
+            System.out.println(b.toPlainString());
+        }
+    }
+
 }

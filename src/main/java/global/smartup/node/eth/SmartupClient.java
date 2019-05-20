@@ -1,5 +1,6 @@
 package global.smartup.node.eth;
 
+import global.smartup.node.Config;
 import global.smartup.node.constant.PoConstant;
 import global.smartup.node.po.Trade;
 import org.slf4j.Logger;
@@ -26,14 +27,35 @@ import java.math.BigInteger;
 import java.util.*;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.indexOfSubList;
 
 @Component
 public class SmartupClient {
 
     private static final Logger log = LoggerFactory.getLogger(SmartupClient.class);
 
+    private static Integer decimal = null;
+
     @Autowired
     private EthClient ethClient;
+
+    @Autowired
+    private Erc20Client erc20Client;
+
+    @Autowired
+    private Config config;
+
+    public BigDecimal getSutBalance(String address) {
+        BigDecimal ret = null;
+        if (decimal == null) {
+            decimal = erc20Client.getDecimals(config.ethSutContract);
+            if (decimal == null) {
+                return null;
+            }
+        }
+        ret = erc20Client.getBalance(config.ethSutContract, address, decimal);
+        return ret;
+    }
 
     public TransactionReceipt queryReceipt(String txHash) {
         return ethClient.getTxReceipt(txHash);
