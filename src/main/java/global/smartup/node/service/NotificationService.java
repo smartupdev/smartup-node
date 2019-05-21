@@ -6,6 +6,7 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import global.smartup.node.compoment.IdGenerator;
+import global.smartup.node.constant.LangHandle;
 import global.smartup.node.constant.PoConstant;
 import global.smartup.node.constant.RedisKey;
 import global.smartup.node.mapper.NotificationMapper;
@@ -18,16 +19,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.Keys;
 import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -51,21 +50,18 @@ public class NotificationService {
     @Autowired
     private IdGenerator idGenerator;
 
+    @Autowired
+    private MessageSource messageSource;
 
-    public void sendMarketCreateFinish(String txHash, boolean isSuccess, String marketId, String userAddress, String marketAddress, String name) {
+
+    public void sendMarketCreateFinish(String txHash, boolean isSuccess, String marketId, String userAddress, String marketAddress, String marketName) {
         userAddress = Keys.toChecksumAddress(userAddress);
         Notification ntfc = new Notification();
         HashMap<String, Object> content = new HashMap<>();
-        if (isSuccess) {
-            ntfc.setTitle("Market Is Created!");
-            ntfc.setText("Used 2500 SmartUp created market “" + name + "”");
-        } else {
-            ntfc.setTitle("Market Is Not Created!");
-            ntfc.setText("Unable to create market “" + name + "”");
-        }
         content.put("txHash", txHash);
         content.put("isSuccess", isSuccess);
         content.put("marketId", marketId);
+        content.put("marketName", marketName);
         content.put("userAddress", userAddress);
         content.put("marketAddress", marketAddress);
         ntfc.setUserAddress(userAddress);
@@ -86,28 +82,12 @@ public class NotificationService {
         userAddress = Keys.toChecksumAddress(userAddress);
         Notification ntfc = new Notification();
         HashMap<String, Object> content = new HashMap<>();
-        if (PoConstant.Trade.Type.Buy.equals(type)) {
-            if (isSuccess) {
-                ntfc.setTitle("Trade (Buy) Completed!");
-                ntfc.setText("Bought " + ct.toPlainString() + " token in " + marketName + ".");
-            } else {
-                ntfc.setTitle("Trade (Buy) Failed!");
-                ntfc.setText("Unable to buy " + ct.toPlainString() + " token in " + marketName + ".");
-            }
-        } else {
-            if (isSuccess) {
-                ntfc.setTitle("Trade (Sell) Completed!");
-                ntfc.setText("Sold " + ct.toPlainString() + " token in " + marketName + ".");
-            } else {
-                ntfc.setTitle("Trade (Sell) Failed!");
-                ntfc.setText("Unable to sell " + ct.toPlainString() + " token in " + marketName + "}.");
-            }
-        }
         content.put("txHash", txHash);
         content.put("isSuccess", isSuccess);
         content.put("userAddress", userAddress);
         content.put("type", type);
         content.put("marketId", marketId);
+        content.put("marketName", marketName);
         content.put("marketAddress", marketAddress);
         content.put("sut", sut);
         content.put("ct", ct);
@@ -247,7 +227,7 @@ public class NotificationService {
         }
     }
 
-    public UnreadNtfc queryUnreadInCache(String userAddress) {
+    public UnreadNtfc queryUnreadInCache(String userAddress, Locale locale) {
         userAddress = Keys.toChecksumAddress(userAddress);
         UnreadNtfc unreadNtfc = new UnreadNtfc();
         Integer count = 0;
@@ -268,6 +248,7 @@ public class NotificationService {
             Object listObj = redisTemplate.opsForValue().get(listKey);
             if (listObj != null) {
                 list = (List<Notification>) listObj;
+                handleI18n(list, locale);
                 unreadNtfc.setList(transferVo(list));
                 return unreadNtfc;
             }
@@ -286,7 +267,7 @@ public class NotificationService {
         return unreadNtfc;
     }
 
-    public Pagination<Ntfc> queryPage(String userAddress, Boolean unread, Integer pageNumb, Integer pageSize) {
+    public Pagination<Ntfc> queryPage(String userAddress, Boolean unread, Integer pageNumb, Integer pageSize, Locale locale) {
         userAddress = Keys.toChecksumAddress(userAddress);
         Example example = new Example(Notification.class);
         Example.Criteria criteria = example.createCriteria()
@@ -297,11 +278,12 @@ public class NotificationService {
         example.orderBy("createTime").desc();
         Page<Notification> page = PageHelper.startPage(pageNumb, pageSize);
         notificationMapper.selectByExample(example);
+        handleI18n(page.getResult(), locale);
         List<Ntfc> list = transferVo(page.getResult());
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), list);
     }
 
-    public Pagination<Ntfc> querySearch(String userAddress, String query, Integer pageNumb, Integer pageSize) {
+    public Pagination<Ntfc> querySearch(String userAddress, String query, Integer pageNumb, Integer pageSize, Locale locale) {
         userAddress = Keys.toChecksumAddress(userAddress);
         Example example = new Example(Notification.class);
         Example.Criteria criteria = example.createCriteria()
@@ -317,11 +299,67 @@ public class NotificationService {
         example.orderBy("createTime").desc();
         Page<Notification> page = PageHelper.startPage(pageNumb, pageSize);
         notificationMapper.selectByExample(example);
+        handleI18n(page.getResult(), locale);
         List<Ntfc> list = transferVo(page.getResult());
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), list);
     }
 
-    public List<Ntfc> transferVo(List<Notification> list) {
+    private void handleI18n(List<Notification> list, Locale locale) {
+        for (Notification n : list) {
+            HashMap map = JSON.parseObject(n.getContent(), HashMap.class, Feature.UseBigDecimal);
+            String title = null, text = null;
+
+            if (n.getType().equals(PoConstant.Notification.Type.MarketCreateFinish)) {
+                // create market
+
+                Boolean isS = (Boolean) map.get("isSuccess");
+                String marketName = (String) map.get("marketName");
+                if (isS) {
+                    title = messageSource.getMessage(LangHandle.NotificationTitleMarketCreateSuccess, null, locale);
+                    text = messageSource.getMessage(LangHandle.NotificationTextMarketCreateSuccess, new String[]{"2500", marketName}, locale);
+                } else {
+                    title = messageSource.getMessage(LangHandle.NotificationTitleMarketCreateFail, null, locale);
+                    text = messageSource.getMessage(LangHandle.NotificationTextMarketCreateFail, new String[]{marketName}, locale);
+                }
+            } else if (n.getType().equals(PoConstant.Notification.Type.TradeFinish)) {
+                //trade
+
+                Boolean isS = (Boolean) map.get("isSuccess");
+                String type = (String) map.get("type");
+                String marketName = (String) map.get("marketName");
+                Object ct =  map.get("ct");
+                String ctStr;
+                if (ct == null) {
+                    ctStr = "?";
+                } else if (ct instanceof BigDecimal) {
+                    ctStr = ((BigDecimal) ct).setScale(2, BigDecimal.ROUND_DOWN).toPlainString();
+                } else {
+                    ctStr = String.valueOf(ct);
+                }
+                if (PoConstant.Trade.Type.Buy.equals(type)) {
+                    if (isS) {
+                        title = messageSource.getMessage(LangHandle.NotificationTitleBuyCtSuccess, null, locale);
+                        text = messageSource.getMessage(LangHandle.NotificationTextBuyCtSuccess, new String[]{ctStr, marketName}, locale);
+                    } else {
+                        title = messageSource.getMessage(LangHandle.NotificationTitleBuyCtFail, null, locale);
+                        text = messageSource.getMessage(LangHandle.NotificationTextBuyCtFail, new String[]{ctStr, marketName}, locale);
+                    }
+                } else if (PoConstant.Trade.Type.Sell.equals(type)) {
+                    if (isS) {
+                        title = messageSource.getMessage(LangHandle.NotificationTitleSellCtSuccess, null, locale);
+                        text = messageSource.getMessage(LangHandle.NotificationTextSellCtSuccess, new String[]{ctStr, marketName}, locale);
+                    } else {
+                        title = messageSource.getMessage(LangHandle.NotificationTitleSellCtFail, null, locale);
+                        text = messageSource.getMessage(LangHandle.NotificationTextSellCtFail, new String[]{ctStr, marketName}, locale);
+                    }
+                }
+            }
+            n.setTitle(title);
+            n.setText(text);
+        }
+    }
+
+    private List<Ntfc> transferVo(List<Notification> list) {
         List<Ntfc> ret = new ArrayList<>();
         for (Notification notification : list) {
             Ntfc ntfc = new Ntfc();

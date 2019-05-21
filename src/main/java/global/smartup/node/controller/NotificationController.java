@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -37,7 +38,7 @@ public class NotificationController extends BaseController {
     public Object unread(HttpServletRequest request) {
         try {
             String userAddress = getLoginUserAddress(request);
-            UnreadNtfc ntfc = notificationService.queryUnreadInCache(userAddress);
+            UnreadNtfc ntfc = notificationService.queryUnreadInCache(userAddress, LocaleContextHolder.getLocale());
             return Wrapper.success(ntfc);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -58,7 +59,7 @@ public class NotificationController extends BaseController {
     @RequestMapping("/list")
     public Object list(HttpServletRequest request, Boolean unread, Integer pageNumb, Integer pageSize) {
         try {
-            Pagination page = notificationService.queryPage(getLoginUserAddress(request), unread, pageNumb, pageSize);
+            Pagination page = notificationService.queryPage(getLoginUserAddress(request), unread, pageNumb, pageSize, LocaleContextHolder.getLocale());
             return Wrapper.success(page);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -72,7 +73,7 @@ public class NotificationController extends BaseController {
     @RequestMapping("/search")
     public Object search(HttpServletRequest request, String query, Integer pageNumb, Integer pageSize) {
         try {
-            Pagination page = notificationService.querySearch(getLoginUserAddress(request), query, pageNumb, pageSize);
+            Pagination page = notificationService.querySearch(getLoginUserAddress(request), query, pageNumb, pageSize, LocaleContextHolder.getLocale());
             return Wrapper.success(page);
         } catch (Exception e) {
             log.error(e.getMessage(), e);

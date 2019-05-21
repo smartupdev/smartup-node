@@ -11,11 +11,15 @@ public class LangHandle {
 
 	public static final String MarketTxHashFormatError = "market_tx_hash_format_error";
 
+	public static final String NotificationTitleSellCtFail = "notification_title_sell_ct_fail";
+
 	public static final String TradeTxHashFormatError = "trade_tx_hash_format_error";
 
 	public static final String UserSignatureError = "user_signature_error";
 
 	public static final String UserNameRepeatError = "user_name_repeat_error";
+
+	public static final String NotificationTitleMarketCreateSuccess = "notification_title_market_create_success";
 
 	public static final String TradeTypeError = "trade_type_error";
 
@@ -33,6 +37,10 @@ public class LangHandle {
 
 	public static final String MarketTxHashEmptyError = "market_tx_hash_empty_error";
 
+	public static final String NotificationTitleSellCtSuccess = "notification_title_sell_ct_success";
+
+	public static final String NotificationTextBuyCtFail = "notification_text_buy_ct_fail";
+
 	public static final String PostUserAddressFormatError = "post_user_address_format_error";
 
 	public static final String UserNameCanNotChange = "user_name_can_not_change";
@@ -41,11 +49,17 @@ public class LangHandle {
 
 	public static final String MarketNameLengthError = "market_name_length_error";
 
+	public static final String NotificationTextSellCtFail = "notification_text_sell_ct_fail";
+
+	public static final String NotificationTextMarketCreateSuccess = "notification_text_market_create_success";
+
 	public static final String PostNotExist = "post_not_exist";
 
 	public static final String AddressFormatError = "address_format_error";
 
 	public static final String PostDescriptionLengthError = "post_description_length_error";
+
+	public static final String NotificationTitleBuyCtFail = "notification_title_buy_ct_fail";
 
 	public static final String PostTitleEmptyError = "post_title_empty_error";
 
@@ -53,19 +67,23 @@ public class LangHandle {
 
 	public static final String UserAddressAlreadyExist = "user_address_already_exist";
 
+	public static final String NotificationTextBuyCtSuccess = "notification_text_buy_ct_success";
+
 	public static final String MarketIdNotExist = "market_id_not_exist";
 
-	public static final String MarketStageIsFail = "market_stage_is_fail";
-
 	public static final String MarketCreatorAddressFormatError = "market_creator_address_format_error";
+
+	public static final String MarketStageIsFail = "market_stage_is_fail";
 
 	public static final String TradeMarketAddressFormatError = "trade_market_address_format_error";
 
 	public static final String ReplyContentLengthError = "reply_content_length_error";
 
+	public static final String MarketStageIsPending = "market_stage_is_pending";
+
 	public static final String MarketNameRepeat = "market_name_repeat";
 
-	public static final String MarketStageIsPending = "market_stage_is_pending";
+	public static final String NotificationTitleBuyCtSuccess = "notification_title_buy_ct_success";
 
 	public static final String CollectObjectNotExist = "collect_object_not_exist";
 
@@ -73,11 +91,17 @@ public class LangHandle {
 
 	public static final String UserAvatarIpfsHashMaxSizeError = "user_avatar_ipfs_hash_max_size_error";
 
+	public static final String NotificationTextSellCtSuccess = "notification_text_sell_ct_success";
+
 	public static final String MarketNameEmptyError = "market_name_empty_error";
 
 	public static final String PostDescriptionEmptyError = "post_description_empty_error";
 
 	public static final String TestLanguage = "test_language";
+
+	public static final String NotificationTextMarketCreateFail = "notification_text_market_create_fail";
+
+	public static final String NotificationTitleMarketCreateFail = "notification_title_market_create_fail";
 
 	public static final String CollectTypeError = "collect_type_error";
 

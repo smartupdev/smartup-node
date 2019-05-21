@@ -3,6 +3,7 @@ package global.smartup.node.po;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.util.Date;
 
 @Table(name = "notification")
@@ -21,12 +22,6 @@ public class Notification {
     @Column(name="type")
     private String type;
 
-    @Column(name="title")
-    private String title;
-
-    @Column(name="text")
-    private String text;
-
     @Column(name="content")
     private String content;
 
@@ -36,6 +31,13 @@ public class Notification {
     @Column(name="create_time")
     private Date createTime;
 
+
+
+    @Transient
+    private String title;
+
+    @Transient
+    private String text;
 
 
 

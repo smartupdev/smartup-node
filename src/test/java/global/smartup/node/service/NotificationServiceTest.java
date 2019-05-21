@@ -13,6 +13,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.math.BigDecimal;
+import java.util.Locale;
 
 @ActiveProfiles("unit")
 @RunWith(SpringRunner.class)
@@ -30,13 +31,13 @@ public class NotificationServiceTest {
 
     @Test
     public void queryUnreadInCache() {
-        UnreadNtfc ntfc = notificationService.queryUnreadInCache("user");
+        UnreadNtfc ntfc = notificationService.queryUnreadInCache("user", Locale.CHINA);
         System.out.println(JSON.toJSONString(ntfc));
     }
 
     @Test
     public void querySearch() {
-        Pagination<Ntfc> page = notificationService.querySearch("0xB44940Be0eeA81a3D0dA22CC15208AF4744BeA8E", "c", 1, 10);
+        Pagination<Ntfc> page = notificationService.querySearch("0xB44940Be0eeA81a3D0dA22CC15208AF4744BeA8E", "", 1, 10, Locale.CHINA);
         System.out.println(JSON.toJSONString(page));
     }
 
