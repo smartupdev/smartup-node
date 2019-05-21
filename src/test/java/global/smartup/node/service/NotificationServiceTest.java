@@ -31,7 +31,7 @@ public class NotificationServiceTest {
 
     @Test
     public void queryUnreadInCache() {
-        UnreadNtfc ntfc = notificationService.queryUnreadInCache("user", Locale.CHINA);
+        UnreadNtfc ntfc = notificationService.queryUnreadInCache("0xB44940Be0eeA81a3D0dA22CC15208AF4744BeA8E", Locale.CHINA);
         System.out.println(JSON.toJSONString(ntfc));
     }
 

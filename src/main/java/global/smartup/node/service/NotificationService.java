@@ -241,6 +241,7 @@ public class NotificationService {
             count = Integer.valueOf(countObj.toString());
             unreadNtfc.setCount(count);
             if (count.compareTo(0) == 0) {
+                handleI18n(list, locale);
                 unreadNtfc.setList(transferVo(list));
                 return unreadNtfc;
             }
@@ -257,6 +258,7 @@ public class NotificationService {
         // find in db
         count = notificationMapper.selectUnreadCount(userAddress);
         list = notificationMapper.selectUnreadFew(userAddress, 10);
+        handleI18n(list, locale);
         unreadNtfc.setCount(count);
         unreadNtfc.setList(transferVo(list));
 
