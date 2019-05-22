@@ -24,8 +24,14 @@ public class BlockServiceTest {
     private EthClient ethClient;
 
     @Test
-    public void test() {
+    public void getBlockByNumber() {
         EthBlock.Block block = ethClient.getBlockByNumber(BigInteger.valueOf(5408855L), true);
         blockService.parseBlock(block);
+    }
+
+    @Test
+    public void getLastBlockNumber() {
+        BigInteger i = ethClient.getLastBlockNumber();
+        System.out.println(i.toString());
     }
 }

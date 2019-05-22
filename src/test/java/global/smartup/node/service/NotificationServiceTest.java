@@ -1,7 +1,11 @@
 package global.smartup.node.service;
 
 import com.alibaba.fastjson.JSON;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import global.smartup.node.Starter;
+import global.smartup.node.mapper.NotificationMapper;
+import global.smartup.node.po.Notification;
 import global.smartup.node.util.Pagination;
 import global.smartup.node.vo.Ntfc;
 import global.smartup.node.vo.UnreadNtfc;
@@ -13,6 +17,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Locale;
 
 @ActiveProfiles("unit")
@@ -22,6 +27,9 @@ public class NotificationServiceTest {
 
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private NotificationMapper notificationMapper;
 
     @Test
     public void sendTradeFinish() {
@@ -37,8 +45,24 @@ public class NotificationServiceTest {
 
     @Test
     public void querySearch() {
-        Pagination<Ntfc> page = notificationService.querySearch("0xB44940Be0eeA81a3D0dA22CC15208AF4744BeA8E", "", 1, 10, Locale.CHINA);
+        Pagination<Ntfc> page = notificationService.querySearch("0xB44940Be0eeA81a3D0dA22CC15208AF4744BeA8E", "創建", 1, 10, Locale.TRADITIONAL_CHINESE);
         System.out.println(JSON.toJSONString(page));
+    }
+
+    @Test
+    public void fixData() {
+        Page<Notification> page;
+        Integer pageNumb = 0;
+        do {
+            pageNumb += 1;
+            page = PageHelper.startPage(pageNumb, 200);
+            notificationMapper.selectAll();
+            for (Notification n : page.getResult()) {
+                notificationService.fillAllI18n(n);
+                notificationMapper.updateByPrimaryKey(n);
+            }
+        } while (page.getPageNum() < page.getPages());
+
     }
 
 }
