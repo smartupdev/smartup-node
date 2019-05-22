@@ -71,6 +71,7 @@ public class NotificationService {
         ntfc.setContent(JSON.toJSONString(content, SerializerFeature.WriteBigDecimalAsPlain));
         ntfc.setIsRead(false);
         ntfc.setCreateTime(new Date());
+        fillAllI18n(ntfc);
         notificationMapper.insert(ntfc);
 
         //clear cache
@@ -98,6 +99,7 @@ public class NotificationService {
         ntfc.setContent(JSON.toJSONString(content, SerializerFeature.WriteBigDecimalAsPlain));
         ntfc.setIsRead(false);
         ntfc.setCreateTime(new Date());
+        fillAllI18n(ntfc);
         notificationMapper.insert(ntfc);
 
         //clear cache
@@ -241,16 +243,14 @@ public class NotificationService {
             count = Integer.valueOf(countObj.toString());
             unreadNtfc.setCount(count);
             if (count.compareTo(0) == 0) {
-                handleI18n(list, locale);
-                unreadNtfc.setList(transferVo(list));
+                unreadNtfc.setList(transferVo(list, locale));
                 return unreadNtfc;
             }
 
             Object listObj = redisTemplate.opsForValue().get(listKey);
             if (listObj != null) {
                 list = (List<Notification>) listObj;
-                handleI18n(list, locale);
-                unreadNtfc.setList(transferVo(list));
+                unreadNtfc.setList(transferVo(list, locale));
                 return unreadNtfc;
             }
         }
@@ -258,9 +258,8 @@ public class NotificationService {
         // find in db
         count = notificationMapper.selectUnreadCount(userAddress);
         list = notificationMapper.selectUnreadFew(userAddress, 10);
-        handleI18n(list, locale);
         unreadNtfc.setCount(count);
-        unreadNtfc.setList(transferVo(list));
+        unreadNtfc.setList(transferVo(list, locale));
 
         // save in cache
         redisTemplate.opsForValue().set(countKey, count, RedisKey.NotificationExpire, TimeUnit.MILLISECONDS);
@@ -280,8 +279,7 @@ public class NotificationService {
         example.orderBy("createTime").desc();
         Page<Notification> page = PageHelper.startPage(pageNumb, pageSize);
         notificationMapper.selectByExample(example);
-        handleI18n(page.getResult(), locale);
-        List<Ntfc> list = transferVo(page.getResult());
+        List<Ntfc> list = transferVo(page.getResult(), locale);
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), list);
     }
 
@@ -295,77 +293,109 @@ public class NotificationService {
             if (query.length() > 100) {
                 query = query.substring(0, 100);
             }
-            criteria.andCondition(" (title like '%" + query + "%' or text like '%" + query + "%') ");
+            if (Locale.ENGLISH.equals(locale)) {
+                criteria.andCondition(" (title_en like '%" + query + "%' or text_en like '%" + query + "%') ");
+            } else if (Locale.SIMPLIFIED_CHINESE.equals(locale)) {
+                criteria.andCondition(" (title_zh_cn like '%" + query + "%' or text_zh_cn like '%" + query + "%') ");
+            } else if (Locale.TRADITIONAL_CHINESE.equals(locale)) {
+                criteria.andCondition(" (title_zh_tw like '%" + query + "%' or text_zh_tw like '%" + query + "%') ");
+            }
         }
 
         example.orderBy("createTime").desc();
         Page<Notification> page = PageHelper.startPage(pageNumb, pageSize);
         notificationMapper.selectByExample(example);
-        handleI18n(page.getResult(), locale);
-        List<Ntfc> list = transferVo(page.getResult());
+        List<Ntfc> list = transferVo(page.getResult(), locale);
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), list);
     }
 
-    private void handleI18n(List<Notification> list, Locale locale) {
-        for (Notification n : list) {
-            HashMap map = JSON.parseObject(n.getContent(), HashMap.class, Feature.UseBigDecimal);
-            String title = null, text = null;
+    public void fillAllI18n(Notification ntft) {
+        fillI18n(ntft, Locale.ENGLISH);
+        fillI18n(ntft, Locale.SIMPLIFIED_CHINESE);
+        fillI18n(ntft, Locale.TRADITIONAL_CHINESE);
+    }
 
-            if (n.getType().equals(PoConstant.Notification.Type.MarketCreateFinish)) {
-                // create market
+    private void fillI18n(Notification ntft, Locale locale) {
+        HashMap map = JSON.parseObject(ntft.getContent(), HashMap.class, Feature.UseBigDecimal);
+        String title = null, text = null;
 
-                Boolean isS = (Boolean) map.get("isSuccess");
-                String marketName = (String) map.get("marketName");
+        if (ntft.getType().equals(PoConstant.Notification.Type.MarketCreateFinish)) {
+            // create market
+
+            Boolean isS = (Boolean) map.get("isSuccess");
+            String marketName = (String) map.get("marketName");
+            if (isS) {
+                title = messageSource.getMessage(LangHandle.NotificationTitleMarketCreateSuccess, null, locale);
+                text = messageSource.getMessage(LangHandle.NotificationTextMarketCreateSuccess, new String[]{"2500", marketName}, locale);
+            } else {
+                title = messageSource.getMessage(LangHandle.NotificationTitleMarketCreateFail, null, locale);
+                text = messageSource.getMessage(LangHandle.NotificationTextMarketCreateFail, new String[]{marketName}, locale);
+            }
+        } else if (ntft.getType().equals(PoConstant.Notification.Type.TradeFinish)) {
+            //trade
+
+            Boolean isS = (Boolean) map.get("isSuccess");
+            String type = (String) map.get("type");
+            String marketName = (String) map.get("marketName");
+            Object ct =  map.get("ct");
+            String ctStr;
+            if (ct == null) {
+                ctStr = "?";
+            } else if (ct instanceof BigDecimal) {
+                ctStr = ((BigDecimal) ct).setScale(2, BigDecimal.ROUND_DOWN).toPlainString();
+            } else {
+                ctStr = String.valueOf(ct);
+            }
+            if (PoConstant.Trade.Type.Buy.equals(type)) {
                 if (isS) {
-                    title = messageSource.getMessage(LangHandle.NotificationTitleMarketCreateSuccess, null, locale);
-                    text = messageSource.getMessage(LangHandle.NotificationTextMarketCreateSuccess, new String[]{"2500", marketName}, locale);
+                    title = messageSource.getMessage(LangHandle.NotificationTitleBuyCtSuccess, null, locale);
+                    text = messageSource.getMessage(LangHandle.NotificationTextBuyCtSuccess, new String[]{ctStr, marketName}, locale);
                 } else {
-                    title = messageSource.getMessage(LangHandle.NotificationTitleMarketCreateFail, null, locale);
-                    text = messageSource.getMessage(LangHandle.NotificationTextMarketCreateFail, new String[]{marketName}, locale);
+                    title = messageSource.getMessage(LangHandle.NotificationTitleBuyCtFail, null, locale);
+                    text = messageSource.getMessage(LangHandle.NotificationTextBuyCtFail, new String[]{ctStr, marketName}, locale);
                 }
-            } else if (n.getType().equals(PoConstant.Notification.Type.TradeFinish)) {
-                //trade
-
-                Boolean isS = (Boolean) map.get("isSuccess");
-                String type = (String) map.get("type");
-                String marketName = (String) map.get("marketName");
-                Object ct =  map.get("ct");
-                String ctStr;
-                if (ct == null) {
-                    ctStr = "?";
-                } else if (ct instanceof BigDecimal) {
-                    ctStr = ((BigDecimal) ct).setScale(2, BigDecimal.ROUND_DOWN).toPlainString();
+            } else if (PoConstant.Trade.Type.Sell.equals(type)) {
+                if (isS) {
+                    title = messageSource.getMessage(LangHandle.NotificationTitleSellCtSuccess, null, locale);
+                    text = messageSource.getMessage(LangHandle.NotificationTextSellCtSuccess, new String[]{ctStr, marketName}, locale);
                 } else {
-                    ctStr = String.valueOf(ct);
-                }
-                if (PoConstant.Trade.Type.Buy.equals(type)) {
-                    if (isS) {
-                        title = messageSource.getMessage(LangHandle.NotificationTitleBuyCtSuccess, null, locale);
-                        text = messageSource.getMessage(LangHandle.NotificationTextBuyCtSuccess, new String[]{ctStr, marketName}, locale);
-                    } else {
-                        title = messageSource.getMessage(LangHandle.NotificationTitleBuyCtFail, null, locale);
-                        text = messageSource.getMessage(LangHandle.NotificationTextBuyCtFail, new String[]{ctStr, marketName}, locale);
-                    }
-                } else if (PoConstant.Trade.Type.Sell.equals(type)) {
-                    if (isS) {
-                        title = messageSource.getMessage(LangHandle.NotificationTitleSellCtSuccess, null, locale);
-                        text = messageSource.getMessage(LangHandle.NotificationTextSellCtSuccess, new String[]{ctStr, marketName}, locale);
-                    } else {
-                        title = messageSource.getMessage(LangHandle.NotificationTitleSellCtFail, null, locale);
-                        text = messageSource.getMessage(LangHandle.NotificationTextSellCtFail, new String[]{ctStr, marketName}, locale);
-                    }
+                    title = messageSource.getMessage(LangHandle.NotificationTitleSellCtFail, null, locale);
+                    text = messageSource.getMessage(LangHandle.NotificationTextSellCtFail, new String[]{ctStr, marketName}, locale);
                 }
             }
-            n.setTitle(title);
-            n.setText(text);
+        }
+        if (Locale.ENGLISH.equals(locale)) {
+            ntft.setTitleEn(title);
+            ntft.setTextEn(text);
+        } else if (Locale.SIMPLIFIED_CHINESE.equals(locale)) {
+            ntft.setTitleZhCn(title);
+            ntft.setTextZhCN(text);
+        } else if (Locale.TRADITIONAL_CHINESE.equals(locale)) {
+            ntft.setTitleZhTw(title);
+            ntft.setTextZhTW(text);
         }
     }
 
-    private List<Ntfc> transferVo(List<Notification> list) {
+    private List<Ntfc> transferVo(List<Notification> list, Locale locale) {
         List<Ntfc> ret = new ArrayList<>();
         for (Notification notification : list) {
             Ntfc ntfc = new Ntfc();
             BeanUtils.copyProperties(notification, ntfc, "content");
+
+            String title = null, text = null;
+            if (Locale.ENGLISH.equals(locale)) {
+                title = notification.getTitleEn();
+                text = notification.getTextEn();
+            } else if (Locale.SIMPLIFIED_CHINESE.equals(locale)) {
+                title = notification.getTitleZhCn();
+                text = notification.getTextZhCN();
+            } else if (Locale.TRADITIONAL_CHINESE.equals(locale)) {
+                title = notification.getTitleZhTw();
+                text = notification.getTextZhTW();
+            }
+            ntfc.setTitle(title);
+            ntfc.setTitle(text);
+
             HashMap<String, Object> map = JSON.parseObject(notification.getContent(), HashMap.class, Feature.UseBigDecimal);
             ntfc.setContent(map);
             ret.add(ntfc);
