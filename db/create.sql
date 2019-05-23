@@ -189,7 +189,13 @@ create table notification (
   type varchar(32),
   content varchar(1024),
   is_read tinyint(1),
-  create_time datetime
+  create_time datetime,
+  title_en varchar(512),
+  title_zh_cn varchar(512),
+  title_zh_tw varchar(512),
+  text_en varchar(512),
+  text_zh_cn varchar(512),
+  text_zh_tw varchar(512)
 );
 
 drop table if exists proposal;
