@@ -46,7 +46,6 @@ public class Market {
     @Column(name="photo")
     private String photo;
 
-    @Size(max = 150, min = 1, message = "{market_description_length_error}", groups = Market.Add.class)
     @Column(name="description")
     private String description;
 

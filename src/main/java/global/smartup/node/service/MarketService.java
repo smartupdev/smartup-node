@@ -15,6 +15,7 @@ import global.smartup.node.po.Collect;
 import global.smartup.node.po.Market;
 import global.smartup.node.po.MarketData;
 import global.smartup.node.po.User;
+import global.smartup.node.util.Common;
 import global.smartup.node.util.Pagination;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -613,6 +614,20 @@ public class MarketService {
                 return ret;
             } else {
                 return (List<User>) obj;
+            }
+        }
+    }
+
+    public boolean isDescriptionLen(String des) {
+        if (StringUtils.isBlank(des)) {
+            return true;
+        } else {
+            int len = Common.getLenOfChinese(des) * 2;
+            len += Common.getLenOfNotChinese(des);
+            if (len <= 2000) {
+                return true;
+            } else {
+                return false;
             }
         }
     }

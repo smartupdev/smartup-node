@@ -54,7 +54,7 @@ create table market (
   name varchar(64) not null ,
   cover varchar(64),
   photo varchar(64),
-  description varchar(512),
+  description varchar(2048),
   type varchar(16),
   stage varchar(16),
   status varchar(16),

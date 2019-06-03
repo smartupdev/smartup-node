@@ -11,6 +11,7 @@ import org.web3j.crypto.Keys;
 import java.math.BigInteger;
 import java.text.ParseException;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class Common {
 
@@ -350,6 +351,24 @@ public class Common {
         } catch (ParseException e) {
             // e.printStackTrace();
             return list;
+        }
+    }
+
+    public static int getLenOfChinese(String s) {
+        if (StringUtils.isBlank(s)) {
+            return 0;
+        } else {
+            Pattern p = Pattern.compile("[^\u4e00-\u9fa5]");
+            return p.matcher(s).replaceAll("").length();
+        }
+    }
+
+    public static int getLenOfNotChinese(String s) {
+        if (StringUtils.isBlank(s)) {
+            return 0;
+        } else {
+            Pattern p = Pattern.compile("[\u4e00-\u9fa5]");
+            return p.matcher(s).replaceAll("").length();
         }
     }
 

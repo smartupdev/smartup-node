@@ -43,12 +43,15 @@ public class MarketController extends BaseController {
     @RequestMapping("/user/market/save")
     public Object save(HttpServletRequest request, Market market) {
         try {
+            String userAddress = getLoginUserAddress(request);
+
             String err = validator.validate(market, Market.Add.class);
             if (err != null) {
                 return Wrapper.alert(err);
             }
-            String userAddress = getLoginUserAddress(request);
-
+            if (!marketService.isDescriptionLen(market.getDescription())) {
+                return Wrapper.alert(getLocaleMsg(LangHandle.MarketDescriptionLengthError));
+            }
             Market current = marketService.queryCurrentCreating(userAddress);
             if (current != null && PoConstant.Market.Status.Locked.equals(current.getStatus())) {
                 return Wrapper.alert(getLocaleMsg(LangHandle.MarketSaveWhenLock));

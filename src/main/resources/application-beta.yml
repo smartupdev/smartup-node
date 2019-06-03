@@ -8,6 +8,7 @@ app:
     market:
       lock:
         expire: 5
+
 eth:
   protocol: http
   domain: 54.255.204.122
@@ -64,6 +65,7 @@ pagehelper:
 
 server:
   port: 80
+  max-http-header-size: 10240
 
 logging:
   level:

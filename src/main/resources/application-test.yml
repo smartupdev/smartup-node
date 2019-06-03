@@ -64,6 +64,7 @@ pagehelper:
 
 server:
   port: 8085
+  max-http-header-size: 10240
 
 logging:
   level:
