@@ -82,7 +82,7 @@ public class NotificationController extends BaseController {
     }
 
     @ApiOperation(value = "设为已读", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：notificationId (notificationId=1, notificationId=2 ...)\n" +
+                notes = "参数：notificationIds (notificationIds=1, notificationIds=2 ...)\n" +
                         "返回：是否成功")
     @RequestMapping("/set/read")
     public Object setRead(HttpServletRequest request, Long[] notificationIds) {
