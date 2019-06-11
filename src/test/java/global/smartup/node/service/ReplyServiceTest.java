@@ -20,7 +20,7 @@ public class ReplyServiceTest {
 
     @Test
     public void queryPage() {
-        Pagination page = replyService.queryPage(null, "0xB44940Be0eeA81a3D0dA22CC15208AF4744BeA8E", 9446206937763840L, 1, 10);
+        Pagination page = replyService.queryPage(null, "0xB44940Be0eeA81a3D0dA22CC15208AF4744BeA8E", "9446206937763840", 1, 10);
         System.out.println(JSON.toJSONString(page));
     }
 
@@ -38,7 +38,7 @@ public class ReplyServiceTest {
 
     @Test
     public void modLike() {
-        replyService.modLike("0xB44940Be0eeA81a3D0dA22CC15208AF4744BeA8E", 9448745313767424L, true, false);
+        replyService.modLike("0xB44940Be0eeA81a3D0dA22CC15208AF4744BeA8E", "9448745313767424", true, false);
     }
 
 }

@@ -81,7 +81,7 @@ public class TestController extends BaseController {
             }
 
             CTBuyInfo info = new CTBuyInfo();
-            info.setTxHash(idGenerator.getStringId());
+            info.setTxHash(idGenerator.getHexStringId());
             info.setEventUserAddress(userAddress);
             info.setEventMarketAddress(market.getMarketAddress());
             info.setEventSUTOffer(sut);
@@ -126,7 +126,7 @@ public class TestController extends BaseController {
             }
 
             CTSellInfo info = new CTSellInfo();
-            info.setTxHash(idGenerator.getStringId());
+            info.setTxHash(idGenerator.getHexStringId());
             info.setEventMarketAddress(market.getMarketAddress());
             info.setEventUserAddress(user.getUserAddress());
             info.setEventSUT(sut);
@@ -196,7 +196,7 @@ public class TestController extends BaseController {
             }
 
             HashMap<String, String> map = new HashMap<>();
-            map.put("id", idGenerator.getStringId());
+            map.put("id", idGenerator.getHexStringId());
             map.put("type", type);
             map.put("time", time);
             map.put("count", String.valueOf(count));

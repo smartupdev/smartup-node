@@ -9,7 +9,7 @@ public class ReplyData {
 
     @Id
     @Column(name = "reply_id")
-    private Long replyId;
+    private String replyId;
 
     @Column(name = "like_count")
     private Integer likeCount;
@@ -18,11 +18,11 @@ public class ReplyData {
     private Integer dislikeCount;
 
 
-    public Long getReplyId() {
+    public String getReplyId() {
         return replyId;
     }
 
-    public void setReplyId(Long replyId) {
+    public void setReplyId(String replyId) {
         this.replyId = replyId;
     }
 

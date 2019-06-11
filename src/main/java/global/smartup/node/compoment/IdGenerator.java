@@ -54,6 +54,10 @@ public class IdGenerator {
     }
 
     public String getStringId() {
+        return Long.toString(getId(), 10);
+    }
+
+    public String getHexStringId() {
         return Long.toString(getId(), 36);
     }
 

@@ -86,7 +86,7 @@ public class PostController extends BaseController {
                         "　lastReply = { 见/api/post/reply/one }\n" +
                         "}")
     @RequestMapping("/post/one")
-    public Object one(HttpServletRequest request, Long postId) {
+    public Object one(HttpServletRequest request, String postId) {
         try {
             if (!postService.isExist(postId)) {
                 return Wrapper.alert(getLocaleMsg(LangHandle.PostNotExist));
@@ -162,7 +162,7 @@ public class PostController extends BaseController {
                         "　}\n" +
                         "}")
     @RequestMapping("/post/reply/one")
-    public Object replyOne(HttpServletRequest request, Long replyId) {
+    public Object replyOne(HttpServletRequest request, String replyId) {
         try {
             if (!replyService.isExist(replyId)) {
                 return Wrapper.alert(getLocaleMsg(LangHandle.ReplyNotExist));
@@ -178,7 +178,7 @@ public class PostController extends BaseController {
             notes = "参数：query(搜索词), postId, pageNumb, pageSize\n" +
                     "返回：obj = { list = [ {见/api/post/reply/one}, {} ... ] }")
     @RequestMapping("/post/reply/list")
-    public Object replyList(HttpServletRequest request, String query, Long postId, Integer pageNumb, Integer pageSize) {
+    public Object replyList(HttpServletRequest request, String query, String postId, Integer pageNumb, Integer pageSize) {
         try {
             if (!postService.isExist(postId)) {
                 return Wrapper.alert(getLocaleMsg(LangHandle.PostNotExist));
@@ -196,7 +196,7 @@ public class PostController extends BaseController {
                 notes = "参数：fatherId, pageNumb, pageSize\n" +
                         "返回：obj = { list = [ {见/api/post/reply/one}, {} ... ] }")
     @RequestMapping("/post/reply/children/list")
-    public Object replyChildrenList(HttpServletRequest request, Long fatherId, Integer pageNumb, Integer pageSize) {
+    public Object replyChildrenList(HttpServletRequest request, String fatherId, Integer pageNumb, Integer pageSize) {
         try {
             if (!replyService.isExist(fatherId)) {
                 return Wrapper.alert(getLocaleMsg(LangHandle.ReplyNotExist));
@@ -213,7 +213,7 @@ public class PostController extends BaseController {
                 notes = "参数：isMark(true 标记 / false 取消标记), type(post/reply), isLike(true/false), id\n" +
                         "返回：是否成功")
     @RequestMapping("/user/post/like")
-    public Object like(HttpServletRequest request, boolean isMark, String type, boolean isLike, Long id) {
+    public Object like(HttpServletRequest request, boolean isMark, String type, boolean isLike, String id) {
         try {
             String userAddress = getLoginUserAddress(request);
             if (PoConstant.Liked.Type.Post.equals(type)) {

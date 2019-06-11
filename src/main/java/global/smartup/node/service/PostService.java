@@ -53,7 +53,7 @@ public class PostService {
     private CollectService collectService;
 
     public void create(Post post) {
-        Long id = idGenerator.getId();
+        String id = idGenerator.getStringId();
         post.setPostId(id);
         if (PoConstant.Post.Type.Market.equals(post.getType())) {
             Market market = marketService.queryById(post.getMarketId());
@@ -80,7 +80,7 @@ public class PostService {
         }
     }
 
-    public void modLike(String userAddress, Long postId, boolean isMark, boolean isLike) {
+    public void modLike(String userAddress, String postId, boolean isMark, boolean isLike) {
         Post post = postMapper.selectByPrimaryKey(postId);
         if (post == null) {
             return;
@@ -116,7 +116,7 @@ public class PostService {
         }
     }
 
-    private void modLikeCount(Long postId, boolean newIsLike) {
+    private void modLikeCount(String postId, boolean newIsLike) {
         PostData data = postDataMapper.selectByPrimaryKey(postId);
         if (data == null) {
             return;
@@ -133,7 +133,7 @@ public class PostService {
         postDataMapper.updateByPrimaryKey(data);
     }
 
-    private void modLikeCount(Long postId, boolean isLike, boolean addOrSubtract) {
+    private void modLikeCount(String postId, boolean isLike, boolean addOrSubtract) {
         PostData data = postDataMapper.selectByPrimaryKey(postId);
         if (data == null) {
             return;
@@ -154,15 +154,15 @@ public class PostService {
         postDataMapper.updateByPrimaryKey(data);
     }
 
-    public boolean isExist(Long postId) {
+    public boolean isExist(String postId) {
         return postMapper.selectByPrimaryKey(postId) != null;
     }
 
-    public Post query(Long postId) {
+    public Post query(String postId) {
         return postMapper.selectByPrimaryKey(postId);
     }
 
-    public Post queryWithData(String userAddress, Long postId) {
+    public Post queryWithData(String userAddress, String postId) {
         Post post = postMapper.selectByPrimaryKey(postId);
         if (post != null) {
             post.setData(postDataMapper.selectByPrimaryKey(postId));
@@ -256,7 +256,7 @@ public class PostService {
         if (replies == null || replies.size() <= 0) {
             return;
         }
-        List<Long> postIds = replies.stream().map(Reply::getPostId).collect(Collectors.toList());
+        List<String> postIds = replies.stream().map(Reply::getPostId).collect(Collectors.toList());
         Example example = new Example(Post.class);
         example.createCriteria().andIn("postId", postIds);
         List<Post> postList = postMapper.selectByExample(example);
@@ -267,7 +267,7 @@ public class PostService {
         if (posts == null || posts.size() <= 0) {
             return;
         }
-        List<Long> postIds = posts.stream().map(Post::getPostId).collect(Collectors.toList());
+        List<String> postIds = posts.stream().map(Post::getPostId).collect(Collectors.toList());
         Example example = new Example(PostData.class);
         example.createCriteria().andIn("postId", postIds);
         List<PostData> dataList = postDataMapper.selectByExample(example);

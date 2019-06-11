@@ -18,13 +18,13 @@ public class Reply {
 
     @Id
     @Column(name="reply_id")
-    private Long replyId;
+    private String replyId;
 
     @Column(name="post_id")
-    private Long postId;
+    private String postId;
 
     @Column(name="father_id")
-    private Long fatherId;
+    private String fatherId;
 
     @Column(name="user_address")
     private String userAddress;
@@ -122,27 +122,27 @@ public class Reply {
         isDisliked = disliked;
     }
 
-    public Long getReplyId() {
+    public String getReplyId() {
         return replyId;
     }
 
-    public void setReplyId(Long replyId) {
+    public void setReplyId(String replyId) {
         this.replyId = replyId;
     }
 
-    public Long getPostId() {
+    public String getPostId() {
         return postId;
     }
 
-    public void setPostId(Long postId) {
+    public void setPostId(String postId) {
         this.postId = postId;
     }
 
-    public Long getFatherId() {
+    public String getFatherId() {
         return fatherId;
     }
 
-    public void setFatherId(Long fatherId) {
+    public void setFatherId(String fatherId) {
         this.fatherId = fatherId;
     }
 

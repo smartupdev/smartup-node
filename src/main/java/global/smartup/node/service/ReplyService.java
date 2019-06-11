@@ -56,9 +56,9 @@ public class ReplyService {
 
 
     public void add(Reply reply) {
-        Long id = idGenerator.getId();
+        String id = idGenerator.getStringId();
         if (reply.getFatherId() == null) {
-            reply.setFatherId(0L);
+            reply.setFatherId("0");
         }
         reply.setReplyId(id);
         reply.setCreateTime(new Date());
@@ -82,7 +82,7 @@ public class ReplyService {
         }
     }
 
-    public void modLike(String userAddress, Long replyId, boolean isMark, boolean isLike) {
+    public void modLike(String userAddress, String replyId, boolean isMark, boolean isLike) {
         Reply reply = replyMapper.selectByPrimaryKey(replyId);
         if (reply == null) {
             return;
@@ -110,7 +110,7 @@ public class ReplyService {
         }
     }
 
-    private void modLikeCount(Long replyId, boolean newIsLike) {
+    private void modLikeCount(String replyId, boolean newIsLike) {
         ReplyData data = replyDataMapper.selectByPrimaryKey(replyId);
         if (data == null) {
             return;
@@ -127,7 +127,7 @@ public class ReplyService {
         replyDataMapper.updateByPrimaryKey(data);
     }
 
-    private void modLikeCount(Long replyId, boolean isLike, boolean addOrSubtract) {
+    private void modLikeCount(String replyId, boolean isLike, boolean addOrSubtract) {
         ReplyData data = replyDataMapper.selectByPrimaryKey(replyId);
         if (data == null) {
             return;
@@ -148,15 +148,15 @@ public class ReplyService {
         replyDataMapper.updateByPrimaryKey(data);
     }
 
-    public boolean isExist(Long replyId) {
+    public boolean isExist(String replyId) {
         return replyMapper.selectByPrimaryKey(replyId) != null;
     }
 
-    public Reply query(Long replyId) {
+    public Reply query(String replyId) {
         return replyMapper.selectByPrimaryKey(replyId);
     }
 
-    public Pagination<Reply> queryPage(String query, String userAddress, Long postId, Integer pageNumb, Integer pageSize) {
+    public Pagination<Reply> queryPage(String query, String userAddress, String postId, Integer pageNumb, Integer pageSize) {
         Example example = new Example(Reply.class);
         Example.Criteria criteria = example.createCriteria();
         criteria.andEqualTo("postId", postId);
@@ -181,7 +181,7 @@ public class ReplyService {
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
     }
 
-    public Pagination<Reply> queryChildren(String userAddress, Long fatherId, Integer pageNumb, Integer pageSize) {
+    public Pagination<Reply> queryChildren(String userAddress, String fatherId, Integer pageNumb, Integer pageSize) {
         Reply reply = replyMapper.selectByPrimaryKey(fatherId);
         if (reply == null) {
             return null;
@@ -252,7 +252,7 @@ public class ReplyService {
             return;
         }
         list.stream().forEach(i -> {
-            if (i.getFatherId() == 0) {
+            if ("0".equals(i.getFatherId())) {
                 i.setChildrenPage(queryChildren(userAddress, i.getReplyId(), 1, BuConstant.DefaultPageSize));
             }
         });
@@ -262,7 +262,7 @@ public class ReplyService {
         if (posts == null || posts.size() <= 0) {
             return;
         }
-        List<Long> replyIds = posts.stream().map(p -> p.getData().getLastReplyId()).collect(Collectors.toList());
+        List<String> replyIds = posts.stream().map(p -> p.getData().getLastReplyId()).collect(Collectors.toList());
         Example example = new Example(Reply.class);
         example.createCriteria().andIn("replyId", replyIds);
         List<Reply> replyList = replyMapper.selectByExample(example);
@@ -274,7 +274,7 @@ public class ReplyService {
         if (list == null || list.size() <= 0) {
             return;
         }
-        List<Long> ids = list.stream().map(Reply::getReplyId).collect(Collectors.toList());
+        List<String> ids = list.stream().map(Reply::getReplyId).collect(Collectors.toList());
         Example example = new Example(ReplyData.class);
         example.createCriteria().andIn("replyId", ids);
         List<ReplyData> dataList = replyDataMapper.selectByExample(example);
@@ -285,7 +285,7 @@ public class ReplyService {
         if (list == null || list.size() <= 0) {
             return;
         }
-        List<Long> postIds = list.stream().map(Reply::getPostId).distinct().collect(Collectors.toList());
+        List<String> postIds = list.stream().map(Reply::getPostId).distinct().collect(Collectors.toList());
         Example example = new Example(Post.class);
         example.createCriteria().andIn("postId", postIds);
         List<Post> postList = postMapper.selectByExample(example);

@@ -83,7 +83,7 @@ public class MarketService {
             marketMapper.updateByPrimaryKey(current);
             return current;
         } else {
-            market.setMarketId(idGenerator.getStringId());
+            market.setMarketId(idGenerator.getHexStringId());
             market.setStatus(PoConstant.Market.Status.Creating);
             market.setCreateTime(new Date());
             marketMapper.insert(market);

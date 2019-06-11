@@ -71,13 +71,11 @@ public class CollectService {
                 return true;
             }
         } else if (PoConstant.Collect.Type.Post.equals(type)) {
-            Long id = Long.valueOf(objectMark);
-            if (postService.isExist(id)) {
+            if (postService.isExist(objectMark)) {
                 return true;
             }
         } else if (PoConstant.Collect.Type.Reply.equals(type)) {
-            Long id = Long.valueOf(objectMark);
-            if (replyService.isExist(id)) {
+            if (replyService.isExist(objectMark)) {
                 return true;
             }
         }

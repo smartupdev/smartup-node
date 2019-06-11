@@ -78,7 +78,7 @@ create table trade (
 
 drop table if exists post;
 create table post (
-  post_id bigint primary key,
+  post_id varchar(32) primary key,
   type varchar(16),
   market_id varchar(42),
   market_address varchar(42),
@@ -91,19 +91,19 @@ create table post (
 
 drop table if exists post_data;
 create table post_data(
-  post_id bigint primary key,
+  post_id varchar(32) primary key,
   reply_count int,
   like_count int,
   dislike_count int,
   last_reply_time datetime,
-  last_reply_id bigint
+  last_reply_id varchar(32)
 );
 
 drop table if exists reply;
 create table reply (
-  reply_id bigint primary key,
-  post_id bigint not null,
-  father_id bigint default 0,
+  reply_id varchar(32) primary key,
+  post_id varchar(32) not null,
+  father_id varchar(32) default 0,
   user_address varchar(64),
   content varchar(512),
   create_time datetime
@@ -111,7 +111,7 @@ create table reply (
 
 drop table if exists reply_data;
 create table reply_data(
-  reply_id bigint primary key,
+  reply_id varchar(32) primary key,
   like_count int,
   dislike_count int
 );
@@ -183,7 +183,7 @@ create table liked (
 
 drop table if exists notification;
 create table notification (
-  notification_id bigint primary key,
+  notification_id varchar(32) primary key,
   user_address varchar(42),
   style varchar(32),
   type varchar(32),

@@ -11,7 +11,7 @@ public class PostData {
 
     @Id
     @Column(name = "post_id")
-    private Long postId;
+    private String postId;
 
     @Column(name = "reply_count")
     private Integer replyCount;
@@ -26,7 +26,7 @@ public class PostData {
     private Date lastReplyTime;
 
     @Column(name = "last_reply_id")
-    private Long lastReplyId;
+    private String lastReplyId;
 
 
     public Date getLastReplyTime() {
@@ -37,19 +37,19 @@ public class PostData {
         this.lastReplyTime = lastReplyTime;
     }
 
-    public Long getLastReplyId() {
+    public String getLastReplyId() {
         return lastReplyId;
     }
 
-    public void setLastReplyId(Long lastReplyId) {
+    public void setLastReplyId(String lastReplyId) {
         this.lastReplyId = lastReplyId;
     }
 
-    public Long getPostId() {
+    public String getPostId() {
         return postId;
     }
 
-    public void setPostId(Long postId) {
+    public void setPostId(String postId) {
         this.postId = postId;
     }
 

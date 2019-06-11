@@ -11,7 +11,7 @@ public class Notification {
 
     @Id
     @Column(name="notification_id")
-    private Long notificationId;
+    private String notificationId;
 
     @Column(name="user_address")
     private String userAddress;
@@ -138,11 +138,11 @@ public class Notification {
         this.userAddress = userAddress;
     }
 
-    public Long getNotificationId() {
+    public String getNotificationId() {
         return notificationId;
     }
 
-    public void setNotificationId(Long notificationId) {
+    public void setNotificationId(String notificationId) {
         this.notificationId = notificationId;
     }
 

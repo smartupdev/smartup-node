@@ -1,12 +1,11 @@
 package global.smartup.node.vo;
 
-import javax.persistence.Column;
 import java.util.Date;
 import java.util.Map;
 
 public class Ntfc {
 
-    private Long notificationId;
+    private String notificationId;
 
     private String userAddress;
 
@@ -51,11 +50,11 @@ public class Ntfc {
         this.style = style;
     }
 
-    public Long getNotificationId() {
+    public String getNotificationId() {
         return notificationId;
     }
 
-    public void setNotificationId(Long notificationId) {
+    public void setNotificationId(String notificationId) {
         this.notificationId = notificationId;
     }
 

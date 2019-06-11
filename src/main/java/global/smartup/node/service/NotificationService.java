@@ -65,7 +65,7 @@ public class NotificationService {
         content.put("userAddress", userAddress);
         content.put("marketAddress", marketAddress);
         ntfc.setUserAddress(userAddress);
-        ntfc.setNotificationId(idGenerator.getId());
+        ntfc.setNotificationId(idGenerator.getStringId());
         ntfc.setStyle(PoConstant.Notification.Style.Personal);
         ntfc.setType(PoConstant.Notification.Type.MarketCreateFinish);
         ntfc.setContent(JSON.toJSONString(content, SerializerFeature.WriteBigDecimalAsPlain));
@@ -93,7 +93,7 @@ public class NotificationService {
         content.put("sut", sut);
         content.put("ct", ct);
         ntfc.setUserAddress(userAddress);
-        ntfc.setNotificationId(idGenerator.getId());
+        ntfc.setNotificationId(idGenerator.getStringId());
         ntfc.setStyle(PoConstant.Notification.Style.Personal);
         ntfc.setType(PoConstant.Notification.Type.TradeFinish);
         ntfc.setContent(JSON.toJSONString(content, SerializerFeature.WriteBigDecimalAsPlain));
@@ -118,7 +118,7 @@ public class NotificationService {
         content.put("proposalId", proposalId);
         content.put("sutAmount", sutAmount);
         ntfc.setUserAddress(userAddress);
-        ntfc.setNotificationId(idGenerator.getId());
+        ntfc.setNotificationId(idGenerator.getStringId());
         ntfc.setStyle(PoConstant.Notification.Style.Personal);
         ntfc.setType(PoConstant.Notification.Type.ProposalSutCreateFinish);
         ntfc.setContent(JSON.toJSONString(content, SerializerFeature.WriteBigDecimalAsPlain));
@@ -141,7 +141,7 @@ public class NotificationService {
         content.put("proposalId", proposalId);
         content.put("isAgree", isAgree);
         ntfc.setUserAddress(userAddress);
-        ntfc.setNotificationId(idGenerator.getId());
+        ntfc.setNotificationId(idGenerator.getStringId());
         ntfc.setStyle(PoConstant.Notification.Style.Personal);
         ntfc.setType(PoConstant.Notification.Type.ProposalSutVoteFinish);
         ntfc.setContent(JSON.toJSONString(content, SerializerFeature.WriteBigDecimalAsPlain));
@@ -165,7 +165,7 @@ public class NotificationService {
         content.put("proposalId", proposalId);
         content.put("isAgree", isAgree);
         ntfc.setUserAddress(userAddress);
-        ntfc.setNotificationId(idGenerator.getId());
+        ntfc.setNotificationId(idGenerator.getStringId());
         ntfc.setStyle(PoConstant.Notification.Style.Personal);
         ntfc.setType(PoConstant.Notification.Type.ProposalSutFinish);
         ntfc.setContent(JSON.toJSONString(content, SerializerFeature.WriteBigDecimalAsPlain));
@@ -188,7 +188,7 @@ public class NotificationService {
         content.put("proposalId", proposalId);
         content.put("proposalChainId", proposalChainId);
         ntfc.setUserAddress(userAddress);
-        ntfc.setNotificationId(idGenerator.getId());
+        ntfc.setNotificationId(idGenerator.getStringId());
         ntfc.setStyle(PoConstant.Notification.Style.Personal);
         ntfc.setType(PoConstant.Notification.Type.ProposalSuggestCreateFinish);
         ntfc.setContent(JSON.toJSONString(content, SerializerFeature.WriteBigDecimalAsPlain));

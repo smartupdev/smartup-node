@@ -17,7 +17,7 @@ public class Post {
 
     @Id
     @Column(name="post_id")
-    private Long postId;
+    private String postId;
 
     @Column(name="type")
     private String type;
@@ -135,11 +135,11 @@ public class Post {
         isDisliked = disliked;
     }
 
-    public Long getPostId() {
+    public String getPostId() {
         return postId;
     }
 
-    public void setPostId(Long postId) {
+    public void setPostId(String postId) {
         this.postId = postId;
     }
 
