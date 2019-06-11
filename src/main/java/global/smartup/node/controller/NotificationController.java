@@ -85,7 +85,7 @@ public class NotificationController extends BaseController {
                 notes = "参数：notificationIds (notificationIds=1, notificationIds=2 ...)\n" +
                         "返回：是否成功")
     @RequestMapping("/set/read")
-    public Object setRead(HttpServletRequest request, Long[] notificationIds) {
+    public Object setRead(HttpServletRequest request, String[] notificationIds) {
         try {
             notificationService.modRead(Arrays.asList(notificationIds));
             return Wrapper.success();

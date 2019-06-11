@@ -208,7 +208,7 @@ public class NotificationService {
         redisTemplate.delete(listKey);
     }
 
-    public void modRead(Long notificationId) {
+    public void modRead(String notificationId) {
         if (notificationId == null) {
             return;
         }
@@ -223,8 +223,8 @@ public class NotificationService {
         delNotificationCache(ntfc.getUserAddress());
     }
 
-    public void modRead(List<Long> ids) {
-        for (Long id : ids) {
+    public void modRead(List<String> ids) {
+        for (String id : ids) {
             modRead(id);
         }
     }
