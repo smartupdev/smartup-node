@@ -30,6 +30,7 @@ public class AccountController extends BaseController {
     @Autowired
     private UserAccountService userAccountService;
 
+
     @ApiOperation(value = "CT账户和市场信息", httpMethod = "POST", response = Wrapper.class,
                 notes = "参数：pageNumb, pageSize\n" +
                         "返回：obj = { list = [ {marketId, marketAddress, marketName, marketCover, marketPhoto, latelyChange, userAddress, ctAmount, lastUpdateTime}, ... ] }")
@@ -39,6 +40,21 @@ public class AccountController extends BaseController {
             String userAddress = getLoginUserAddress(request);
             Pagination page = ctAccountService.queryCTAccountsWithMarket(userAddress, pageNumb, pageSize);
             return Wrapper.success(page);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return Wrapper.sysError();
+        }
+    }
+
+    @ApiOperation(value = "用户账户", httpMethod = "POST", response = Wrapper.class,
+                notes = "参数：无\n" +
+                        "返回：obj = {userAddress, sut, eth, sutAmount(sut + ct等价的sut), updateTime}")
+    @RequestMapping("/user/account")
+    public Object userAccount(HttpServletRequest request) {
+        try {
+            String userAddress = getLoginUserAddress(request);
+            UserAccount account = userAccountService.queryByAddress(userAddress);
+            return Wrapper.success(account);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return Wrapper.sysError();

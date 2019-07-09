@@ -10,13 +10,16 @@ app:
         expire: 5
 
 eth:
+
   protocol: http
   domain: 127.0.0.1
   port: 8080
 
-  smartupContract: '0xfee003d3cac834b1a8d285252e22c8bb08563b8c'
-  sutContract: '0xf1899c6eb6940021c1ae4e9c3a8e29ee93704b03'
-  nttContract: '0x846ce03199a759a183cccb35146124cd3f120548'
+  contract:
+    exchange: '0x7d56a317ceda7083172757e88c2ba4576f9530da'
+    smartup: '0x184a3dad8912a81ab393b83892f2039ec0297132'
+    sut: '0xf1899c6eb6940021c1ae4e9c3a8e29ee93704b03'
+    ntt: '0x846ce03199a759a183cccb35146124cd3f120548'
 
 spring:
 

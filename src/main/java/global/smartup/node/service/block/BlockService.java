@@ -1,11 +1,15 @@
-package global.smartup.node.service;
+package global.smartup.node.service.block;
 
 import global.smartup.node.Config;
 import global.smartup.node.constant.PoConstant;
 import global.smartup.node.eth.EthClient;
+import global.smartup.node.eth.constract.Const;
+import global.smartup.node.eth.constract.func.AdminWithdrawFunc;
+import global.smartup.node.eth.constract.func.WithdrawFunc;
 import global.smartup.node.eth.info.*;
 import global.smartup.node.po.Market;
 import global.smartup.node.po.Proposal;
+import global.smartup.node.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +20,6 @@ import org.web3j.protocol.core.methods.response.Transaction;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 
 import java.util.Date;
-import java.util.List;
 
 @Service
 public class BlockService {
@@ -72,110 +75,51 @@ public class BlockService {
             return;
         }
 
+        String userAddress = Keys.toChecksumAddress(tx.getFrom());
         String to = tx.getTo();
+        String input = tx.getInput();
 
         // call SUT
         if (to.equals(config.ethSutContract)) {
-            String input = tx.getInput();
-            if (input.startsWith(Constant.SUT.ApproveAndCall)) {
-
-                //  call create market
-                if (input.endsWith(MarketCreateInfo.ByteLastFlag)) {
-                    // handleCreateMarket(block, tx);
-                    transactionService.addPending(tx.getHash(), PoConstant.Transaction.Type.CreateMarket);
-
-                }
-
-                // call buy CT
-                if (CTBuyInfo.isBuyCTTransaction(input, config.ethSmartupContract)) {
-                    // handleBuyCT(block, tx);
-                    transactionService.addPending(tx.getHash(), PoConstant.Transaction.Type.BuyCT);
-                }
-
-                // appeal
-
+            // 充值SUT
+            if (input.startsWith(Const.SUT.Func.ChargeSut)) {
+                transactionService.addPending(tx.getHash(), userAddress, PoConstant.Transaction.Type.ChargeSut);
             }
         }
 
-        // call CT
-        if (marketService.isMarketAddressInCache(to)) {
-            String input = tx.getInput();
-
-            // call sell CT
-            if (input.startsWith(Constant.CT.Sell)) {
-                // handleSellCT(block, tx);
-                transactionService.addPending(tx.getHash(), PoConstant.Transaction.Type.SellCT);
+        // call Exchange
+        if (to.equals(config.ethExchangeContract)) {
+            // 充值ETH
+            if (input.startsWith(Const.Exchange.Func.ChargeEth)) {
+                transactionService.addPending(tx.getHash(), userAddress, PoConstant.Transaction.Type.ChargeEth);
             }
 
-            // // call sut proposal
-            // if (input.startsWith(Constant.CT.SutProposal)) {
-            //     handleSutProposal(block, tx);
-            // }
-            //
-            // // call sut proposal vote
-            // if (input.startsWith(Constant.CT.SutProposalVote)) {
-            //     handleSutProposalVote(block, tx);
-            // }
-            //
-            // // call sut proposal finish
-            // if (input.startsWith(Constant.CT.SutProposalFinish)) {
-            //     handleSutProposalFinish(block, tx);
-            // }
-            //
-            // //  call suggest proposal
-            // if (input.startsWith(Constant.CT.SuggestProposal)) {
-            //     handleSuggestProposal(block, tx);
-            // }
-            //
-            // // call suggest proposal vote
-            // if (input.startsWith(Constant.CT.SuggestProposalVote)) {
-            //     handleSuggestProposalVote(block, tx);
-            // }
-            //
-            // // call suggest proposal finish
-            // if (input.startsWith(Constant.CT.SuggestProposalFinish)) {
-            //     handleSuggestProposalFinish(block, tx);
-            // }
+            // 提取
+            if (input.startsWith(Const.Exchange.Func.Withdraw)) {
+                WithdrawFunc func = WithdrawFunc.parse(tx);
+                if (func.isWithdrawEth()) {
+                    transactionService.addPending(tx.getHash(), userAddress, PoConstant.Transaction.Type.WithdrawEth);
+                } else {
+                    transactionService.addPending(tx.getHash(), userAddress, PoConstant.Transaction.Type.WithdrawSut);
+                }
 
+            }
+
+            // 管理员提取
+            if (input.startsWith(Const.Exchange.Func.AdminWithdraw)) {
+                AdminWithdrawFunc func = AdminWithdrawFunc.parse(tx);
+                if (func.isWithdrawEth()) {
+                    transactionService.addPending(tx.getHash(), userAddress, PoConstant.Transaction.Type.AdminWithdrawEth);
+                } else {
+                    transactionService.addPending(tx.getHash(), userAddress, PoConstant.Transaction.Type.AdminWithdrawSut);
+                }
+            }
         }
-
-        // // call SmartUp
-        // if (to.equals(config.ethSmartupContract)) {
-        //     // flag
-        //
-        //     // flag vote
-        //
-        // }
 
     }
 
-    // 处理数据库中pending中的交易
-    public void handlePendingTransaction() {
-        List<global.smartup.node.po.Transaction> transactionList = transactionService.queryPendingList();
-        for (global.smartup.node.po.Transaction tr : transactionList) {
-            Transaction tx = ethClient.getTx(tr.getTxHash());
-            TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
-            EthBlock.Block block = ethClient.getBlockByNumber(tx.getBlockNumber(), false);
-            if (tx == null || receipt == null || block == null) {
-                // 有可能节点还没有同步到收据，放置到下一次处理
-                continue;
-            }
-            Date blockTime = new Date(block.getTimestamp().longValue() * 1000);
 
-            if (PoConstant.Transaction.Type.CreateMarket.equals(tr.getType())) {
-                handleCreateMarket(blockTime, tx, receipt);
-            }
-
-            if (PoConstant.Transaction.Type.BuyCT.equals(tr.getType())) {
-                handleBuyCT(blockTime, tx, receipt);
-            }
-
-            if (PoConstant.Transaction.Type.SellCT.equals(tr.getType())) {
-                handleSellCT(blockTime, tx, receipt);
-            }
-        }
-    }
-
+    // TODO 转移下面的fun
 
     private void handleCreateMarket(Date blockTime, Transaction tx, TransactionReceipt receipt) {
         if (transactionService.isTxHashHandled(tx.getHash())) {
@@ -369,13 +313,10 @@ public class BlockService {
             notificationService.sendProposalCreated(tx.getHash(), true, from, to, proposal.getProposalId(),
                     proposal.getType(), info.getInputSutAmount());
 
-            // TODO
-            //  send vote ntfc
         }
 
 
     }
-
 
     private void handleSutProposalVote(EthBlock.Block block, Transaction tx) {
         log.info("Handle sut proposal vote txHash = {}", tx.getHash());
@@ -407,7 +348,6 @@ public class BlockService {
             notificationService.sendProposalSutVoteFinish(tx.getHash(), true, from, to, proposal.getProposalId(), info.getInputVote());
         }
     }
-
 
     private void handleSutProposalFinish(EthBlock.Block block, Transaction tx) {
         log.info("Handle sut proposal finish = {}", tx.getHash());

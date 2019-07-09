@@ -131,6 +131,10 @@ public class EthClient {
         return false;
     }
 
+    public boolean isTransactionSuccess(TransactionReceipt receipt) {
+        return !isTransactionFail(receipt);
+    }
+
     public boolean recoverSignature (String address, String message, String signature) {
         try {
             if (!Checker.isAddress(address) || signature.length() != 132) {
@@ -166,10 +170,6 @@ public class EthClient {
             log.error(e.getMessage(), e);
         }
         return false;
-    }
-
-    public void test() {
-
     }
 
 }

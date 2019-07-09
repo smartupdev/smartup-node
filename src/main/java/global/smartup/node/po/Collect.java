@@ -12,6 +12,9 @@ public class Collect {
     @Column(name = "user_address")
     private String userAddress;
 
+    /**
+     * {@link global.smartup.node.constant.PoConstant.Collect.Type}
+     */
     @Id
     @Column(name = "type")
     private String type;

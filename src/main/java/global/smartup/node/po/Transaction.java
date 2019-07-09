@@ -10,20 +10,20 @@ public class Transaction {
     @Column(name = "tx_hash")
     private String txHash;
 
+    /**
+     * {@link global.smartup.node.constant.PoConstant.TxStage}
+     */
     @Column(name = "stage")
     private String stage;
 
+    /**
+     * {@link global.smartup.node.constant.PoConstant.Transaction.Type}
+     */
     @Column(name = "type")
     private String type;
 
     @Column(name = "user_address")
     private String userAddress;
-
-    @Column(name = "market_id")
-    private String marketId;
-
-    @Column(name = "market_address")
-    private String marketAddress;
 
     @Column(name = "detail")
     private String detail;
@@ -35,13 +35,6 @@ public class Transaction {
     private Date blockTime;
 
 
-    public String getMarketAddress() {
-        return marketAddress;
-    }
-
-    public void setMarketAddress(String marketAddress) {
-        this.marketAddress = marketAddress;
-    }
 
     public Date getCreateTime() {
         return createTime;
@@ -81,14 +74,6 @@ public class Transaction {
 
     public void setUserAddress(String userAddress) {
         this.userAddress = userAddress;
-    }
-
-    public String getMarketId() {
-        return marketId;
-    }
-
-    public void setMarketId(String marketId) {
-        this.marketId = marketId;
     }
 
     public String getDetail() {

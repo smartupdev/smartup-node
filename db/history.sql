@@ -1,3 +1,4 @@
+# init
 
 drop database if exists smartup_node;
 create database smartup_node character set utf8mb4 collate utf8mb4_general_ci;
@@ -261,3 +262,57 @@ create table proposal_suggest_vote(
   create_time datetime,
   block_time datetime
 );
+
+
+# 2019-06-11
+
+alter table notification modify notification_id varchar(32);
+alter table post modify post_id varchar(32);
+alter table post_data modify post_id varchar(32);
+alter table post_data modify last_reply_id varchar(32);
+alter table reply modify reply_id varchar(32);
+alter table reply modify post_id varchar(32);
+alter table reply modify father_id varchar(32);
+alter table reply_data modify reply_id varchar(32);
+
+# 2019-07-04
+
+alter table user_account add column eth decimal(40,20);
+update user_account set user_account.eth = 0;
+
+# 2019-07-05
+
+drop table if exists fund_flow;
+create table fund_flow (
+  flow_id varchar(32) primary key,
+  user_address varchar(42),
+  currency varchar(32),
+  type varchar(32),
+  direction varchar(32),
+  amount decimal(40,20),
+  fee decimal(40,20),
+  is_success tinyint,
+  create_time datetime
+);
+
+drop table if exists fund_flow_tx;
+create table fund_flow_tx(
+  flow_id varchar(32),
+  tx_hash varchar(66),
+  primary key (flow_id, tx_hash)
+);
+
+
+# 2019-07-09
+alter table transaction drop column market_id;
+alter table transaction drop column market_address;
+
+alter table notification drop title_en;
+alter table notification drop title_zh_cn;
+alter table notification drop title_zh_tw;
+alter table notification drop text_en;
+alter table notification drop text_zh_cn;
+alter table notification drop text_zh_tw;
+
+insert into dict values ('admin_public_key', '');
+insert into dict values ('admin_private_key', '');

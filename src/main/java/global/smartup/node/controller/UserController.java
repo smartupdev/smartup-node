@@ -174,10 +174,14 @@ public class UserController extends BaseController {
     @ApiOperation(value = "用户交易列表", httpMethod = "POST", response = Wrapper.class,
                 notes = "参数：pageNumb, pageSize\n" +
                         "返回：obj = {\n" +
-                        "　txHash, stage(pending/success/fail), type, userAddress, marketId, marketAddress, detail, createTime, blockTime\n" +
-                        "　type = CreateMarket, detail = {sut}\n" +
-                        "　type = BuyCT, detail = {sut, ct}\n" +
-                        "　type = SellCT, detail = {sut(stage==fail ? null:sut), ct}\n" +
+                        "　txHash, stage(pending/success/fail), type, userAddress, detail, createTime, blockTime\n" +
+                        "　type = ChargeSut, detail = {sut}\n" +
+                        "　type = ChargeEth, detail = {eth}\n" +
+                        "　type = WithdrawSut, detail = {sut}\n" +
+                        "　type = WithdrawEth, detail = {eth}\n" +
+                        "　type = CreateMarket, detail = {...}\n" +
+                        "　type = BuyCT, detail = {...}\n" +
+                        "　type = SellCT, detail = {...}\n" +
                         "}")
     @RequestMapping("/user/transaction/list")
     public Object transactionList(HttpServletRequest request, Integer pageNumb, Integer pageSize) {

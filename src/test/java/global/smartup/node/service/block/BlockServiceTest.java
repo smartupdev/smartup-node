@@ -1,7 +1,8 @@
-package global.smartup.node.service;
+package global.smartup.node.service.block;
 
 import global.smartup.node.Starter;
 import global.smartup.node.eth.EthClient;
+import global.smartup.node.service.block.BlockService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

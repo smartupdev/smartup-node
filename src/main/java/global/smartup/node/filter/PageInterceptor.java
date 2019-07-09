@@ -21,6 +21,7 @@ import java.util.List;
 @Component
 public class PageInterceptor {
 
+
     @Around("execution (* global.smartup.node.service.*.*(..))")
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
         Object[] args = joinPoint.getArgs();

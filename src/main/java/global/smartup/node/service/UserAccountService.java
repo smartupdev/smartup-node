@@ -1,16 +1,12 @@
 package global.smartup.node.service;
 
 import com.github.pagehelper.Page;
-import com.github.pagehelper.PageException;
 import com.github.pagehelper.PageHelper;
 import global.smartup.node.constant.PoConstant;
-import global.smartup.node.eth.SmartupClient;
+import global.smartup.node.eth.ExchangeClient;
 import global.smartup.node.mapper.UserAccountMapper;
-import global.smartup.node.po.CTAccount;
 import global.smartup.node.po.Market;
-import global.smartup.node.po.User;
 import global.smartup.node.po.UserAccount;
-import global.smartup.node.util.Pagination;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,22 +42,76 @@ public class UserAccountService {
     private MarketService marketService;
 
     @Autowired
-    private SmartupClient smartupClient;
+    private ExchangeClient exchangeClient;
 
-    public void updateAllAccount() {
-        loadLastPrice();
-        Integer pageNumb = 0;
-        Integer pageSize = 200;
-        Pagination<User> page;
-        do {
-            pageNumb += 1;
-            page = userService.queryPage(pageNumb, pageSize);
 
-            for (User user : page.getList()) {
-                updateAccount(user.getUserAddress());
-            }
-        } while (page.hasNextPage());
-        lastPriceCache.clear();
+    public void addAccount(String userAddress) {
+        UserAccount account = new UserAccount();
+        account.setUserAddress(userAddress);
+        account.setSut(BigDecimal.ZERO);
+        account.setEth(BigDecimal.ZERO);
+        account.setSutAmount(BigDecimal.ZERO);
+        account.setUpdateTime(new Date());
+        userAccountMapper.insert(account);
+    }
+
+    public void updateSut(String userAddress, BigDecimal newBalance) {
+        UserAccount account = queryByAddress(userAddress);
+        account.setSut(newBalance);
+        account.setUpdateTime(new Date());
+        userAccountMapper.updateByPrimaryKey(account);
+    }
+
+    public void updateEth(String userAddress, BigDecimal newBalance) {
+        UserAccount account = queryByAddress(userAddress);
+        account.setEth(newBalance);
+        account.setUpdateTime(new Date());
+        userAccountMapper.updateByPrimaryKey(account);
+    }
+
+    public void updateWithdrawSut(String userAddress, BigDecimal sut) {
+        // check balance
+
+        // todo check order book
+
+        // call contract
+
+    }
+
+    public Boolean hasEnoughSut(String userAddress, BigDecimal sut) {
+        // query form contract
+        BigDecimal balance = exchangeClient.querySutBalance(userAddress);
+        if (balance == null) {
+            return null;
+        }
+
+        // update account
+        updateSut(userAddress, balance);
+
+        if (balance.compareTo(sut) >= 0) {
+            return true;
+        }
+        return false;
+    }
+
+    public Boolean hasEnoughEth(String userAddress, BigDecimal eth) {
+        // query form contract
+        BigDecimal balance = exchangeClient.queryEthBalance(userAddress);
+        if (balance == null) {
+            return null;
+        }
+
+        // update account
+        updateSut(userAddress, balance);
+
+        if (balance.compareTo(eth) >= 0) {
+            return true;
+        }
+        return false;
+    }
+
+    public UserAccount queryByAddress(String userAddress) {
+        return userAccountMapper.selectByPrimaryKey(userAddress);
     }
 
     public List<UserAccount> queryTop(Integer top) {
@@ -71,35 +121,6 @@ public class UserAccountService {
         userAccountMapper.selectByExample(example);
         userService.fillUserForAccount(page.getResult());
         return page.getResult();
-    }
-
-    private void updateAccount(String userAddress) {
-        BigDecimal sut = smartupClient.getSutBalance(userAddress);
-        if (sut == null) {
-            return;
-        }
-        BigDecimal sutAmount = BigDecimal.ZERO.add(sut);
-        List<CTAccount> ctAccountList = ctAccountService.queryUserAll(userAddress);
-        for (CTAccount ctAccount : ctAccountList) {
-            BigDecimal last = lastPriceCache.get(ctAccount.getMarketAddress());
-            if (last != null) {
-                sutAmount = sutAmount.add(ctAccount.getAmount().multiply(last));
-            }
-        }
-        UserAccount account = userAccountMapper.selectByPrimaryKey(userAddress);
-        if (account == null) {
-            account = new UserAccount();
-            account.setUserAddress(userAddress);
-            account.setSut(sut);
-            account.setSutAmount(sutAmount);
-            account.setUpdateTime(new Date());
-            userAccountMapper.insert(account);
-        } else {
-            account.setSut(sut);
-            account.setSutAmount(sutAmount);
-            account.setUpdateTime(new Date());
-            userAccountMapper.updateByPrimaryKey(account);
-        }
     }
 
     private void loadLastPrice() {

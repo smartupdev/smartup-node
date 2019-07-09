@@ -11,10 +11,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.servlet.LocaleResolver;
-import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.ParameterBuilder;
 import springfox.documentation.builders.PathSelectors;
@@ -27,7 +25,6 @@ import springfox.documentation.spring.web.plugins.Docket;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 @Configuration
 public class Config {
@@ -56,14 +53,21 @@ public class Config {
     @Value("${eth.port}")
     public String ethPort;
 
-    @Value("${eth.smartupContract}")
+    @Value("${eth.contract.exchange}")
+    public String ethExchangeContract;
+
+    @Value("${eth.contract.smartup}")
     public String ethSmartupContract;
 
-    @Value("${eth.sutContract}")
+    @Value("${eth.contract.sut}")
     public String ethSutContract;
 
-    @Value("${eth.nttContract}")
+    @Value("${eth.contract.ntt}")
     public String ethNttContract;
+
+    public String ethAdminPublicKey;
+
+    public String ethAdminPrivateKey;
 
     @Bean
     public MessageSource messageSource() {

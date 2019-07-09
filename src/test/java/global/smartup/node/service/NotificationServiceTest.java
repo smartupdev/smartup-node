@@ -49,20 +49,4 @@ public class NotificationServiceTest {
         System.out.println(JSON.toJSONString(page));
     }
 
-    @Test
-    public void fixData() {
-        Page<Notification> page;
-        Integer pageNumb = 0;
-        do {
-            pageNumb += 1;
-            page = PageHelper.startPage(pageNumb, 200);
-            notificationMapper.selectAll();
-            for (Notification n : page.getResult()) {
-                notificationService.fillAllI18n(n);
-                notificationMapper.updateByPrimaryKey(n);
-            }
-        } while (page.getPageNum() < page.getPages());
-
-    }
-
 }

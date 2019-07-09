@@ -14,9 +14,15 @@ public class UserAccount {
     @Column(name="user_address")
     private String userAddress;
 
+    // sut余额
     @Column(name="sut")
     private BigDecimal sut;
 
+    // eth余额
+    @Column(name = "eth")
+    private BigDecimal eth;
+
+    // sut余额 + ct等价的sut
     @Column(name="sut_amount")
     private BigDecimal sutAmount;
 
@@ -29,6 +35,14 @@ public class UserAccount {
     private User user;
 
 
+
+    public BigDecimal getEth() {
+        return eth;
+    }
+
+    public void setEth(BigDecimal eth) {
+        this.eth = eth;
+    }
 
     public User getUser() {
         return user;

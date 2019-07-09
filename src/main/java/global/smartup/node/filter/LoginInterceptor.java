@@ -14,6 +14,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+/**
+ * 约定/api/user开头的url是需要登录的 <br>
+ * 拦截未登录的请求
+ */
 @Component
 public class LoginInterceptor implements HandlerInterceptor {
 

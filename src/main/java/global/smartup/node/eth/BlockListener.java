@@ -1,7 +1,7 @@
 package global.smartup.node.eth;
 
 import global.smartup.node.Config;
-import global.smartup.node.service.BlockService;
+import global.smartup.node.service.block.BlockService;
 import global.smartup.node.service.DictService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

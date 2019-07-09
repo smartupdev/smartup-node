@@ -6,11 +6,13 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import global.smartup.node.compoment.IdGenerator;
+import global.smartup.node.constant.BuConstant;
 import global.smartup.node.constant.LangHandle;
 import global.smartup.node.constant.PoConstant;
 import global.smartup.node.constant.RedisKey;
 import global.smartup.node.mapper.NotificationMapper;
 import global.smartup.node.po.Notification;
+import global.smartup.node.util.MapBuilder;
 import global.smartup.node.util.Pagination;
 import global.smartup.node.vo.Ntfc;
 import global.smartup.node.vo.UnreadNtfc;
@@ -26,6 +28,7 @@ import org.web3j.crypto.Keys;
 import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -53,6 +56,45 @@ public class NotificationService {
     @Autowired
     private MessageSource messageSource;
 
+    public void sendChargeSutFinish(boolean isSuccess, String userAddress, BigDecimal sut) {
+        userAddress = Keys.toChecksumAddress(userAddress);
+        Map<String, Object> content = MapBuilder.<String, Object>create()
+                .put("isSuccess", isSuccess)
+                .put("sut", sut)
+                .put("userAddress", userAddress)
+                .build();
+        send(userAddress, PoConstant.Notification.Style.Personal, PoConstant.Notification.Type.ChargeSutFinish, content);
+    }
+
+    public void sendChargeEthFinish(boolean isSuccess, String userAddress, BigDecimal eth) {
+        userAddress = Keys.toChecksumAddress(userAddress);
+        Map<String, Object> content = MapBuilder.<String, Object>create()
+                .put("isSuccess", isSuccess)
+                .put("eth", eth)
+                .put("userAddress", userAddress)
+                .build();
+        send(userAddress, PoConstant.Notification.Style.Personal, PoConstant.Notification.Type.ChargeEthFinish, content);
+    }
+
+    public void sendWithdrawSutFinish(boolean isSuccess, String userAddress, BigDecimal sut) {
+        userAddress = Keys.toChecksumAddress(userAddress);
+        Map<String, Object> content = MapBuilder.<String, Object>create()
+                .put("isSuccess", isSuccess)
+                .put("sut", sut)
+                .put("userAddress", userAddress)
+                .build();
+        send(userAddress, PoConstant.Notification.Style.Personal, PoConstant.Notification.Type.WithdrawSutFinish, content);
+    }
+
+    public void sendWithdrawEthFinish(boolean isSuccess, String userAddress, BigDecimal eth) {
+        userAddress = Keys.toChecksumAddress(userAddress);
+        Map<String, Object> content = MapBuilder.<String, Object>create()
+                .put("isSuccess", isSuccess)
+                .put("eth", eth)
+                .put("userAddress", userAddress)
+                .build();
+        send(userAddress, PoConstant.Notification.Style.Personal, PoConstant.Notification.Type.WithdrawEthFinish, content);
+    }
 
     public void sendMarketCreateFinish(String txHash, boolean isSuccess, String marketId, String userAddress, String marketAddress, String marketName) {
         userAddress = Keys.toChecksumAddress(userAddress);
@@ -71,7 +113,6 @@ public class NotificationService {
         ntfc.setContent(JSON.toJSONString(content, SerializerFeature.WriteBigDecimalAsPlain));
         ntfc.setIsRead(false);
         ntfc.setCreateTime(new Date());
-        fillAllI18n(ntfc);
         notificationMapper.insert(ntfc);
 
         //clear cache
@@ -99,7 +140,6 @@ public class NotificationService {
         ntfc.setContent(JSON.toJSONString(content, SerializerFeature.WriteBigDecimalAsPlain));
         ntfc.setIsRead(false);
         ntfc.setCreateTime(new Date());
-        fillAllI18n(ntfc);
         notificationMapper.insert(ntfc);
 
         //clear cache
@@ -195,6 +235,21 @@ public class NotificationService {
         ntfc.setIsRead(false);
         ntfc.setCreateTime(new Date());
         notificationMapper.insert(ntfc);
+
+        //clear cache
+        delNotificationCache(userAddress);
+    }
+
+    public void send(String userAddress, String style, String type, Map content) {
+        Notification n = new Notification();
+        n.setUserAddress(userAddress);
+        n.setNotificationId(idGenerator.getStringId());
+        n.setStyle(style);
+        n.setType(type);
+        n.setContent(JSON.toJSONString(content, SerializerFeature.WriteBigDecimalAsPlain));
+        n.setIsRead(false);
+        n.setCreateTime(new Date());
+        notificationMapper.insert(n);
 
         //clear cache
         delNotificationCache(userAddress);
@@ -309,19 +364,72 @@ public class NotificationService {
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), list);
     }
 
-    public void fillAllI18n(Notification ntft) {
-        fillI18n(ntft, Locale.ENGLISH);
-        fillI18n(ntft, Locale.SIMPLIFIED_CHINESE);
-        fillI18n(ntft, Locale.TRADITIONAL_CHINESE);
+    private List<Ntfc> transferVo(List<Notification> list, Locale locale) {
+        List<Ntfc> ret = new ArrayList<>();
+        for (Notification notification : list) {
+            fillI18n(notification, locale);
+            Ntfc ntfc = new Ntfc();
+            BeanUtils.copyProperties(notification, ntfc, "content");
+            HashMap<String, Object> map = JSON.parseObject(notification.getContent(), HashMap.class, Feature.UseBigDecimal);
+            ntfc.setContent(map);
+            ret.add(ntfc);
+        }
+        return ret;
     }
 
-    private void fillI18n(Notification ntft, Locale locale) {
-        HashMap map = JSON.parseObject(ntft.getContent(), HashMap.class, Feature.UseBigDecimal);
+    private void fillI18n(Notification not, Locale locale) {
+        HashMap map = JSON.parseObject(not.getContent(), HashMap.class, Feature.UseBigDecimal);
         String title = null, text = null;
 
-        if (ntft.getType().equals(PoConstant.Notification.Type.MarketCreateFinish)) {
-            // create market
+        if (PoConstant.Notification.Type.ChargeSutFinish.equals(not.getType())) {
+            Boolean isS = (Boolean) map.get("isSuccess");
+            String sut = ((BigDecimal) map.get("sut")).setScale(2, BigDecimal.ROUND_DOWN).toPlainString();
+            if (isS) {
+                title = messageSource.getMessage(LangHandle.NotificationTitleChargeSutSuccess, null, locale);
+                text = messageSource.getMessage(LangHandle.NotificationTextChargeSutSuccess, new String[]{sut}, locale);
+            } else {
+                title = messageSource.getMessage(LangHandle.NotificationTitleChargeSutFail, null, locale);
+                text = messageSource.getMessage(LangHandle.NotificationTextChargeSutFail, new String[]{sut}, locale);
+            }
+        }
 
+        if (PoConstant.Notification.Type.ChargeEthFinish.equals(not.getType())) {
+            Boolean isS = (Boolean) map.get("isSuccess");
+            String eth = ((BigDecimal) map.get("eth")).setScale(6, BigDecimal.ROUND_DOWN).toPlainString();
+            if (isS) {
+                title = messageSource.getMessage(LangHandle.NotificationTitleChargeEthSuccess, null, locale);
+                text = messageSource.getMessage(LangHandle.NotificationTextChargeEthSuccess, new String[]{eth}, locale);
+            } else {
+                title = messageSource.getMessage(LangHandle.NotificationTitleChargeEthFail, null, locale);
+                text = messageSource.getMessage(LangHandle.NotificationTextChargeEthFail, new String[]{eth}, locale);
+            }
+        }
+
+        if (PoConstant.Notification.Type.WithdrawSutFinish.equals(not.getType())) {
+            Boolean isS = (Boolean) map.get("isSuccess");
+            String sut = ((BigDecimal) map.get("sut")).setScale(2, BigDecimal.ROUND_DOWN).toPlainString();
+            if (isS) {
+                title = messageSource.getMessage(LangHandle.NotificationTitleWithdrawSutSuccess, null, locale);
+                text = messageSource.getMessage(LangHandle.NotificationTextWithdrawSutSuccess, new String[]{sut}, locale);
+            } else {
+                title = messageSource.getMessage(LangHandle.NotificationTitleWithdrawSutFail, null, locale);
+                text = messageSource.getMessage(LangHandle.NotificationTextWithdrawSutFail, new String[]{sut}, locale);
+            }
+        }
+
+        if (PoConstant.Notification.Type.WithdrawEthFinish.equals(not.getType())) {
+            Boolean isS = (Boolean) map.get("isSuccess");
+            String eth = ((BigDecimal) map.get("eth")).setScale(6, BigDecimal.ROUND_DOWN).toPlainString();
+            if (isS) {
+                title = messageSource.getMessage(LangHandle.NotificationTitleWithdrawEthSuccess, null, locale);
+                text = messageSource.getMessage(LangHandle.NotificationTextWithdrawEthSuccess, new String[]{eth}, locale);
+            } else {
+                title = messageSource.getMessage(LangHandle.NotificationTitleWithdrawEthFail, null, locale);
+                text = messageSource.getMessage(LangHandle.NotificationTextWithdrawEthFail, new String[]{eth}, locale);
+            }
+        }
+
+        if (PoConstant.Notification.Type.MarketCreateFinish.equals(not.getType())) {
             Boolean isS = (Boolean) map.get("isSuccess");
             String marketName = (String) map.get("marketName");
             if (isS) {
@@ -331,9 +439,9 @@ public class NotificationService {
                 title = messageSource.getMessage(LangHandle.NotificationTitleMarketCreateFail, null, locale);
                 text = messageSource.getMessage(LangHandle.NotificationTextMarketCreateFail, new String[]{marketName}, locale);
             }
-        } else if (ntft.getType().equals(PoConstant.Notification.Type.TradeFinish)) {
-            //trade
+        }
 
+        if (PoConstant.Notification.Type.TradeFinish.equals(not.getType())) {
             Boolean isS = (Boolean) map.get("isSuccess");
             String type = (String) map.get("type");
             String marketName = (String) map.get("marketName");
@@ -364,43 +472,10 @@ public class NotificationService {
                 }
             }
         }
-        if (Locale.ENGLISH.equals(locale)) {
-            ntft.setTitleEn(title);
-            ntft.setTextEn(text);
-        } else if (Locale.SIMPLIFIED_CHINESE.equals(locale)) {
-            ntft.setTitleZhCn(title);
-            ntft.setTextZhCN(text);
-        } else if (Locale.TRADITIONAL_CHINESE.equals(locale)) {
-            ntft.setTitleZhTw(title);
-            ntft.setTextZhTW(text);
-        }
+
+        not.setTitle(title);
+        not.setText(text);
     }
 
-    private List<Ntfc> transferVo(List<Notification> list, Locale locale) {
-        List<Ntfc> ret = new ArrayList<>();
-        for (Notification notification : list) {
-            Ntfc ntfc = new Ntfc();
-            BeanUtils.copyProperties(notification, ntfc, "content");
-
-            String title = null, text = null;
-            if (Locale.ENGLISH.equals(locale)) {
-                title = notification.getTitleEn();
-                text = notification.getTextEn();
-            } else if (Locale.SIMPLIFIED_CHINESE.equals(locale)) {
-                title = notification.getTitleZhCn();
-                text = notification.getTextZhCN();
-            } else if (Locale.TRADITIONAL_CHINESE.equals(locale)) {
-                title = notification.getTitleZhTw();
-                text = notification.getTextZhTW();
-            }
-            ntfc.setTitle(title);
-            ntfc.setTitle(text);
-
-            HashMap<String, Object> map = JSON.parseObject(notification.getContent(), HashMap.class, Feature.UseBigDecimal);
-            ntfc.setContent(map);
-            ret.add(ntfc);
-        }
-        return ret;
-    }
 }
 

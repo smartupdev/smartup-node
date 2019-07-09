@@ -31,25 +31,6 @@ public class Notification {
     @Column(name="create_time")
     private Date createTime;
 
-    @Column(name = "title_en")
-    private String titleEn;
-
-    @Column(name = "title_zh_cn")
-    private String titleZhCn;
-
-    @Column(name = "title_zh_tw")
-    private String titleZhTw;
-
-    @Column(name = "text_en")
-    private String textEn;
-
-    @Column(name = "text_zh_cn")
-    private String textZhCN;
-
-    @Column(name = "text_zh_tw")
-    private String textZhTW;
-
-
 
     @Transient
     private String title;
@@ -57,54 +38,6 @@ public class Notification {
     @Transient
     private String text;
 
-
-    public String getTitleEn() {
-        return titleEn;
-    }
-
-    public void setTitleEn(String titleEn) {
-        this.titleEn = titleEn;
-    }
-
-    public String getTitleZhCn() {
-        return titleZhCn;
-    }
-
-    public void setTitleZhCn(String titleZhCn) {
-        this.titleZhCn = titleZhCn;
-    }
-
-    public String getTitleZhTw() {
-        return titleZhTw;
-    }
-
-    public void setTitleZhTw(String titleZhTw) {
-        this.titleZhTw = titleZhTw;
-    }
-
-    public String getTextEn() {
-        return textEn;
-    }
-
-    public void setTextEn(String textEn) {
-        this.textEn = textEn;
-    }
-
-    public String getTextZhCN() {
-        return textZhCN;
-    }
-
-    public void setTextZhCN(String textZhCN) {
-        this.textZhCN = textZhCN;
-    }
-
-    public String getTextZhTW() {
-        return textZhTW;
-    }
-
-    public void setTextZhTW(String textZhTW) {
-        this.textZhTW = textZhTW;
-    }
 
     public String getTitle() {
         return title;

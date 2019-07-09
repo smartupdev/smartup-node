@@ -5,15 +5,21 @@ public class LangHandle {
 
 	public static final String PostMarketIdEmptyError = "post_market_id_empty_error";
 
+	public static final String NotificationTitleChargeEthFail = "notification_title_charge_eth_fail";
+
 	public static final String PostMarketAddressFormatError = "post_market_address_format_error";
 
 	public static final String UserNameSizeError = "user_name_size_error";
+
+	public static final String NotificationTitleWithdrawEthFail = "notification_title_withdraw_eth_fail";
 
 	public static final String MarketTxHashFormatError = "market_tx_hash_format_error";
 
 	public static final String NotificationTitleSellCtFail = "notification_title_sell_ct_fail";
 
 	public static final String TradeTxHashFormatError = "trade_tx_hash_format_error";
+
+	public static final String NotificationTitleWithdrawSutSuccess = "notification_title_withdraw_sut_success";
 
 	public static final String UserSignatureError = "user_signature_error";
 
@@ -33,6 +39,8 @@ public class LangHandle {
 
 	public static final String ReplyNotExist = "reply_not_exist";
 
+	public static final String NotificationTextWithdrawEthSuccess = "notification_text_withdraw_eth_success";
+
 	public static final String PostTypeError = "post_type_error";
 
 	public static final String MarketTxHashEmptyError = "market_tx_hash_empty_error";
@@ -43,9 +51,15 @@ public class LangHandle {
 
 	public static final String PostUserAddressFormatError = "post_user_address_format_error";
 
+	public static final String NotificationTitleChargeSutFail = "notification_title_charge_sut_fail";
+
 	public static final String UserNameCanNotChange = "user_name_can_not_change";
 
+	public static final String NotificationTextWithdrawEthFail = "notification_text_withdraw_eth_fail";
+
 	public static final String MarketTxHashRepeatError = "market_tx_hash_repeat_error";
+
+	public static final String NotificationTitleWithdrawSutFail = "notification_title_withdraw_sut_fail";
 
 	public static final String MarketNameLengthError = "market_name_length_error";
 
@@ -61,9 +75,13 @@ public class LangHandle {
 
 	public static final String NotificationTitleBuyCtFail = "notification_title_buy_ct_fail";
 
-	public static final String PostTitleEmptyError = "post_title_empty_error";
+	public static final String NotificationTextChargeEthSuccess = "notification_text_charge_eth_success";
+
+	public static final String NotificationTitleChargeEthSuccess = "notification_title_charge_eth_success";
 
 	public static final String PostTitleLengthError = "post_title_length_error";
+
+	public static final String PostTitleEmptyError = "post_title_empty_error";
 
 	public static final String UserAddressAlreadyExist = "user_address_already_exist";
 
@@ -75,9 +93,17 @@ public class LangHandle {
 
 	public static final String MarketStageIsFail = "market_stage_is_fail";
 
+	public static final String NotificationTextChargeEthFail = "notification_text_charge_eth_fail";
+
 	public static final String TradeMarketAddressFormatError = "trade_market_address_format_error";
 
+	public static final String NotificationTextWithdrawSutFail = "notification_text_withdraw_sut_fail";
+
 	public static final String ReplyContentLengthError = "reply_content_length_error";
+
+	public static final String NotificationTextWithdrawSutSuccess = "notification_text_withdraw_sut_success";
+
+	public static final String NotificationTitleWithdrawEthSuccess = "notification_title_withdraw_eth_success";
 
 	public static final String MarketStageIsPending = "market_stage_is_pending";
 
@@ -101,9 +127,15 @@ public class LangHandle {
 
 	public static final String NotificationTextMarketCreateFail = "notification_text_market_create_fail";
 
+	public static final String NotificationTextChargeSutFail = "notification_text_charge_sut_fail";
+
 	public static final String NotificationTitleMarketCreateFail = "notification_title_market_create_fail";
 
+	public static final String NotificationTextChargeSutSuccess = "notification_text_charge_sut_success";
+
 	public static final String CollectTypeError = "collect_type_error";
+
+	public static final String NotificationTitleChargeSutSuccess = "notification_title_charge_sut_success";
 
 	public static final String KlineSegmentFormatError = "kline_segment_format_error";
 

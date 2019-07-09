@@ -2,6 +2,13 @@ package global.smartup.node.constant;
 
 public class PoConstant {
 
+    public static class Currency {
+
+        public static final String ETH = "ETH";
+
+        public static final String SUT = "SUT";
+
+    }
 
     public static class TxStage {
 
@@ -138,6 +145,14 @@ public class PoConstant {
 
         public static class Type {
 
+            public static final String ChargeSutFinish = "ChargeSutFinish";
+
+            public static final String ChargeEthFinish = "ChargeEthFinish";
+
+            public static final String WithdrawSutFinish = "WithdrawSutFinish";
+
+            public static final String WithdrawEthFinish = "WithdrawEthFinish";
+
             public static final String MarketCreateFinish = "MarketCreateFinish";
 
             public static final String TradeFinish = "TradeFinish";
@@ -182,11 +197,51 @@ public class PoConstant {
 
         public static class Type {
 
+            public static final String ChargeSut = "ChargeSut";
+
+            public static final String ChargeEth = "ChargeEth";
+
+            public static final String WithdrawSut = "WithdrawSut";
+
+            public static final String WithdrawEth = "WithdrawEth";
+
+            public static final String AdminWithdrawSut = "AdminWithdrawSut";
+
+            public static final String AdminWithdrawEth = "AdminWithdrawEth";
+
             public static final String CreateMarket = "CreateMarket";
 
             public static final String BuyCT = "BuyCT";
 
             public static final String SellCT = "SellCT";
+
+        }
+
+    }
+
+    public static class FundFlow {
+
+        public static class Type {
+
+            public static final String ChargeSut = "ChargeSut";
+
+            public static final String ChargeEth = "ChargeEth";
+
+            public static final String WithdrawSut = "WithdrawSut";
+
+            public static final String WithdrawEth = "WithdrawEth";
+
+            public static final String AdminWithdrawSut = "AdminWithdrawSut";
+
+            public static final String AdminWithdrawEth = "AdminWithdrawEth";
+
+        }
+
+        public static class Direction {
+
+            public static final String In = "in";
+
+            public static final String Out = "out";
 
         }
 

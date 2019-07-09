@@ -1,6 +1,6 @@
 package global.smartup.node.job;
 
-import global.smartup.node.service.BlockService;
+import global.smartup.node.service.block.BlockTxService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -9,11 +9,11 @@ import org.springframework.stereotype.Component;
 public class TransactionJob {
 
     @Autowired
-    private BlockService blockService;
+    private BlockTxService blockTxService;
 
     @Scheduled(fixedDelay = 1000)
     public void blockListen () {
-        blockService.handlePendingTransaction();
+        blockTxService.handlePendingTransaction();
     }
 
 }

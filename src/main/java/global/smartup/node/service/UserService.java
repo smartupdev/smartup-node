@@ -27,6 +27,8 @@ public class UserService {
     @Autowired
     private UserMarketDataMapper userMarketDataMapper;
 
+    @Autowired
+    private UserAccountService userAccountService;
 
     public User add(String address) {
         address = Keys.toChecksumAddress(address);
@@ -35,6 +37,7 @@ public class UserService {
         user.setCreateTime(new Date());
         user.setCode(generateCode());
         userMapper.insert(user);
+        userAccountService.addAccount(address);
         return user;
     }
 
@@ -136,6 +139,10 @@ public class UserService {
         User cdt = new User();
         cdt.setName(name);
         return userMapper.selectOne(cdt) != null;
+    }
+
+    public boolean isNotExist(String address) {
+        return !isExist(address);
     }
 
     public boolean isExist(String address) {
