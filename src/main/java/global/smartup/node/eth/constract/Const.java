@@ -24,6 +24,8 @@ public class Const {
 
             public static final String AdminWithdraw = "0x8b6aa4b2";
 
+            public static final String CreateMarket = "0x...";
+
         }
 
         public static class Event {

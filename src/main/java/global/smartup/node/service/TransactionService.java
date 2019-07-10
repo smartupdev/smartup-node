@@ -6,7 +6,6 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import global.smartup.node.constant.PoConstant;
-import global.smartup.node.eth.EthClient;
 import global.smartup.node.mapper.TransactionMapper;
 import global.smartup.node.po.Transaction;
 import global.smartup.node.util.Common;
@@ -19,8 +18,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.web3j.protocol.core.methods.response.EthBlock;
-import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
@@ -91,6 +88,24 @@ public class TransactionService {
         transactionMapper.updateByPrimaryKey(tr);
     }
 
+    public void modCreateMarketFinish(String txHash, boolean isSuccess, String userAddress, String marketAddress,
+                                      String marketId, String marketName, BigDecimal sut, Date blockTime) {
+        Transaction tr = query(txHash);
+        if (tr == null) {
+            return;
+        }
+        tr.setStage(isSuccess ? PoConstant.TxStage.Success : PoConstant.TxStage.Fail);
+        Map<String, Object> detail = MapBuilder.<String, Object>create()
+                .put("userAddress", userAddress)
+                .put("marketAddress", marketAddress).put("marketId", marketId)
+                .put("marketName", marketName)
+                .put("sut", sut)
+                .build();
+        tr.setDetail(JSON.toJSONString(detail, SerializerFeature.WriteBigDecimalAsPlain));
+        tr.setBlockTime(blockTime);
+        transactionMapper.updateByPrimaryKey(tr);
+    }
+
     public void addCreateMarket(String txHash, String marketId, String userAddress) {
         Transaction tr = query(txHash);
         if (tr == null) {
@@ -98,25 +113,6 @@ public class TransactionService {
                     null, null, new Date(), null);
         } else {
             log.error("Add create market transaction error, repeat txHash = {}" , txHash);
-        }
-    }
-
-    public void modCreateMarketFinish(String txHash, String stage, String userAddress, String marketId,
-                                      String marketAddress, BigDecimal sutAmount, Date blockTime) {
-        Transaction tr = query(txHash);
-        HashMap<String, Object> map = new HashMap<>();
-        map.put("marketId", marketId);
-        map.put("marketAddress", marketAddress);
-        map.put("sut", sutAmount);
-        if (tr == null) {
-            add(txHash, stage, PoConstant.Transaction.Type.CreateMarket, marketAddress, map,
-                    new Date(), blockTime);
-        } else {
-            tr.setStage(stage);
-            tr.setUserAddress(userAddress);
-            tr.setDetail(JSON.toJSONString(map, SerializerFeature.WriteBigDecimalAsPlain));
-            tr.setBlockTime(blockTime);
-            transactionMapper.updateByPrimaryKey(tr);
         }
     }
 
@@ -187,6 +183,17 @@ public class TransactionService {
             return false;
         }
         return true;
+    }
+
+    public boolean isTxHashNotExistOrHandled(String txHash) {
+        Transaction tr = query(txHash);
+        if (tr == null) {
+            return true;
+        }
+        if (!PoConstant.TxStage.Pending.equals(tr.getStage())) {
+            return true;
+        }
+        return false;
     }
 
     public List<Transaction> queryPendingList() {

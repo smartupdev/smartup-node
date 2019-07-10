@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.Keys;
+import org.web3j.crypto.SignedRawTransaction;
 import org.web3j.protocol.core.methods.response.Transaction;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.utils.Convert;
@@ -63,7 +64,7 @@ public class BlockFundService {
         // update tr
         transactionService.modChargeSutFinish(tx.getHash(), isSuccess, sut, blockTime);
 
-        // save record
+        // save fund record
         fundFlowService.addChargeSut(tx.getHash(), isSuccess, userAddress, sut, BigDecimal.ZERO);
 
         // send notification
@@ -85,7 +86,7 @@ public class BlockFundService {
         // update tr
         transactionService.modChargeEthFinish(tx.getHash(), isSuccess, eth, blockTime);
 
-        // save record
+        // save fund record
         fundFlowService.addChargeEth(tx.getHash(), isSuccess, userAddress, eth, BigDecimal.ZERO);
 
         // send notification
@@ -107,7 +108,7 @@ public class BlockFundService {
         // update tr
         transactionService.modWithdrawSutFinish(tx.getHash(), isSuccess, sut, blockTime);
 
-        // save record
+        // save fund record
         fundFlowService.addWithdrawSut(tx.getHash(), isSuccess, userAddress, sut, BigDecimal.ZERO);
 
         // send notification
@@ -129,7 +130,7 @@ public class BlockFundService {
         // update tr
         transactionService.modWithdrawEthFinish(tx.getHash(), isSuccess, eth, blockTime);
 
-        // save record
+        // save fund record
         fundFlowService.addWithdrawEth(tx.getHash(), isSuccess, userAddress, eth, BigDecimal.ZERO);
 
         // send notification
@@ -151,7 +152,7 @@ public class BlockFundService {
         // update tr
         transactionService.modWithdrawSutFinish(tx.getHash(), isSuccess, sut, blockTime);
 
-        // save record
+        // save fund record
         fundFlowService.addWithdrawSut(tx.getHash(), isSuccess, userAddress, sut, BigDecimal.ZERO);
 
         // send notification
@@ -173,7 +174,7 @@ public class BlockFundService {
         // update tr
         transactionService.modWithdrawEthFinish(tx.getHash(), isSuccess, eth, blockTime);
 
-        // save record
+        // save fund record
         fundFlowService.addWithdrawEth(tx.getHash(), isSuccess, userAddress, eth, BigDecimal.ZERO);
 
         // send notification

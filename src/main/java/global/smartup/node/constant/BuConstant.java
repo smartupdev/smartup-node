@@ -1,5 +1,7 @@
 package global.smartup.node.constant;
 
+import java.math.BigDecimal;
+
 public class BuConstant {
 
     public static final Integer DefaultPageSize = 10;
@@ -14,5 +16,7 @@ public class BuConstant {
 
 
     public static final Integer QueryMaxLength = 100;
+
+    public static final BigDecimal MarketInitSut = BigDecimal.valueOf(2500);
 
 }

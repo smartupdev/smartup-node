@@ -23,7 +23,7 @@
         <swagger.version>2.9.2</swagger.version>
         <javax.mail.version>1.6.1</javax.mail.version>
         <pagehelper.version>1.2.3</pagehelper.version>
-        <web3j.version>4.1.1</web3j.version>
+        <web3j.version>4.3.1</web3j.version>
     </properties>
 
     <dependencies>

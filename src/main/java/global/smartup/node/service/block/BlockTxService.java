@@ -11,6 +11,7 @@ import org.web3j.crypto.Keys;
 import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 
+import java.math.BigInteger;
 import java.util.Date;
 import java.util.List;
 
@@ -32,6 +33,9 @@ public class BlockTxService {
     @Autowired
     private BlockFundService blockFundService;
 
+    @Autowired
+    private BlockMarketService blockMarketService;
+
     /**
      * 处理数据库中pending中的交易
      */
@@ -39,8 +43,14 @@ public class BlockTxService {
         List<Transaction> transactionList = transactionService.queryPendingList();
         for (global.smartup.node.po.Transaction tr : transactionList) {
             org.web3j.protocol.core.methods.response.Transaction tx = ethClient.getTx(tr.getTxHash());
+            BigInteger blockNumber;
+            try {
+                blockNumber = tx.getBlockNumber();
+            } catch (Exception e) {
+                continue;
+            }
             TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
-            EthBlock.Block block = ethClient.getBlockByNumber(tx.getBlockNumber(), false);
+            EthBlock.Block block = ethClient.getBlockByNumber(blockNumber, false);
             if (tx == null || receipt == null || block == null) {
                 // 有可能节点还没有同步到收据，放置到下一次处理
                 continue;
@@ -81,6 +91,12 @@ public class BlockTxService {
             if (tr.getType().startsWith(PoConstant.Transaction.Type.AdminWithdrawEth)) {
                 blockFundService.handleAdminWithdrawEth(tx, receipt, blockTime);
             }
+
+            // 创建市场
+            // if (tr.getType().startsWith(PoConstant.Transaction.Type.CreateMarket)) {
+            //     blockMarketService.handleMarketCreate(tx, receipt, blockTime);
+            // }
+
         }
     }
 

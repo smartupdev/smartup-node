@@ -307,12 +307,12 @@ create table fund_flow_tx(
 alter table transaction drop column market_id;
 alter table transaction drop column market_address;
 
-alter table notification drop title_en;
-alter table notification drop title_zh_cn;
-alter table notification drop title_zh_tw;
-alter table notification drop text_en;
-alter table notification drop text_zh_cn;
-alter table notification drop text_zh_tw;
-
 insert into dict values ('admin_public_key', '');
 insert into dict values ('admin_private_key', '');
+
+# 2019-07-06
+alter table market add column ct_count decimal(40,20);
+alter table market add column ct_price decimal(40,20);
+alter table market add column ct_recycle_price decimal(40,20);
+alter table market drop column stage;
+alter table market drop column type;

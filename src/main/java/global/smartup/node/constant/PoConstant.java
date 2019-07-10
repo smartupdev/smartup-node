@@ -43,6 +43,8 @@ public class PoConstant {
 
             public static final String Close = "close";
 
+            public static final String Fail = "fail";
+
         }
 
         public static class TopType {
@@ -230,6 +232,8 @@ public class PoConstant {
             public static final String WithdrawSut = "WithdrawSut";
 
             public static final String WithdrawEth = "WithdrawEth";
+
+            public static final String CreateMarket = "CreateMarket";
 
             public static final String AdminWithdrawSut = "AdminWithdrawSut";
 

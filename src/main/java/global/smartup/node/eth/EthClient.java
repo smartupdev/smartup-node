@@ -12,6 +12,7 @@ import org.web3j.crypto.Keys;
 import org.web3j.crypto.Sign;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.DefaultBlockParameter;
+import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.response.*;
 import org.web3j.protocol.http.HttpService;
 import org.web3j.utils.Convert;
@@ -170,6 +171,25 @@ public class EthClient {
             log.error(e.getMessage(), e);
         }
         return false;
+    }
+
+    public BigInteger getTransactionCount(String publicKey) {
+        BigInteger ret = null;
+        try {
+            EthGetTransactionCount resp = web3j.ethGetTransactionCount(publicKey, DefaultBlockParameterName.LATEST).send();
+            if (resp != null) {
+                if (!resp.hasError()) {
+                    ret = resp.getTransactionCount();
+                } else {
+                    log.error("[ETH getTransactionCount error] code = {}, msg = {}", resp.getError().getCode(), resp.getError().getMessage());
+                }
+            } else {
+                log.error("[ETH getTransactionCount error] server no response");
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        return ret;
     }
 
 }

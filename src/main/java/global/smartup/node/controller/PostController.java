@@ -65,7 +65,7 @@ public class PostController extends BaseController {
                 if (market == null) {
                     return Wrapper.alert(getLocaleMsg(LangHandle.MarketIdNotExist));
                 }
-                if (!PoConstant.TxStage.Success.equals(market.getStage())) {
+                if (!PoConstant.Market.Status.Open.equals(market.getStatus())) {
                     return Wrapper.alert(getLocaleMsg(LangHandle.MarketStageIsPending));
                 }
             }

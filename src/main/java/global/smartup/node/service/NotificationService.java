@@ -56,6 +56,8 @@ public class NotificationService {
     @Autowired
     private MessageSource messageSource;
 
+    // TODO 通知中添加 txHash
+
     public void sendChargeSutFinish(boolean isSuccess, String userAddress, BigDecimal sut) {
         userAddress = Keys.toChecksumAddress(userAddress);
         Map<String, Object> content = MapBuilder.<String, Object>create()
@@ -96,148 +98,16 @@ public class NotificationService {
         send(userAddress, PoConstant.Notification.Style.Personal, PoConstant.Notification.Type.WithdrawEthFinish, content);
     }
 
-    public void sendMarketCreateFinish(String txHash, boolean isSuccess, String marketId, String userAddress, String marketAddress, String marketName) {
+    public void sendMarketCreateFinish(String txHash, boolean isSuccess, String userAddress, String marketId, String marketName, BigDecimal sut) {
         userAddress = Keys.toChecksumAddress(userAddress);
-        Notification ntfc = new Notification();
-        HashMap<String, Object> content = new HashMap<>();
-        content.put("txHash", txHash);
-        content.put("isSuccess", isSuccess);
-        content.put("marketId", marketId);
-        content.put("marketName", marketName);
-        content.put("userAddress", userAddress);
-        content.put("marketAddress", marketAddress);
-        ntfc.setUserAddress(userAddress);
-        ntfc.setNotificationId(idGenerator.getStringId());
-        ntfc.setStyle(PoConstant.Notification.Style.Personal);
-        ntfc.setType(PoConstant.Notification.Type.MarketCreateFinish);
-        ntfc.setContent(JSON.toJSONString(content, SerializerFeature.WriteBigDecimalAsPlain));
-        ntfc.setIsRead(false);
-        ntfc.setCreateTime(new Date());
-        notificationMapper.insert(ntfc);
-
-        //clear cache
-        delNotificationCache(userAddress);
-    }
-
-    public void sendTradeFinish(String txHash, boolean isSuccess, String userAddress, String type, String marketId,
-                                String marketAddress, String marketName, BigDecimal sut, BigDecimal ct) {
-        userAddress = Keys.toChecksumAddress(userAddress);
-        Notification ntfc = new Notification();
-        HashMap<String, Object> content = new HashMap<>();
-        content.put("txHash", txHash);
-        content.put("isSuccess", isSuccess);
-        content.put("userAddress", userAddress);
-        content.put("type", type);
-        content.put("marketId", marketId);
-        content.put("marketName", marketName);
-        content.put("marketAddress", marketAddress);
-        content.put("sut", sut);
-        content.put("ct", ct);
-        ntfc.setUserAddress(userAddress);
-        ntfc.setNotificationId(idGenerator.getStringId());
-        ntfc.setStyle(PoConstant.Notification.Style.Personal);
-        ntfc.setType(PoConstant.Notification.Type.TradeFinish);
-        ntfc.setContent(JSON.toJSONString(content, SerializerFeature.WriteBigDecimalAsPlain));
-        ntfc.setIsRead(false);
-        ntfc.setCreateTime(new Date());
-        notificationMapper.insert(ntfc);
-
-        //clear cache
-        delNotificationCache(userAddress);
-    }
-
-    public void sendProposalCreated(String txHash, boolean isSuccess, String userAddress, String marketAddress, Long proposalId, String type, BigDecimal sutAmount) {
-        userAddress = Keys.toChecksumAddress(userAddress);
-        Notification ntfc = new Notification();
-        HashMap<String, Object> content = new HashMap<>();
-        content.put("txHash", txHash);
-        content.put("isSuccess", isSuccess);
-        content.put("userAddress", userAddress);
-        content.put("type", type);
-        content.put("marketAddress", marketAddress);
-        content.put("proposalId", proposalId);
-        content.put("sutAmount", sutAmount);
-        ntfc.setUserAddress(userAddress);
-        ntfc.setNotificationId(idGenerator.getStringId());
-        ntfc.setStyle(PoConstant.Notification.Style.Personal);
-        ntfc.setType(PoConstant.Notification.Type.ProposalSutCreateFinish);
-        ntfc.setContent(JSON.toJSONString(content, SerializerFeature.WriteBigDecimalAsPlain));
-        ntfc.setIsRead(false);
-        ntfc.setCreateTime(new Date());
-        notificationMapper.insert(ntfc);
-
-        //clear cache
-        delNotificationCache(userAddress);
-    }
-
-    public void sendProposalSutVoteFinish(String txHash, boolean isSuccess, String userAddress, String marketAddress, Long proposalId, Boolean isAgree) {
-        userAddress = Keys.toChecksumAddress(userAddress);
-        Notification ntfc = new Notification();
-        HashMap<String, Object> content = new HashMap<>();
-        content.put("txHash", txHash);
-        content.put("isSuccess", isSuccess);
-        content.put("userAddress", userAddress);
-        content.put("marketAddress", marketAddress);
-        content.put("proposalId", proposalId);
-        content.put("isAgree", isAgree);
-        ntfc.setUserAddress(userAddress);
-        ntfc.setNotificationId(idGenerator.getStringId());
-        ntfc.setStyle(PoConstant.Notification.Style.Personal);
-        ntfc.setType(PoConstant.Notification.Type.ProposalSutVoteFinish);
-        ntfc.setContent(JSON.toJSONString(content, SerializerFeature.WriteBigDecimalAsPlain));
-        ntfc.setIsRead(false);
-        ntfc.setCreateTime(new Date());
-        notificationMapper.insert(ntfc);
-
-        //clear cache
-        delNotificationCache(userAddress);
-    }
-
-
-    public void sendProposalSutFinish(String txHash, boolean isSuccess, String userAddress, String marketAddress, Long proposalId, Boolean isAgree){
-        userAddress = Keys.toChecksumAddress(userAddress);
-        Notification ntfc = new Notification();
-        HashMap<String, Object> content = new HashMap<>();
-        content.put("txHash", txHash);
-        content.put("isSuccess", isSuccess);
-        content.put("userAddress", userAddress);
-        content.put("marketAddress", marketAddress);
-        content.put("proposalId", proposalId);
-        content.put("isAgree", isAgree);
-        ntfc.setUserAddress(userAddress);
-        ntfc.setNotificationId(idGenerator.getStringId());
-        ntfc.setStyle(PoConstant.Notification.Style.Personal);
-        ntfc.setType(PoConstant.Notification.Type.ProposalSutFinish);
-        ntfc.setContent(JSON.toJSONString(content, SerializerFeature.WriteBigDecimalAsPlain));
-        ntfc.setIsRead(false);
-        ntfc.setCreateTime(new Date());
-        notificationMapper.insert(ntfc);
-
-        //clear cache
-        delNotificationCache(userAddress);
-    }
-
-    public void sendProposalSuggestVoteFinsh(String txHash, boolean isSuccess, String userAddress, String marketAddress, Long proposalId, String proposalChainId) {
-        userAddress = Keys.toChecksumAddress(userAddress);
-        Notification ntfc = new Notification();
-        HashMap<String, Object> content = new HashMap<>();
-        content.put("txHash", txHash);
-        content.put("isSuccess", isSuccess);
-        content.put("userAddress", userAddress);
-        content.put("marketAddress", marketAddress);
-        content.put("proposalId", proposalId);
-        content.put("proposalChainId", proposalChainId);
-        ntfc.setUserAddress(userAddress);
-        ntfc.setNotificationId(idGenerator.getStringId());
-        ntfc.setStyle(PoConstant.Notification.Style.Personal);
-        ntfc.setType(PoConstant.Notification.Type.ProposalSuggestCreateFinish);
-        ntfc.setContent(JSON.toJSONString(content, SerializerFeature.WriteBigDecimalAsPlain));
-        ntfc.setIsRead(false);
-        ntfc.setCreateTime(new Date());
-        notificationMapper.insert(ntfc);
-
-        //clear cache
-        delNotificationCache(userAddress);
+        Map<String, Object> content = MapBuilder.<String, Object>create()
+                .put("txHash", txHash)
+                .put("isSuccess", isSuccess)
+                .put("marketId", marketId)
+                .put("marketName", marketName)
+                .put("sut", sut)
+                .build();
+        send(userAddress, PoConstant.Notification.Style.Personal, PoConstant.Notification.Type.MarketCreateFinish, content);
     }
 
     public void send(String userAddress, String style, String type, Map content) {
@@ -313,13 +183,13 @@ public class NotificationService {
         // find in db
         count = notificationMapper.selectUnreadCount(userAddress);
         list = notificationMapper.selectUnreadFew(userAddress, 10);
-        unreadNtfc.setCount(count);
-        unreadNtfc.setList(transferVo(list, locale));
 
         // save in cache
         redisTemplate.opsForValue().set(countKey, count, RedisKey.NotificationExpire, TimeUnit.MILLISECONDS);
         redisTemplate.opsForValue().set(listKey, list, RedisKey.NotificationExpire, TimeUnit.MILLISECONDS);
 
+        unreadNtfc.setCount(count);
+        unreadNtfc.setList(transferVo(list, locale));
         return unreadNtfc;
     }
 
@@ -432,44 +302,13 @@ public class NotificationService {
         if (PoConstant.Notification.Type.MarketCreateFinish.equals(not.getType())) {
             Boolean isS = (Boolean) map.get("isSuccess");
             String marketName = (String) map.get("marketName");
+            String sut = ((BigDecimal) map.get("sut")).setScale(2, BigDecimal.ROUND_DOWN).toPlainString();
             if (isS) {
                 title = messageSource.getMessage(LangHandle.NotificationTitleMarketCreateSuccess, null, locale);
-                text = messageSource.getMessage(LangHandle.NotificationTextMarketCreateSuccess, new String[]{"2500", marketName}, locale);
+                text = messageSource.getMessage(LangHandle.NotificationTextMarketCreateSuccess, new String[]{sut, marketName}, locale);
             } else {
                 title = messageSource.getMessage(LangHandle.NotificationTitleMarketCreateFail, null, locale);
-                text = messageSource.getMessage(LangHandle.NotificationTextMarketCreateFail, new String[]{marketName}, locale);
-            }
-        }
-
-        if (PoConstant.Notification.Type.TradeFinish.equals(not.getType())) {
-            Boolean isS = (Boolean) map.get("isSuccess");
-            String type = (String) map.get("type");
-            String marketName = (String) map.get("marketName");
-            Object ct =  map.get("ct");
-            String ctStr;
-            if (ct == null) {
-                ctStr = "?";
-            } else if (ct instanceof BigDecimal) {
-                ctStr = ((BigDecimal) ct).setScale(2, BigDecimal.ROUND_DOWN).toPlainString();
-            } else {
-                ctStr = String.valueOf(ct);
-            }
-            if (PoConstant.Trade.Type.Buy.equals(type)) {
-                if (isS) {
-                    title = messageSource.getMessage(LangHandle.NotificationTitleBuyCtSuccess, null, locale);
-                    text = messageSource.getMessage(LangHandle.NotificationTextBuyCtSuccess, new String[]{ctStr, marketName}, locale);
-                } else {
-                    title = messageSource.getMessage(LangHandle.NotificationTitleBuyCtFail, null, locale);
-                    text = messageSource.getMessage(LangHandle.NotificationTextBuyCtFail, new String[]{ctStr, marketName}, locale);
-                }
-            } else if (PoConstant.Trade.Type.Sell.equals(type)) {
-                if (isS) {
-                    title = messageSource.getMessage(LangHandle.NotificationTitleSellCtSuccess, null, locale);
-                    text = messageSource.getMessage(LangHandle.NotificationTextSellCtSuccess, new String[]{ctStr, marketName}, locale);
-                } else {
-                    title = messageSource.getMessage(LangHandle.NotificationTitleSellCtFail, null, locale);
-                    text = messageSource.getMessage(LangHandle.NotificationTextSellCtFail, new String[]{ctStr, marketName}, locale);
-                }
+                text = messageSource.getMessage(LangHandle.NotificationTextMarketCreateFail, new String[]{sut, marketName}, locale);
             }
         }
 

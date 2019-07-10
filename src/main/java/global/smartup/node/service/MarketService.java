@@ -4,17 +4,19 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import global.smartup.node.Config;
 import global.smartup.node.compoment.IdGenerator;
+import global.smartup.node.constant.BuConstant;
+import global.smartup.node.constant.LangHandle;
 import global.smartup.node.constant.PoConstant;
 import global.smartup.node.constant.RedisKey;
 import global.smartup.node.eth.info.CTBuyInfo;
 import global.smartup.node.eth.info.CTSellInfo;
-import global.smartup.node.eth.info.MarketCreateInfo;
 import global.smartup.node.mapper.MarketDataMapper;
 import global.smartup.node.mapper.MarketMapper;
 import global.smartup.node.po.Collect;
 import global.smartup.node.po.Market;
 import global.smartup.node.po.MarketData;
 import global.smartup.node.po.User;
+import global.smartup.node.service.block.BlockMarketService;
 import global.smartup.node.util.Common;
 import global.smartup.node.util.Pagination;
 import org.apache.commons.lang3.StringUtils;
@@ -24,16 +26,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.Keys;
+import org.web3j.utils.Convert;
 import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
-public class MarketService {
+public class MarketService extends BaseService {
 
     private static final Logger log = LoggerFactory.getLogger(MarketService.class);
 
@@ -72,29 +76,141 @@ public class MarketService {
     @Autowired
     private CTAccountService ctAccountService;
 
+    @Autowired
+    private BlockMarketService blockMarketService;
 
-    public Market save(Market market) {
-        Market current = queryCurrentCreating(market.getCreatorAddress());
-        if (current != null) {
-            current.setName(market.getName());
-            current.setCover(market.getCover());
-            current.setPhoto(market.getPhoto());
-            current.setDescription(market.getDescription());
-            marketMapper.updateByPrimaryKey(current);
-            return current;
+
+    public Map<String, String> checkMarketInfo(String userAddress, String name, String description, String photo, String cover) {
+        Map<String, String> err = new HashMap<>();
+        if (name == null || 3 > name.length() || name.length() > 40) {
+            err.put("name", getLocaleMsg(LangHandle.MarketNameLengthError));
         } else {
-            market.setMarketId(idGenerator.getHexStringId());
-            market.setStatus(PoConstant.Market.Status.Creating);
-            market.setCreateTime(new Date());
-            marketMapper.insert(market);
-            return market;
+            if (StringUtils.isBlank(userAddress)) {
+                if (isNameRepeat(name)) {
+                    err.put("name", getLocaleMsg(LangHandle.MarketNameRepeat));
+                }
+            } else {
+                if (isNameRepeat(userAddress, name)) {
+                    err.put("name", getLocaleMsg(LangHandle.MarketNameRepeat));
+                }
+            }
         }
+        if (!isDescriptionLenRight(description)) {
+            err.put("description", getLocaleMsg(LangHandle.MarketDescriptionLengthError));
+        }
+        if (StringUtils.isBlank(photo)) {
+            err.put("photo", getLocaleMsg(LangHandle.MarketPhotoNotNull));
+
+        }
+        if (StringUtils.isBlank(cover)) {
+            err.put("cover", getLocaleMsg(LangHandle.MarketCoverNotNull));
+        }
+        return err;
+    }
+
+    public Map<String, String> checkMarketSetting(BigDecimal ctCount, BigDecimal ctPrice, BigDecimal percentOfCtPrice) {
+        Map<String, String> err = new HashMap<>();
+        if (ctCount == null) {
+            err.put("ctCount", getLocaleMsg(LangHandle.MarketCtCountNotNull));
+        } else {
+            if (ctCount.compareTo(BigDecimal.ZERO) < 0) {
+                err.put("ctCount", getLocaleMsg(LangHandle.MarketCtCountOverZero));
+            }
+        }
+        if (ctPrice == null) {
+            err.put("ctPrice", getLocaleMsg(LangHandle.MarketCtPriceNotNull));
+        } else {
+            if (ctPrice.compareTo(BigDecimal.ZERO) < 0) {
+                err.put("ctPrice", getLocaleMsg(LangHandle.MarketCtPriceOverZero));
+            }
+        }
+        if (percentOfCtPrice == null) {
+            err.put("percentOfCtPrice", getLocaleMsg(LangHandle.MarketPercentOfCtPriceNotNull));
+        } else {
+            if (percentOfCtPrice.compareTo(BigDecimal.ZERO) < 0
+                    || percentOfCtPrice.compareTo(BigDecimal.valueOf(100)) > 0) {
+                err.put("percentOfCtPrice", getLocaleMsg(LangHandle.MarketPercentOfCtPriceRangeError));
+            }
+        }
+        return err;
+    }
+
+    public Map<String, Object> getCreateInfoForSign(String marketId, String userAddress, BigDecimal ctCount, BigDecimal ctPrice,
+                                                    BigDecimal percentOfCtPrice) {
+        BigDecimal ctRecyclePrice = ctPrice
+                .multiply(percentOfCtPrice)
+                .divide(BigDecimal.valueOf(100), 18, BigDecimal.ROUND_DOWN);
+        if (StringUtils.isBlank(marketId)) {
+            marketId = idGenerator.getHexStringId();
+        }
+
+        Map<String, Object> ret = new HashMap<>();
+        ret.put("userAddress", userAddress);
+        ret.put("sut", Convert.toWei(BuConstant.MarketInitSut, Convert.Unit.ETHER).setScale(0).toPlainString());
+        ret.put("marketId", marketId);
+        ret.put("ctCount", Convert.toWei(ctCount, Convert.Unit.ETHER).setScale(0).toPlainString());
+        ret.put("ctPrice", Convert.toWei(ctPrice, Convert.Unit.ETHER).setScale(0).toPlainString());
+        ret.put("ctRecyclePrice", Convert.toWei(ctRecyclePrice, Convert.Unit.ETHER).setScale(0).toPlainString());
+        return ret;
+    }
+
+    public Market saveAndPay(String marketId, String userAddress, String name, String description, String photo,
+                             String cover, BigDecimal ctCount, BigDecimal ctPrice, BigDecimal percentOfCtPrice,
+                             BigInteger gasLimit, BigInteger gasPrice, String sign) {
+        BigDecimal ctRecyclePrice = ctPrice
+                .multiply(percentOfCtPrice)
+                .divide(BigDecimal.valueOf(100), 18, BigDecimal.ROUND_DOWN);
+
+        // insert or update market
+        Market market = queryById(marketId);
+        if (market == null) {
+            market = new Market();
+            market.setMarketId(marketId);
+            market.setName(name);
+            market.setCreatorAddress(userAddress);
+            market.setDescription(description);
+            market.setPhoto(photo);
+            market.setCover(cover);
+            market.setInitSut(BuConstant.MarketInitSut);
+            market.setCtCount(ctCount);
+            market.setCtPrice(ctPrice);
+            market.setCtRecyclePrice(ctRecyclePrice);
+            market.setCreateTime(new Date());
+            market.setStatus(PoConstant.Market.Status.Creating);
+            marketMapper.insert(market);
+        } else {
+            market.setName(name);
+            market.setCreatorAddress(userAddress);
+            market.setDescription(description);
+            market.setPhoto(photo);
+            market.setCover(cover);
+            market.setInitSut(BuConstant.MarketInitSut);
+            market.setCtCount(ctCount);
+            market.setCtPrice(ctPrice);
+            market.setCtRecyclePrice(ctRecyclePrice);
+            market.setCreateTime(new Date());
+            market.setStatus(PoConstant.Market.Status.Creating);
+            marketMapper.updateByPrimaryKey(market);
+        }
+
+        // pay and update market
+        String txHash = blockMarketService.createMarket(userAddress, BuConstant.MarketInitSut, marketId, ctCount,
+                ctPrice, ctRecyclePrice, gasLimit, gasPrice, sign);
+        if (txHash != null) {
+            market.setStatus(PoConstant.Market.Status.Locked);
+            market.setTxHash(txHash);
+            marketMapper.updateByPrimaryKey(market);
+
+            // add pending
+            transactionService.addPending(txHash, userAddress, PoConstant.Transaction.Type.CreateMarket);
+        }
+
+        return market;
     }
 
     public void updateLock(String marketId, String txHash) {
         Market market = marketMapper.selectByPrimaryKey(marketId);
         if (market != null && PoConstant.Market.Status.Creating.equals(market.getStatus())) {
-            market.setStage(PoConstant.TxStage.Pending);
             market.setStatus(PoConstant.Market.Status.Locked);
             market.setTxHash(txHash);
             marketMapper.updateByPrimaryKey(market);
@@ -105,51 +221,38 @@ public class MarketService {
     }
 
     /**
-     * 创建市场成功，更新市场
+     * 创建市场完成
      */
-    public void updateCreateByChain(MarketCreateInfo info) {
-        if (info == null) {
-            return;
-        }
-        Market market = queryCurrentCreating(info.getEventCreatorAddress());
+    public void updateCreateMarketFinish(String marketId, boolean isSuccess, String marketAddress) {
+        Market market = queryById(marketId);
         if (market == null) {
             return;
         }
-        market.setTxHash(info.getTxHash());
-        market.setMarketAddress(info.getEventMarketAddress());
-        market.setInitSut(info.getEventAmount());
-        market.setStage(PoConstant.TxStage.Success);
-        market.setStatus(PoConstant.Market.Status.Open);
-        marketMapper.updateByPrimaryKey(market);
+        if (isSuccess) {
+            market.setMarketAddress(marketAddress);
+            market.setStatus(PoConstant.Market.Status.Open);
+            marketMapper.updateByPrimaryKey(market);
 
-        // create market data
-        MarketData data = new MarketData();
-        data.setMarketAddress(info.getEventMarketAddress());
-        data.setLast(null);
-        data.setLatelyChange(null);
-        data.setLatelyVolume(null);
-        data.setAmount(null);
-        data.setCtAmount(null);
-        data.setCtTopAmount(null);
-        data.setCount(null);
-        data.setPostCount(null);
-        data.setUserCount(null);
-        marketDataMapper.insert(data);
+            MarketData data = new MarketData();
+            data.setMarketAddress(marketAddress);
+            data.setLast(null);
+            data.setLatelyChange(null);
+            data.setLatelyVolume(null);
+            data.setAmount(null);
+            data.setCtAmount(null);
+            data.setCtTopAmount(null);
+            data.setCount(null);
+            data.setPostCount(null);
+            data.setUserCount(null);
+            marketDataMapper.insert(data);
+        } else {
+            market.setMarketAddress(marketAddress);
+            market.setStatus(PoConstant.Market.Status.Fail);
+            marketMapper.updateByPrimaryKey(market);
+        }
 
         // clear cache
         CacheMarketAddresses = null;
-    }
-
-    /**
-     *  创建市场失败
-     */
-    public void updateCreateFailByChain(String txHash, String userAddress, BigDecimal initSut) {
-        Market market = queryCurrentCreating(userAddress);
-        market.setInitSut(initSut);
-        market.setTxHash(txHash);
-        market.setStage(PoConstant.TxStage.Fail);
-        market.setStatus(PoConstant.Market.Status.Close);
-        marketMapper.updateByPrimaryKey(market);
     }
 
     /**
@@ -260,7 +363,6 @@ public class MarketService {
         List<Market> list = marketMapper.select(cdt);
         for (Market market : list) {
             if (now.getTime() - ms > market.getCreateTime().getTime()) {
-                market.setStage(null);
                 market.setStatus(PoConstant.Market.Status.Creating);
                 marketMapper.updateByPrimaryKey(market);
                 log.info("Market [{}] lock expire, txHash = {}", market.getMarketId(), market.getTxHash());
@@ -292,6 +394,13 @@ public class MarketService {
             return true;
         }
         return false;
+    }
+
+    public boolean isNameRepeat(String name) {
+        Market cdt = new Market();
+        cdt.setName(name);
+        List<Market> list = marketMapper.select(cdt);
+        return list.size() > 0;
     }
 
     public boolean isMarketAddressInCache(String marketAddress) {
@@ -333,7 +442,6 @@ public class MarketService {
         Market market = marketMapper.selectByPrimaryKey(id);
         if (market != null) {
             market.setData(marketDataMapper.selectByPrimaryKey(market.getMarketAddress()));
-            market.getCreatorAddress();
             market.setCreator(userService.query(market.getCreatorAddress()));
         }
         return market;
@@ -618,7 +726,7 @@ public class MarketService {
         }
     }
 
-    public boolean isDescriptionLen(String des) {
+    public boolean isDescriptionLenRight(String des) {
         if (StringUtils.isBlank(des)) {
             return true;
         } else {
@@ -668,5 +776,4 @@ public class MarketService {
     }
 
 }
-
 
