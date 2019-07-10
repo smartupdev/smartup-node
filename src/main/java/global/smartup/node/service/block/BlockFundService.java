@@ -1,5 +1,6 @@
 package global.smartup.node.service.block;
 
+import global.smartup.node.constant.BuConstant;
 import global.smartup.node.eth.EthClient;
 import global.smartup.node.eth.constract.event.AdminWithdrawEvent;
 import global.smartup.node.eth.constract.event.ChargeEvent;
@@ -72,7 +73,7 @@ public class BlockFundService {
 
     public void handleChargeEth(Transaction tx, TransactionReceipt receipt, Date blockTime) {
         String userAddress = Keys.toChecksumAddress(tx.getFrom());
-        BigDecimal eth = Convert.fromWei(tx.getValue().toString(), Convert.Unit.ETHER);
+        BigDecimal eth = Convert.fromWei(tx.getValue().toString(), Convert.Unit.ETHER).setScale(BuConstant.DefaultScale);
         boolean isSuccess = false;
 
         if (ethClient.isTransactionSuccess(receipt)) {
