@@ -13,12 +13,6 @@ public class Tx {
 
     private String userAddress;
 
-    private String marketId;
-
-    private String marketAddress;
-
-    private String marketName;
-
     private HashMap<String, Object> detail;
 
     private Date createTime;
@@ -27,13 +21,6 @@ public class Tx {
 
 
 
-    public String getMarketName() {
-        return marketName;
-    }
-
-    public void setMarketName(String marketName) {
-        this.marketName = marketName;
-    }
 
     public String getTxHash() {
         return txHash;
@@ -65,22 +52,6 @@ public class Tx {
 
     public void setUserAddress(String userAddress) {
         this.userAddress = userAddress;
-    }
-
-    public String getMarketId() {
-        return marketId;
-    }
-
-    public void setMarketId(String marketId) {
-        this.marketId = marketId;
-    }
-
-    public String getMarketAddress() {
-        return marketAddress;
-    }
-
-    public void setMarketAddress(String marketAddress) {
-        this.marketAddress = marketAddress;
     }
 
     public HashMap<String, Object> getDetail() {

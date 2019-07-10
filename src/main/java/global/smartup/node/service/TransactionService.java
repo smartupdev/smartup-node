@@ -213,7 +213,6 @@ public class TransactionService {
 
     private List<Tx> transferVo(List<Transaction> list) {
         List<Tx> ret = new ArrayList<>();
-        List<String> marketIds = new ArrayList<>();
         list.forEach(tr -> {
             Tx tx = new Tx();
             BeanUtils.copyProperties(tr, tx, "detail");
@@ -222,12 +221,7 @@ public class TransactionService {
                 tx.setDetail(map);
                 ret.add(tx);
             }
-            // marketIds.add(ts.getMarketId());
         });
-        List<String> marketNames = marketService.queryNames(marketIds);
-        for (int i = 0; i < ret.size(); i++) {
-            ret.get(i).setMarketName(marketNames.get(i));
-        }
         return ret;
     }
 }
