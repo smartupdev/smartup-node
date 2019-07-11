@@ -189,6 +189,10 @@ public class TransactionService {
         return true;
     }
 
+    public boolean isExistTransaction(String txHash) {
+        return transactionMapper.selectByPrimaryKey(txHash) != null;
+    }
+
     public List<Transaction> queryPendingList() {
         Example example = new Example(Transaction.class);
         example.createCriteria()
@@ -202,9 +206,16 @@ public class TransactionService {
     }
 
     public Pagination<Tx> queryPage(String userAddress, Integer pageNumb, Integer pageSize) {
+        return queryPage(userAddress, null, pageNumb, pageSize);
+    }
+
+    public Pagination<Tx> queryPage(String userAddress, String type, Integer pageNumb, Integer pageSize) {
         Example example = new Example(Transaction.class);
-        example.createCriteria()
-                .andEqualTo("userAddress", userAddress);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("userAddress", userAddress);
+        if (StringUtils.isNotBlank(type)) {
+            criteria.andEqualTo("type", type);
+        }
         example.orderBy("createTime").desc();
         Page<Transaction> page = PageHelper.startPage(pageNumb, pageSize);
         transactionMapper.selectByExample(example);

@@ -94,24 +94,27 @@ public class AdminWithdrawEvent {
             return null;
         }
 
-        Log log = optional.get();
-        String data = log.getData();
-        List<Type> params =  FunctionReturnDecoder.decode(data, Arrays.asList(new TypeReference[]{
-                TypeReference.create(Address.class),
-                TypeReference.create(Address.class),
-                TypeReference.create(Address.class),
-                TypeReference.create(Uint256.class),
-                TypeReference.create(Uint256.class),
-                TypeReference.create(Uint256.class)
-        }));
-        event.setWithdrawer(Keys.toChecksumAddress(params.get(0).getValue().toString()));
-        event.setToken(Keys.toChecksumAddress(params.get(1).getValue().toString()));
-        event.setOwner(Keys.toChecksumAddress(params.get(2).getValue().toString()));
-        event.setValue(Convert.fromWei(params.get(3).getValue().toString(), Convert.Unit.ETHER).setScale(BuConstant.DefaultScale));
-        event.setFee(Convert.fromWei(params.get(4).getValue().toString(), Convert.Unit.ETHER).setScale(BuConstant.DefaultScale));
-        event.setReamain(Convert.fromWei(params.get(5).getValue().toString(), Convert.Unit.ETHER).setScale(BuConstant.DefaultScale));
-
-        return event;
+        try {
+            Log log = optional.get();
+            String data = log.getData();
+            List<Type> params =  FunctionReturnDecoder.decode(data, Arrays.asList(new TypeReference[]{
+                    TypeReference.create(Address.class),
+                    TypeReference.create(Address.class),
+                    TypeReference.create(Address.class),
+                    TypeReference.create(Uint256.class),
+                    TypeReference.create(Uint256.class),
+                    TypeReference.create(Uint256.class)
+            }));
+            event.setWithdrawer(Keys.toChecksumAddress(params.get(0).getValue().toString()));
+            event.setToken(Keys.toChecksumAddress(params.get(1).getValue().toString()));
+            event.setOwner(Keys.toChecksumAddress(params.get(2).getValue().toString()));
+            event.setValue(Convert.fromWei(params.get(3).getValue().toString(), Convert.Unit.ETHER).setScale(BuConstant.DefaultScale));
+            event.setFee(Convert.fromWei(params.get(4).getValue().toString(), Convert.Unit.ETHER).setScale(BuConstant.DefaultScale));
+            event.setReamain(Convert.fromWei(params.get(5).getValue().toString(), Convert.Unit.ETHER).setScale(BuConstant.DefaultScale));
+            return event;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
 }

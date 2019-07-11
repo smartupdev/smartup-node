@@ -51,6 +51,9 @@ public class BlockFundService {
     public void handleChargeSut(Transaction tx, TransactionReceipt receipt, Date blockTime) {
         String userAddress = Keys.toChecksumAddress(tx.getFrom());
         ChargeSutFunc func = ChargeSutFunc.parse(tx);
+        if (func == null) {
+            return;
+        }
         BigDecimal sut = func.getValue();
         boolean isSuccess = false;
 
@@ -58,6 +61,9 @@ public class BlockFundService {
             isSuccess = true;
             // update balance
             ChargeEvent event = ChargeEvent.parse(receipt);
+            if (event == null) {
+                return;
+            }
             userAccountService.updateSut(userAddress, event.getTotal());
         }
 
@@ -73,13 +79,21 @@ public class BlockFundService {
 
     public void handleChargeEth(Transaction tx, TransactionReceipt receipt, Date blockTime) {
         String userAddress = Keys.toChecksumAddress(tx.getFrom());
-        BigDecimal eth = Convert.fromWei(tx.getValue().toString(), Convert.Unit.ETHER).setScale(BuConstant.DefaultScale);
+        BigDecimal eth;
+        try {
+            eth = Convert.fromWei(tx.getValue().toString(), Convert.Unit.ETHER).setScale(BuConstant.DefaultScale);
+        } catch (Exception e) {
+            return;
+        }
         boolean isSuccess = false;
 
         if (ethClient.isTransactionSuccess(receipt)) {
             isSuccess = true;
             // update balance
             ChargeEvent event = ChargeEvent.parse(receipt);
+            if (event == null) {
+                return;
+            }
             userAccountService.updateEth(userAddress, event.getTotal());
         }
 
@@ -96,12 +110,18 @@ public class BlockFundService {
     public void handleWithdrawSut(Transaction tx, TransactionReceipt receipt, Date blockTime) {
         String userAddress = Keys.toChecksumAddress(tx.getFrom());
         WithdrawFunc func = WithdrawFunc.parse(tx);
+        if (func == null) {
+            return;
+        }
         BigDecimal sut = func.getAmount();
         boolean isSuccess = false;
         if (ethClient.isTransactionSuccess(receipt)) {
             isSuccess = true;
             // update balance
             WithdrawEvent event = WithdrawEvent.parse(receipt);
+            if (event == null) {
+                return;
+            }
             userAccountService.updateSut(userAddress, event.getReamain());
         }
 
@@ -118,12 +138,18 @@ public class BlockFundService {
     public void handleWithdrawEth(Transaction tx, TransactionReceipt receipt, Date blockTime) {
         String userAddress = Keys.toChecksumAddress(tx.getFrom());
         WithdrawFunc func = WithdrawFunc.parse(tx);
+        if (func == null) {
+            return;
+        }
         BigDecimal eth = func.getAmount();
         boolean isSuccess = false;
         if (ethClient.isTransactionSuccess(receipt)) {
             isSuccess = true;
             // update balance
             WithdrawEvent event = WithdrawEvent.parse(receipt);
+            if (event == null) {
+                return;
+            }
             userAccountService.updateEth(userAddress, event.getReamain());
         }
 
@@ -140,12 +166,18 @@ public class BlockFundService {
     public void handleAdminWithdrawSut(Transaction tx, TransactionReceipt receipt, Date blockTime) {
         String userAddress = Keys.toChecksumAddress(tx.getFrom());
         AdminWithdrawFunc func = AdminWithdrawFunc.parse(tx);
+        if (func == null) {
+            return;
+        }
         BigDecimal sut = func.getAmount();
         boolean isSuccess = false;
         if (ethClient.isTransactionSuccess(receipt)) {
             isSuccess = true;
             // update balance
             AdminWithdrawEvent event = AdminWithdrawEvent.parse(receipt);
+            if (event == null) {
+                return;
+            }
             userAccountService.updateSut(userAddress, event.getReamain());
         }
 
@@ -162,12 +194,18 @@ public class BlockFundService {
     public void handleAdminWithdrawEth(Transaction tx, TransactionReceipt receipt, Date blockTime) {
         String userAddress = Keys.toChecksumAddress(tx.getFrom());
         AdminWithdrawFunc func = AdminWithdrawFunc.parse(tx);
+        if (func == null) {
+            return;
+        }
         BigDecimal eth = func.getAmount();
         boolean isSuccess = false;
         if (ethClient.isTransactionSuccess(receipt)) {
             isSuccess = true;
             // update balance
             AdminWithdrawEvent event = AdminWithdrawEvent.parse(receipt);
+            if (event == null) {
+                return;
+            }
             userAccountService.updateEth(userAddress, event.getReamain());
         }
 

@@ -15,6 +15,8 @@ public class LangHandle {
 
 	public static final String MarketTxHashFormatError = "market_tx_hash_format_error";
 
+	public static final String TransactionTxHashError = "transaction_tx_hash_error";
+
 	public static final String NotificationTitleSellCtFail = "notification_title_sell_ct_fail";
 
 	public static final String TradeTxHashFormatError = "trade_tx_hash_format_error";
@@ -34,6 +36,8 @@ public class LangHandle {
 	public static final String MarketDescriptionLengthError = "market_description_length_error";
 
 	public static final String ReplyContentEmptyError = "reply_content_empty_error";
+
+	public static final String TransactionTypeError = "transaction_type_error";
 
 	public static final String MarketSaveWhenLock = "market_save_when_lock";
 
@@ -67,9 +71,9 @@ public class LangHandle {
 
 	public static final String NotificationTextMarketCreateSuccess = "notification_text_market_create_success";
 
-	public static final String PostNotExist = "post_not_exist";
-
 	public static final String AddressFormatError = "address_format_error";
+
+	public static final String PostNotExist = "post_not_exist";
 
 	public static final String PostDescriptionLengthError = "post_description_length_error";
 

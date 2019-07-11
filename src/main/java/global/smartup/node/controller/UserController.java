@@ -36,9 +36,6 @@ public class UserController extends BaseController {
     private UserService userService;
 
     @Autowired
-    private TransactionService transactionService;
-
-    @Autowired
     private EthClient ethClient;
 
     @Autowired
@@ -165,29 +162,6 @@ public class UserController extends BaseController {
             }
             userService.update(user);
             return Wrapper.success();
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            return Wrapper.sysError();
-        }
-    }
-
-    @ApiOperation(value = "用户交易列表", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：pageNumb, pageSize\n" +
-                        "返回：obj = {\n" +
-                        "　txHash, stage(pending/success/fail), type, userAddress, detail, createTime, blockTime\n" +
-                        "　type = ChargeSut, detail = {sut}\n" +
-                        "　type = ChargeEth, detail = {eth}\n" +
-                        "　type = WithdrawSut, detail = {sut}\n" +
-                        "　type = WithdrawEth, detail = {eth}\n" +
-                        "　type = CreateMarket, detail = {...}\n" +
-                        "　type = BuyCT, detail = {...}\n" +
-                        "　type = SellCT, detail = {...}\n" +
-                        "}")
-    @RequestMapping("/user/transaction/list")
-    public Object transactionList(HttpServletRequest request, Integer pageNumb, Integer pageSize) {
-        try {
-            Pagination page = transactionService.queryPage(getLoginUserAddress(request), pageNumb, pageSize);
-            return Wrapper.success(page);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return Wrapper.sysError();

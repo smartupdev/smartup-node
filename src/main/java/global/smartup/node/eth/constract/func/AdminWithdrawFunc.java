@@ -35,22 +35,26 @@ public class AdminWithdrawFunc {
         AdminWithdrawFunc func = new AdminWithdrawFunc();
         String input = tx.getInput();
 
-        String str = input.substring(10);
-        List<Type> params =  FunctionReturnDecoder.decode(str, Arrays.asList(new TypeReference[]{
-                TypeReference.create(Address.class),
-                TypeReference.create(Uint256.class),
-                TypeReference.create(Address.class),
-                TypeReference.create(Uint256.class),
-                TypeReference.create(Uint256.class),
-                TypeReference.create(DynamicBytes.class)
-        }));
-        func.setToken(Keys.toChecksumAddress(params.get(0).getValue().toString()));
-        func.setAmount(Convert.fromWei(params.get(1).getValue().toString(), Convert.Unit.ETHER).setScale(BuConstant.DefaultScale));
-        func.setOwner(Keys.toChecksumAddress(params.get(2).getValue().toString()));
-        func.setNonce(new BigInteger(params.get(3).getValue().toString()));
-        func.setFeeWithdraw(Convert.fromWei(params.get(4).getValue().toString(), Convert.Unit.ETHER).setScale(BuConstant.DefaultScale));
-        func.setSign(params.get(5).getValue().toString());
-        return func;
+        try {
+            String str = input.substring(10);
+            List<Type> params =  FunctionReturnDecoder.decode(str, Arrays.asList(new TypeReference[]{
+                    TypeReference.create(Address.class),
+                    TypeReference.create(Uint256.class),
+                    TypeReference.create(Address.class),
+                    TypeReference.create(Uint256.class),
+                    TypeReference.create(Uint256.class),
+                    TypeReference.create(DynamicBytes.class)
+            }));
+            func.setToken(Keys.toChecksumAddress(params.get(0).getValue().toString()));
+            func.setAmount(Convert.fromWei(params.get(1).getValue().toString(), Convert.Unit.ETHER).setScale(BuConstant.DefaultScale));
+            func.setOwner(Keys.toChecksumAddress(params.get(2).getValue().toString()));
+            func.setNonce(new BigInteger(params.get(3).getValue().toString()));
+            func.setFeeWithdraw(Convert.fromWei(params.get(4).getValue().toString(), Convert.Unit.ETHER).setScale(BuConstant.DefaultScale));
+            func.setSign(params.get(5).getValue().toString());
+            return func;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public boolean isWithdrawEth() {

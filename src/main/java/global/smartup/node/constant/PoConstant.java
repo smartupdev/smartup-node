@@ -1,5 +1,7 @@
 package global.smartup.node.constant;
 
+import java.util.Arrays;
+
 public class PoConstant {
 
     public static class Currency {
@@ -214,6 +216,18 @@ public class PoConstant {
             public static final String BuyCT = "BuyCT";
 
             public static final String SellCT = "SellCT";
+
+            public static final String[] All = new String[]{
+                    ChargeSut, ChargeEth, WithdrawSut, WithdrawEth,
+                    AdminWithdrawSut, AdminWithdrawEth, CreateMarket, BuyCT, SellCT
+            };
+
+            public static boolean isRightType(String type) {
+                if (Arrays.asList(All).contains(type)) {
+                    return true;
+                }
+                return false;
+            }
 
         }
 

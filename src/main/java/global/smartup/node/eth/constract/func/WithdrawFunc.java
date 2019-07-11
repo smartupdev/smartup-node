@@ -25,14 +25,18 @@ public class WithdrawFunc {
         WithdrawFunc func = new WithdrawFunc();
         String input = tx.getInput();
 
-        String str = input.substring(10);
-        List<Type> params =  FunctionReturnDecoder.decode(str, Arrays.asList(new TypeReference[]{
-                TypeReference.create(Address.class),
-                TypeReference.create(Uint256.class)
-        }));
-        func.setToken(Keys.toChecksumAddress(params.get(0).getValue().toString()));
-        func.setAmount(Convert.fromWei(params.get(1).getValue().toString(), Convert.Unit.ETHER).setScale(BuConstant.DefaultScale));
-        return func;
+        try {
+            String str = input.substring(10);
+            List<Type> params =  FunctionReturnDecoder.decode(str, Arrays.asList(new TypeReference[]{
+                    TypeReference.create(Address.class),
+                    TypeReference.create(Uint256.class)
+            }));
+            func.setToken(Keys.toChecksumAddress(params.get(0).getValue().toString()));
+            func.setAmount(Convert.fromWei(params.get(1).getValue().toString(), Convert.Unit.ETHER).setScale(BuConstant.DefaultScale));
+            return func;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public boolean isWithdrawEth() {
