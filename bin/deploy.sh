@@ -57,7 +57,9 @@ if [[ "$cmd" == "start" ]]; then
     cp ${projectRoot}/target/smartup-node.jar ${projectRoot}/../bin/smartup-node.jar
     cd ${projectRoot}/../bin
     java -jar smartup-node.jar --spring.profiles.active=${env} >> /root/log/smartup-node.log 2>&1 &
-    echo "App started. Log file path = /root/log/smartup-node.log"
+    echo "App started"
+    echo "Your can see log by"
+    echo "    less /root/log/smartup-node.log"
 fi
 
 # stop
