@@ -1,9 +1,13 @@
 package global.smartup.node.controller;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.serializer.SerializerFeature;
+import global.smartup.node.constant.BuConstant;
 import global.smartup.node.constant.LangHandle;
 import global.smartup.node.constant.PoConstant;
 import global.smartup.node.service.TransactionService;
 import global.smartup.node.util.Checker;
+import global.smartup.node.util.MapBuilder;
 import global.smartup.node.util.Pagination;
 import global.smartup.node.util.Wrapper;
 import io.swagger.annotations.Api;
@@ -15,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
+import java.util.Map;
 
 @Api(description = "区块交易")
 @RestController
@@ -50,18 +56,31 @@ public class TransactionController extends BaseController {
     }
 
     @ApiOperation(value = "上传区块交易哈希", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：txHash, type(见/user/transaction/list)\n" +
+                notes = "参数：txHash, type(见/user/transaction/list [ChargeSut/ChargeEth/WithdrawSut/WithdrawEth]), amount\n" +
                         "返回：是否成功")
     @RequestMapping("/user/transaction/upload/tx/hash")
-    public Object uploadTxHash(HttpServletRequest request, String txHash, String type) {
+    public Object uploadTxHash(HttpServletRequest request, String txHash, String type, BigDecimal amount) {
         try {
-            if (!PoConstant.Transaction.Type.isRightType(type)) {
+            if (!(PoConstant.Transaction.Type.ChargeEth.equals(type)
+                    || PoConstant.Transaction.Type.ChargeSut.equals(type)
+                    || PoConstant.Transaction.Type.WithdrawEth.equals(type)
+                    || PoConstant.Transaction.Type.WithdrawSut.equals(type))) {
                 return Wrapper.alert(getLocaleMsg(LangHandle.TransactionTypeError));
             }
             if (!Checker.isTxHash(txHash)) {
                 return Wrapper.alert(getLocaleMsg(LangHandle.TransactionTxHashError));
             }
-            transactionService.addPending(txHash, getLoginUserAddress(request), type);
+            String market = "sut";
+            if (PoConstant.Transaction.Type.ChargeEth.equals(type) || PoConstant.Transaction.Type.WithdrawEth.equals(type)) {
+                market = "eth";
+            }
+            if (amount == null) {
+                amount = BigDecimal.ZERO;
+            }
+            amount = amount.setScale(BuConstant.DefaultScale);
+            Map map = MapBuilder.create().put(market, amount).build();
+            String detail = JSON.toJSONString(map, SerializerFeature.WriteBigDecimalAsPlain);
+            transactionService.addPending(txHash, getLoginUserAddress(request), type, detail);
             return Wrapper.success();
         } catch (Exception e) {
             log.error(e.getMessage(), e);

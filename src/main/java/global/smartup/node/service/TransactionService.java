@@ -55,6 +55,20 @@ public class TransactionService {
         }
     }
 
+    public void addPending(String txHash, String userAddress, String type, String detail) {
+        Transaction tr = transactionMapper.selectByPrimaryKey(txHash);
+        if (tr == null) {
+            tr = new Transaction();
+            tr.setTxHash(txHash);
+            tr.setStage(PoConstant.TxStage.Pending);
+            tr.setUserAddress(userAddress);
+            tr.setType(type);
+            tr.setDetail(detail);
+            tr.setCreateTime(new Date());
+            transactionMapper.insert(tr);
+        }
+    }
+
     public void modChargeSutFinish(String txHash, boolean isSuccess, BigDecimal sut, Date blockTime) {
         Transaction tr = query(txHash);
         tr.setStage(isSuccess ? PoConstant.TxStage.Success : PoConstant.TxStage.Fail);
