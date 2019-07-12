@@ -38,11 +38,15 @@ public class BlockTxService {
     public void handlePendingTransaction() {
         List<Transaction> transactionList = transactionService.queryPendingList();
         for (global.smartup.node.po.Transaction tr : transactionList) {
+            // 有可能txHash是错误的
             org.web3j.protocol.core.methods.response.Transaction tx = ethClient.getTx(tr.getTxHash());
+            if (tx == null) {
+                continue;
+            }
+            // 有可能节点还没有同步到receipt收据
             TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
             EthBlock.Block block = ethClient.getBlockByNumber(tx.getBlockNumber(), false);
-            if (tx == null || receipt == null || block == null) {
-                // 有可能节点还没有同步到收据，放置到下一次处理
+            if (receipt == null || block == null) {
                 continue;
             }
             Date blockTime = new Date(block.getTimestamp().longValue() * 1000);

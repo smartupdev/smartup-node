@@ -83,15 +83,12 @@ public class EthClient {
         try {
             EthTransaction transaction = web3j.ethGetTransactionByHash(txHash).send();
             if (transaction == null) {
-                log.error("getTx error no response");
                 return null;
             }
             if (transaction.hasError()) {
-                log.error("getTx error " + transaction.getError().getMessage());
                 return null;
             }
             if (!transaction.getTransaction().isPresent()) {
-                log.error("getTx error transaction can not present");
                 return null;
             }
             return transaction.getTransaction().get();
