@@ -54,10 +54,10 @@ public class NotificationController extends BaseController {
                         "　]\n" +
                         "}\n" +
                         "type, content 说明：\n" +
-                        "type = ChargeSutFinish, content = {isSuccess, sut, userAddress}\n" +
-                        "type = ChargeEthFinish, content = {isSuccess, eth, userAddress}\n" +
-                        "type = WithdrawSutFinish, content = {isSuccess, sut, userAddress}\n" +
-                        "type = WithdrawEthFinish, content = {isSuccess, eth, userAddress}\n" +
+                        "type = ChargeSutFinish, content = {txHash, isSuccess, sut, userAddress}\n" +
+                        "type = ChargeEthFinish, content = {txHash, isSuccess, eth, userAddress}\n" +
+                        "type = WithdrawSutFinish, content = {txHash, isSuccess, sut, userAddress}\n" +
+                        "type = WithdrawEthFinish, content = {txHash, isSuccess, eth, userAddress}\n" +
                         "type = MarketCreateFinish, content = {...}\n" +
                         "type = TradeFinish, content = {...}")
     @RequestMapping("/list")

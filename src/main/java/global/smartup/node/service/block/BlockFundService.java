@@ -74,7 +74,7 @@ public class BlockFundService {
         fundFlowService.addChargeSut(tx.getHash(), isSuccess, userAddress, sut, BigDecimal.ZERO);
 
         // send notification
-        notificationService.sendChargeSutFinish(isSuccess, userAddress, sut);
+        notificationService.sendChargeSutFinish(tx.getHash(), isSuccess, userAddress, sut);
     }
 
     public void handleChargeEth(Transaction tx, TransactionReceipt receipt, Date blockTime) {
@@ -104,7 +104,7 @@ public class BlockFundService {
         fundFlowService.addChargeEth(tx.getHash(), isSuccess, userAddress, eth, BigDecimal.ZERO);
 
         // send notification
-        notificationService.sendChargeEthFinish(isSuccess, userAddress, eth);
+        notificationService.sendChargeEthFinish(tx.getHash(), isSuccess, userAddress, eth);
     }
 
     public void handleWithdrawSut(Transaction tx, TransactionReceipt receipt, Date blockTime) {
@@ -132,7 +132,7 @@ public class BlockFundService {
         fundFlowService.addWithdrawSut(tx.getHash(), isSuccess, userAddress, sut, BigDecimal.ZERO);
 
         // send notification
-        notificationService.sendWithdrawSutFinish(isSuccess, userAddress, sut);
+        notificationService.sendWithdrawSutFinish(tx.getHash(), isSuccess, userAddress, sut);
     }
 
     public void handleWithdrawEth(Transaction tx, TransactionReceipt receipt, Date blockTime) {
@@ -160,7 +160,7 @@ public class BlockFundService {
         fundFlowService.addWithdrawEth(tx.getHash(), isSuccess, userAddress, eth, BigDecimal.ZERO);
 
         // send notification
-        notificationService.sendWithdrawEthFinish(isSuccess, userAddress, eth);
+        notificationService.sendWithdrawEthFinish(tx.getHash(), isSuccess, userAddress, eth);
     }
 
     public void handleAdminWithdrawSut(Transaction tx, TransactionReceipt receipt, Date blockTime) {
@@ -188,7 +188,7 @@ public class BlockFundService {
         fundFlowService.addWithdrawSut(tx.getHash(), isSuccess, userAddress, sut, BigDecimal.ZERO);
 
         // send notification
-        notificationService.sendWithdrawSutFinish(isSuccess, userAddress, sut);
+        notificationService.sendWithdrawSutFinish(tx.getHash(), isSuccess, userAddress, sut);
     }
 
     public void handleAdminWithdrawEth(Transaction tx, TransactionReceipt receipt, Date blockTime) {
@@ -216,7 +216,7 @@ public class BlockFundService {
         fundFlowService.addWithdrawEth(tx.getHash(), isSuccess, userAddress, eth, BigDecimal.ZERO);
 
         // send notification
-        notificationService.sendWithdrawEthFinish(isSuccess, userAddress, eth);
+        notificationService.sendWithdrawEthFinish(tx.getHash(), isSuccess, userAddress, eth);
     }
 
     public void callAdminWithdrawSut() {

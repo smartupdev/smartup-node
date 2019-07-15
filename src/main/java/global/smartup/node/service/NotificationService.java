@@ -56,9 +56,10 @@ public class NotificationService {
     @Autowired
     private MessageSource messageSource;
 
-    public void sendChargeSutFinish(boolean isSuccess, String userAddress, BigDecimal sut) {
+    public void sendChargeSutFinish(String txHash, boolean isSuccess, String userAddress, BigDecimal sut) {
         userAddress = Keys.toChecksumAddress(userAddress);
         Map<String, Object> content = MapBuilder.<String, Object>create()
+                .put("txHash", txHash)
                 .put("isSuccess", isSuccess)
                 .put("sut", sut)
                 .put("userAddress", userAddress)
@@ -66,9 +67,10 @@ public class NotificationService {
         send(userAddress, PoConstant.Notification.Style.Personal, PoConstant.Notification.Type.ChargeSutFinish, content);
     }
 
-    public void sendChargeEthFinish(boolean isSuccess, String userAddress, BigDecimal eth) {
+    public void sendChargeEthFinish(String txHash, boolean isSuccess, String userAddress, BigDecimal eth) {
         userAddress = Keys.toChecksumAddress(userAddress);
         Map<String, Object> content = MapBuilder.<String, Object>create()
+                .put("txHash", txHash)
                 .put("isSuccess", isSuccess)
                 .put("eth", eth)
                 .put("userAddress", userAddress)
@@ -76,9 +78,10 @@ public class NotificationService {
         send(userAddress, PoConstant.Notification.Style.Personal, PoConstant.Notification.Type.ChargeEthFinish, content);
     }
 
-    public void sendWithdrawSutFinish(boolean isSuccess, String userAddress, BigDecimal sut) {
+    public void sendWithdrawSutFinish(String txHash, boolean isSuccess, String userAddress, BigDecimal sut) {
         userAddress = Keys.toChecksumAddress(userAddress);
         Map<String, Object> content = MapBuilder.<String, Object>create()
+                .put("txHash", txHash)
                 .put("isSuccess", isSuccess)
                 .put("sut", sut)
                 .put("userAddress", userAddress)
@@ -86,9 +89,10 @@ public class NotificationService {
         send(userAddress, PoConstant.Notification.Style.Personal, PoConstant.Notification.Type.WithdrawSutFinish, content);
     }
 
-    public void sendWithdrawEthFinish(boolean isSuccess, String userAddress, BigDecimal eth) {
+    public void sendWithdrawEthFinish(String txHash, boolean isSuccess, String userAddress, BigDecimal eth) {
         userAddress = Keys.toChecksumAddress(userAddress);
         Map<String, Object> content = MapBuilder.<String, Object>create()
+                .put("txHash", txHash)
                 .put("isSuccess", isSuccess)
                 .put("eth", eth)
                 .put("userAddress", userAddress)
