@@ -11,6 +11,7 @@ import org.web3j.crypto.Keys;
 import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 
+import java.math.BigInteger;
 import java.util.Date;
 import java.util.List;
 
