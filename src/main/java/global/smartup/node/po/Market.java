@@ -1,13 +1,9 @@
 package global.smartup.node.po;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -15,28 +11,15 @@ import java.util.List;
 @Table(name = "market")
 public class Market {
 
-    public interface Add {}
-
-    public interface CheckName {}
-
     @Id
     private String marketId;
 
-    @Column(name="tx_hash")
-    private String txHash;
-
-    // @NotNull(message = "{market_creator_address_format_error}", groups = Market.Add.class)
-    // @NotEmpty(message = "{market_creator_address_format_error}", groups = Market.Add.class)
-    // @Size(max = 42, min = 42, message = "{market_creator_address_format_error}", groups = Market.Add.class)
     @Column(name="creator_address")
     private String creatorAddress;
 
     @Column(name="market_address")
     private String marketAddress;
 
-    @NotNull(message = "{market_name_empty_error}", groups = {Market.Add.class, Market.CheckName.class})
-    @NotEmpty(message = "{market_name_empty_error}", groups = {Market.Add.class, Market.CheckName.class})
-    @Size(max = 40, min = 3, message = "{market_name_length_error}", groups = {Market.Add.class, Market.CheckName.class})
     @Column(name="name")
     private String name;
 
@@ -49,14 +32,8 @@ public class Market {
     @Column(name="description")
     private String description;
 
-    @Column(name="type")
-    private String type;
-
-    /**
-     * {@link global.smartup.node.constant.PoConstant.TxStage}
-     */
-    @Column(name="stage")
-    private String stage;
+    @Column(name="tx_hash")
+    private String txHash;
 
     /**
      * {@link global.smartup.node.constant.PoConstant.Market.Status}
@@ -66,6 +43,15 @@ public class Market {
 
     @Column(name="init_sut")
     private BigDecimal initSut;
+
+    @Column(name = "ct_count")
+    private BigDecimal ctCount;
+
+    @Column(name = "ct_price")
+    private BigDecimal ctPrice;
+
+    @Column(name = "ct_recycle_price")
+    private BigDecimal ctRecyclePrice;
 
     @Column(name="create_time")
     private Date createTime;
@@ -83,8 +69,6 @@ public class Market {
 
     @Transient
     private User creator;
-
-
 
 
 
@@ -200,27 +184,35 @@ public class Market {
         this.description = description;
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getStage() {
-        return stage;
-    }
-
-    public void setStage(String stage) {
-        this.stage = stage;
-    }
-
     public Date getCreateTime() {
         return createTime;
     }
 
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
+    }
+
+    public BigDecimal getCtCount() {
+        return ctCount;
+    }
+
+    public void setCtCount(BigDecimal ctCount) {
+        this.ctCount = ctCount;
+    }
+
+    public BigDecimal getCtPrice() {
+        return ctPrice;
+    }
+
+    public void setCtPrice(BigDecimal ctPrice) {
+        this.ctPrice = ctPrice;
+    }
+
+    public BigDecimal getCtRecyclePrice() {
+        return ctRecyclePrice;
+    }
+
+    public void setCtRecyclePrice(BigDecimal ctRecyclePrice) {
+        this.ctRecyclePrice = ctRecyclePrice;
     }
 }

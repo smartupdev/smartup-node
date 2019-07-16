@@ -31,69 +31,40 @@ public class FundFlowService {
     private IdGenerator idGenerator;
 
     public void addChargeSut(String txHash, boolean isSuccess, String userAddress, BigDecimal sut, BigDecimal fee) {
-        FundFlow flow = new FundFlow();
-        String flowId = idGenerator.getHexStringId();
-        flow.setFlowId(flowId);
-        flow.setCurrency(PoConstant.Currency.SUT);
-        flow.setType(PoConstant.FundFlow.Type.ChargeSut);
-        flow.setDirection(PoConstant.FundFlow.Direction.In);
-        flow.setUserAddress(userAddress);
-        flow.setAmount(sut);
-        flow.setFee(fee);
-        flow.setIsSuccess(isSuccess);
-        flow.setCreateTime(new Date());
-        fundFlowMapper.insert(flow);
-        addTxHashLink(flowId, txHash);
+        add(txHash, isSuccess, PoConstant.Currency.SUT, PoConstant.FundFlow.Type.ChargeSut, PoConstant.FundFlow.Direction.In, userAddress, sut, fee);
     }
 
     public void addChargeEth(String txHash, boolean isSuccess, String userAddress, BigDecimal eth, BigDecimal fee) {
-        FundFlow flow = new FundFlow();
-        String flowId = idGenerator.getHexStringId();
-        flow.setFlowId(flowId);
-        flow.setCurrency(PoConstant.Currency.ETH);
-        flow.setType(PoConstant.FundFlow.Type.ChargeEth);
-        flow.setDirection(PoConstant.FundFlow.Direction.In);
-        flow.setUserAddress(userAddress);
-        flow.setAmount(eth);
-        flow.setFee(fee);
-        flow.setIsSuccess(isSuccess);
-        flow.setCreateTime(new Date());
-        fundFlowMapper.insert(flow);
-        addTxHashLink(flowId, txHash);
+        add(txHash, isSuccess, PoConstant.Currency.ETH, PoConstant.FundFlow.Type.ChargeEth, PoConstant.FundFlow.Direction.In, userAddress, eth, fee);
     }
 
     public void addWithdrawSut(String txHash, boolean isSuccess, String userAddress, BigDecimal sut, BigDecimal fee) {
-        FundFlow flow = new FundFlow();
-        String flowId = idGenerator.getHexStringId();
-        flow.setFlowId(flowId);
-        flow.setCurrency(PoConstant.Currency.SUT);
-        flow.setType(PoConstant.FundFlow.Type.WithdrawSut);
-        flow.setDirection(PoConstant.FundFlow.Direction.Out);
-        flow.setUserAddress(userAddress);
-        flow.setAmount(sut);
-        flow.setFee(fee);
-        flow.setIsSuccess(isSuccess);
-        flow.setCreateTime(new Date());
-        fundFlowMapper.insert(flow);
-        addTxHashLink(flowId, txHash);
+        add(txHash, isSuccess, PoConstant.Currency.SUT, PoConstant.FundFlow.Type.WithdrawSut, PoConstant.FundFlow.Direction.Out, userAddress, sut, fee);
     }
 
     public void addWithdrawEth(String txHash, boolean isSuccess, String userAddress, BigDecimal eth, BigDecimal fee) {
+        add(txHash, isSuccess, PoConstant.Currency.ETH, PoConstant.FundFlow.Type.WithdrawEth, PoConstant.FundFlow.Direction.Out, userAddress, eth, fee);
+    }
+
+    public void addCreateMarket(String txHash, boolean isSuccess, String userAddress, BigDecimal sut, BigDecimal fee) {
+        add(txHash, isSuccess, PoConstant.Currency.SUT, PoConstant.FundFlow.Type.CreateMarket, PoConstant.FundFlow.Direction.Out, userAddress, sut, fee);
+    }
+
+    private void add(String txHash, boolean isSuccess, String currency, String type, String direction, String userAddress, BigDecimal amount, BigDecimal fee) {
         FundFlow flow = new FundFlow();
         String flowId = idGenerator.getHexStringId();
         flow.setFlowId(flowId);
-        flow.setCurrency(PoConstant.Currency.ETH);
-        flow.setType(PoConstant.FundFlow.Type.WithdrawEth);
-        flow.setDirection(PoConstant.FundFlow.Direction.Out);
+        flow.setCurrency(currency);
+        flow.setType(type);
+        flow.setDirection(direction);
         flow.setUserAddress(userAddress);
-        flow.setAmount(eth);
+        flow.setAmount(amount);
         flow.setFee(fee);
         flow.setIsSuccess(isSuccess);
         flow.setCreateTime(new Date());
         fundFlowMapper.insert(flow);
         addTxHashLink(flowId, txHash);
     }
-
 
     public void addTxHashLink(String flowId, String txHash) {
         List<String> list = new ArrayList<>();

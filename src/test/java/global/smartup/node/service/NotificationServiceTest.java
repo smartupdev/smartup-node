@@ -32,12 +32,6 @@ public class NotificationServiceTest {
     private NotificationMapper notificationMapper;
 
     @Test
-    public void sendTradeFinish() {
-        notificationService.sendTradeFinish("tx", true, "user", "buy", "marketId", "market", "",
-                new BigDecimal("0.00000000000000000000"), BigDecimal.ZERO);
-    }
-
-    @Test
     public void queryUnreadInCache() {
         UnreadNtfc ntfc = notificationService.queryUnreadInCache("0xB44940Be0eeA81a3D0dA22CC15208AF4744BeA8E", Locale.CHINA);
         System.out.println(JSON.toJSONString(ntfc));

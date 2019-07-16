@@ -1,8 +1,6 @@
 package global.smartup.node;
 
 import global.smartup.node.filter.LoginInterceptor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -48,7 +46,9 @@ public class Starter extends WebMvcConfigurerAdapter {
         StringHttpMessageConverter stringConverter  = new StringHttpMessageConverter(Charset.forName("UTF-8"));
         converters.add(stringConverter);
         Jackson2ObjectMapperBuilder jacksonMapperBuilder = new Jackson2ObjectMapperBuilder();
-        jacksonMapperBuilder.indentOutput(true).dateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
+        jacksonMapperBuilder
+                .indentOutput(true)
+                .dateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
         MappingJackson2HttpMessageConverter jsonConverter = new MappingJackson2HttpMessageConverter(jacksonMapperBuilder.build());
         converters.add(jsonConverter);
         super.configureMessageConverters(converters);

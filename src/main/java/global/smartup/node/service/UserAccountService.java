@@ -69,13 +69,12 @@ public class UserAccountService {
         userAccountMapper.updateByPrimaryKey(account);
     }
 
-    public void updateWithdrawSut(String userAddress, BigDecimal sut) {
-        // check balance
-
-        // todo check order book
-
-        // call contract
-
+    public void updateSutAndEth(String userAddress, BigDecimal sut, BigDecimal eth) {
+        UserAccount account = queryByAddress(userAddress);
+        account.setSut(sut);
+        account.setEth(eth);
+        account.setUpdateTime(new Date());
+        userAccountMapper.updateByPrimaryKey(account);
     }
 
     public Boolean hasEnoughSut(String userAddress, BigDecimal sut) {

@@ -1,12 +1,12 @@
 package global.smartup.node.controller;
 
-import global.smartup.node.compoment.Validator;
+import global.smartup.node.constant.BuConstant;
 import global.smartup.node.constant.LangHandle;
 import global.smartup.node.constant.PoConstant;
 import global.smartup.node.po.Market;
 import global.smartup.node.service.GlobalService;
 import global.smartup.node.service.MarketService;
-import global.smartup.node.util.Checker;
+import global.smartup.node.service.UserAccountService;
 import global.smartup.node.util.Pagination;
 import global.smartup.node.util.Wrapper;
 import io.swagger.annotations.Api;
@@ -16,10 +16,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.web3j.utils.Convert;
 
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Map;
 
 @Api(description = "市场")
 @RestController
@@ -35,35 +38,133 @@ public class MarketController extends BaseController {
     private GlobalService globalService;
 
     @Autowired
-    private Validator validator;
+    private UserAccountService userAccountService;
 
-    @ApiOperation(value = "保存市场", httpMethod = "POST", response = Wrapper.class,
-            notes = "参数：name, cover, photo, description\n" +
-                    "返回：obj = { 见/api/market/one }")
-    @RequestMapping("/user/market/save")
-    public Object save(HttpServletRequest request, Market market) {
+
+    @ApiOperation(value = "检查创建市场信息", httpMethod = "POST", response = Wrapper.class,
+                notes = "参数：name, description, photo, cover\n" +
+                        "返回： \n" +
+                        "　如果参数正确 code = 0, obj = null \n" +
+                        "　如果参数错误 code = 4, obj = {\n" +
+                        "　　'name': 'xxxxxx', \n" +
+                        "　　... \n" +
+                        "　}")
+    @RequestMapping("/market/create/check/info")
+    public Object checkInfo(HttpServletRequest request, String name, String description, String photo, String cover) {
+        try {
+            Map<String, String> err = marketService.checkMarketInfo(null, name, description, photo, cover);
+            if (err.size() != 0) {
+                return Wrapper.paramError(err);
+            } else {
+                return Wrapper.success();
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return Wrapper.sysError();
+        }
+    }
+
+    @ApiOperation(value = "检查创建市场设置", httpMethod = "POST", response = Wrapper.class,
+            notes = "参数：ctCount, ctPrice, percentOfCtPrice\n" +
+                    "返回：见/api/market/create/check/info")
+    @RequestMapping("/market/create/check/setting")
+    public Object checkSetting(HttpServletRequest request, BigDecimal ctCount, BigDecimal ctPrice, BigDecimal percentOfCtPrice) {
+        try {
+            Map<String, String> err = marketService.checkMarketSetting(ctCount, ctPrice, percentOfCtPrice);
+            if (err.size() != 0) {
+                return Wrapper.paramError(err);
+            } else {
+                return Wrapper.success();
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return Wrapper.sysError();
+        }
+    }
+
+    @ApiOperation(value = "获取需要签名的信息", httpMethod = "POST", response = Wrapper.class,
+                notes = "参数：marketId(可空) ctCount, ctPrice, percentOfCtPrice\n" +
+                        "返回：obj = {\n" +
+                        "　userAddress, sut, marketId, ctCount, ctPrice, ctRecyclePrice\n" +
+                        "}\n" +
+                        "\n" +
+                        "gasFee：计算方式，见文档。 签名时gasFee需要以wei为单位，转为字符串。\n" +
+                        "\n" +
+                        "签名：依如下顺序，对字符串做hash，签名。注意marketId有两次\n" +
+                        "　userAddress, sut, marketId, marketId, ctCount, ctPrice, ctRecyclePrice, gasFee\n" +
+                        "　hash = web3.utils.soliditySha3(userAddress, web3.utils.toBN(sut), marketId, marketId, web3.utils.toBN(ctCount), web3.utils.toBN(ctPrice), web3.utils.toBN(ctRecyclePrice), web3.utils.toBN(gasFee))\n" +
+                        "　sign = web3.personal.sign(hash, userAddress)")
+    @RequestMapping("/user/market/create/get/sign/info")
+    public Object getSignInfo(HttpServletRequest request, String marketId, BigDecimal ctCount, BigDecimal ctPrice, BigDecimal percentOfCtPrice) {
+        try {
+            Map<String, String> err = marketService.checkMarketSetting(ctCount, ctPrice, percentOfCtPrice);
+            if (err.size() != 0) {
+                return Wrapper.paramError(err);
+            }
+            String userAddress = getLoginUserAddress(request);
+            Map<String,Object> map = marketService.getCreateInfoForSign(marketId, userAddress, ctCount, ctPrice, percentOfCtPrice);
+            return Wrapper.success(map);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return Wrapper.sysError();
+        }
+    }
+
+    @ApiOperation(value = "创建/修改 市场", httpMethod = "POST", response = Wrapper.class,
+                notes = "参数：marketId, name, description, photo, cover, ctCount, ctPrice, percentOfCtPrice, gasPrice, gasLimit, sign\n" +
+                        "返回：\n" +
+                        "　如果参数错误，code = 4, 见/api/market/create/check/info\n" +
+                        "　如果创建失败，code = 2, msg = 'xxxx' \n" +
+                        "　如果创建成功, code = 0, obj = { 见/api/market/one }\n" +
+                        "　　market.status = 'locked' 付款成功" +
+                        "　　market.status = 'creating' 付款失败，可以通过marketId，获取市场信息重新付款 "
+    )
+    @RequestMapping("/user/market/create")
+    public Object createDo(HttpServletRequest request, String marketId, String name, String description, String photo,
+                       String cover, BigDecimal ctCount, BigDecimal ctPrice, BigDecimal percentOfCtPrice,
+                       BigInteger gasPrice, BigInteger gasLimit, String sign) {
         try {
             String userAddress = getLoginUserAddress(request);
 
-            String err = validator.validate(market, Market.Add.class);
-            if (err != null) {
-                return Wrapper.alert(err);
-            }
-            if (!marketService.isDescriptionLen(market.getDescription())) {
-                return Wrapper.alert(getLocaleMsg(LangHandle.MarketDescriptionLengthError));
-            }
-            Market current = marketService.queryCurrentCreating(userAddress);
-            if (current != null && PoConstant.Market.Status.Locked.equals(current.getStatus())) {
-                return Wrapper.alert(getLocaleMsg(LangHandle.MarketSaveWhenLock));
+            // check has creating market
+            Market current = marketService.queryCurrentCreating(getLoginUserAddress(request));
+            if (current != null) {
+                if (PoConstant.Market.Status.Locked.equals(current.getStatus())) {
+                    return Wrapper.alert(getLocaleMsg(LangHandle.MarketIsCreating));
+                }
+                if (!current.getMarketId().equals(marketId)) {
+                    return Wrapper.alert(getLocaleMsg(LangHandle.MarketIsCreating));
+                }
             }
 
-            boolean isRepeat = marketService.isNameRepeat(userAddress, market.getName());
-            if (isRepeat) {
-                return Wrapper.alert(getLocaleMsg(LangHandle.MarketNameRepeat));
+            // check param
+            Map<String, String> err = new HashMap<>();
+            Map<String, String> err1 = marketService.checkMarketInfo(userAddress, name, description, photo, cover);
+            Map<String, String> err2 = marketService.checkMarketSetting(ctCount, ctPrice, percentOfCtPrice);
+            if (err1.size() > 0 || err2.size() > 0) {
+                err.putAll(err1);
+                err.putAll(err2);
+                return Wrapper.paramError(err);
             }
-            market.setCreatorAddress(userAddress);
-            Market ret = marketService.save(market);
-            return Wrapper.success(ret);
+
+            // check balance
+            BigDecimal gasFee = Convert.fromWei(new BigDecimal(gasPrice.multiply(gasLimit)), Convert.Unit.GWEI);
+            Boolean hasEth = userAccountService.hasEnoughEth(userAddress, gasFee);
+            Boolean hasSut = userAccountService.hasEnoughSut(userAddress, BuConstant.MarketInitSut);
+            if (hasEth == null || hasSut == null) {
+                return Wrapper.alert(getLocaleMsg(LangHandle.NetWorkError));
+            }
+            if (!hasEth){
+                return Wrapper.alert(getLocaleMsg(LangHandle.AccountEthNotEnough));
+            }
+            if (!hasSut){
+                return Wrapper.alert(getLocaleMsg(LangHandle.AccountSutNotEnough));
+            }
+
+            // create market
+            Market market = marketService.saveAndPay(marketId, userAddress, name, description, photo, cover, ctCount,
+                    ctPrice, percentOfCtPrice, gasLimit, gasPrice,  sign);
+            return Wrapper.success(market);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return Wrapper.sysError();
@@ -84,77 +185,53 @@ public class MarketController extends BaseController {
         }
     }
 
-    @ApiOperation(value = "支付后锁定市场", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：marketId, txHash\n" +
-                        "返回：是否成功")
-    @RequestMapping("/user/market/lock")
-    public Object lock(HttpServletRequest request, String marketId, String txHash) {
-        try {
-            marketService.updateLock(marketId, txHash);
-            return Wrapper.success();
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            return Wrapper.sysError();
-        }
-    }
+    // @ApiOperation(value = "支付后锁定市场", httpMethod = "POST", response = Wrapper.class,
+    //             notes = "参数：marketId, txHash\n" +
+    //                     "返回：是否成功")
+    // @RequestMapping("/user/market/lock")
+    // public Object lock(HttpServletRequest request, String marketId, String txHash) {
+    //     try {
+    //         marketService.updateLock(marketId, txHash);
+    //         return Wrapper.success();
+    //     } catch (Exception e) {
+    //         log.error(e.getMessage(), e);
+    //         return Wrapper.sysError();
+    //     }
+    // }
 
-    @ApiOperation(value = "判断市场名字正确", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：marketName\n" +
-                        "返回：是否正确")
-    @RequestMapping("/user/market/is/name/right")
-    public Object isNameRight(HttpServletRequest request, String marketName) {
-        try {
-            Market market = new Market();
-            market.setName(marketName);
-            String err = validator.validate(market, Market.CheckName.class);
-            if (err != null) {
-                return Wrapper.alert(err);
-            }
-            boolean isRepeat = marketService.isNameRepeat(getLoginUserAddress(request), marketName);
-            if (isRepeat) {
-                return Wrapper.alert(getLocaleMsg(LangHandle.MarketNameRepeat));
-            }
-            return Wrapper.success();
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            return Wrapper.sysError();
-        }
-    }
-
-    @ApiOperation(value = "市场详情", httpMethod = "POST", response = Wrapper.class,
-            notes = "参数：marketAddress\n" +
-                    "返回：obj = {\n" +
-                    "　marketId, txHash, creatorAddress, marketAddress, name, cover, photo, description, \n" +
-                    "　stage(pending=创建中, success=创建完成, fail=创建失败), " +
-                    "　status(creating=编辑中, locked=锁定, open=开放, close=关闭)" +
-                    "　createTime, isCollect(是否被收藏) \n" +
-                    "　sevenDayNode(7天交易)\n" +
-                    "　data = { latelyChange, last, latelyVolume, amount, ctAmount, ctTopAmount, count, postCount, userCount } \n" +
-                    "}")
-    @RequestMapping("/market/one")
-    public Object marketOne(HttpServletRequest request, String marketAddress) {
-        try {
-            if (!Checker.isAddress(marketAddress)) {
-                return Wrapper.alert(getLocaleMsg(LangHandle.MarketCreatorAddressFormatError));
-            }
-            Market market = marketService.queryByAddress(marketAddress);
-            marketService.queryUserCollect(getLoginUserAddress(request), market);
-            return Wrapper.success(market);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            return Wrapper.sysError();
-        }
-    }
+    // @ApiOperation(value = "判断市场名字正确", httpMethod = "POST", response = Wrapper.class,
+    //             notes = "参数：marketName\n" +
+    //                     "返回：是否正确")
+    // @RequestMapping("/user/market/is/name/right")
+    // public Object isNameRight(HttpServletRequest request, String marketName) {
+    //     try {
+    //         Market market = new Market();
+    //         market.setName(marketName);
+    //         String err = validator.validate(market, Market.CheckName.class);
+    //         if (err != null) {
+    //             return Wrapper.alert(err);
+    //         }
+    //         boolean isRepeat = marketService.isNameRepeat(getLoginUserAddress(request), marketName);
+    //         if (isRepeat) {
+    //             return Wrapper.alert(getLocaleMsg(LangHandle.MarketNameRepeat));
+    //         }
+    //         return Wrapper.success();
+    //     } catch (Exception e) {
+    //         log.error(e.getMessage(), e);
+    //         return Wrapper.sysError();
+    //     }
+    // }
 
     @ApiOperation(value = "市场详情", httpMethod = "POST", response = Wrapper.class,
             notes = "参数：marketId\n" +
                     "返回：obj = {\n" +
-                    "　marketId, txHash, creatorAddress, marketAddress, name, description, \n" +
-                    "　stage(creating=编辑中, pending=创建中, success=创建完成, fail=创建失败), createTime \n" +
-                    "　data = { latelyChange, last, latelyVolume, amount, ctAmount, ctTopAmount, count } \n" +
+                    "　marketId, txHash, creatorAddress, marketAddress, name, description, createTime\n" +
+                    "　ctCount, ctPrice, ctRecyclePrice\n" +
+                    "　status(creating=编辑, locked=锁定, open=开放, close=关闭, fail=失败)" +
+                    "　data = { latelyChange, last, latelyVolume, amount, ctAmount, ctTopAmount, count, postCount, userCount } \n" +
                     "　creator = { 见/api/user/current } \n" +
                     "}")
-    @RequestMapping("/market/one/by/id")
+    @RequestMapping("/market/one")
     public Object marketOneById(HttpServletRequest request, String marketId) {
         try {
             Market market = marketService.queryWithDataById(marketId);
@@ -166,23 +243,23 @@ public class MarketController extends BaseController {
         }
     }
 
-    @ApiOperation(value = "市场详情", httpMethod = "POST", response = Wrapper.class,
-            notes = "参数：txHash\n" +
-                    "返回：见/api/market/one")
-    @RequestMapping("/market/query/by/tx/hash")
-    public Object queryByTxHash(HttpServletRequest request, String txHash) {
-        try {
-            if (!Checker.isTxHash(txHash)) {
-                return Wrapper.alert(getLocaleMsg(LangHandle.MarketTxHashFormatError));
-            }
-            Market market = marketService.queryByTxHash(txHash);
-            marketService.queryUserCollect(getLoginUserAddress(request), market);
-            return Wrapper.success(market);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            return Wrapper.sysError();
-        }
-    }
+    // @ApiOperation(value = "市场详情", httpMethod = "POST", response = Wrapper.class,
+    //         notes = "参数：txHash\n" +
+    //                 "返回：见/api/market/one")
+    // @RequestMapping("/market/query/by/tx/hash")
+    // public Object queryByTxHash(HttpServletRequest request, String txHash) {
+    //     try {
+    //         if (!Checker.isTxHash(txHash)) {
+    //             return Wrapper.alert(getLocaleMsg(LangHandle.MarketTxHashFormatError));
+    //         }
+    //         Market market = marketService.queryByTxHash(txHash);
+    //         marketService.queryUserCollect(getLoginUserAddress(request), market);
+    //         return Wrapper.success(market);
+    //     } catch (Exception e) {
+    //         log.error(e.getMessage(), e);
+    //         return Wrapper.sysError();
+    //     }
+    // }
 
     @ApiOperation(value = "全部市场列表", httpMethod = "POST", response = Wrapper.class,
             notes = "参数：orderBy(lately_change, last, lately_volume, amount, count), asc(true从小到大/false) \n" +
@@ -215,52 +292,52 @@ public class MarketController extends BaseController {
         }
     }
 
-    @ApiOperation(value = "市场top", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：type(hottest, newest, populous, richest), limit(20~100) \n" +
-                        "返回：obj = { list = [ {见/api/market/one}, {}, ...] }")
-    @RequestMapping("/market/top")
-    public Object marketTop(HttpServletRequest request, String type, Integer limit) {
-        try {
-            List ret = marketService.queryTop(getLoginUserAddress(request), type, limit);
-            return Wrapper.success(ret);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            return Wrapper.sysError();
-        }
-    }
+    // @ApiOperation(value = "市场top", httpMethod = "POST", response = Wrapper.class,
+    //             notes = "参数：type(hottest, newest, populous, richest), limit(20~100) \n" +
+    //                     "返回：obj = { list = [ {见/api/market/one}, {}, ...] }")
+    // @RequestMapping("/market/top")
+    // public Object marketTop(HttpServletRequest request, String type, Integer limit) {
+    //     try {
+    //         List ret = marketService.queryTop(getLoginUserAddress(request), type, limit);
+    //         return Wrapper.success(ret);
+    //     } catch (Exception e) {
+    //         log.error(e.getMessage(), e);
+    //         return Wrapper.sysError();
+    //     }
+    // }
 
-    @ApiOperation(value = "全部市场数据", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：无\n" +
-                        "返回：sutAmount, marketCount, latelyPostCount")
-    @RequestMapping("/market/global/data")
-    public Object marketGlobalData(HttpServletRequest request) {
-        try {
-            return Wrapper.success(globalService.queryGlobalData());
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            return Wrapper.sysError();
-        }
-    }
+    // @ApiOperation(value = "全部市场数据", httpMethod = "POST", response = Wrapper.class,
+    //             notes = "参数：无\n" +
+    //                     "返回：sutAmount, marketCount, latelyPostCount")
+    // @RequestMapping("/market/global/data")
+    // public Object marketGlobalData(HttpServletRequest request) {
+    //     try {
+    //         return Wrapper.success(globalService.queryGlobalData());
+    //     } catch (Exception e) {
+    //         log.error(e.getMessage(), e);
+    //         return Wrapper.sysError();
+    //     }
+    // }
 
-    @ApiOperation(value = "市场top用户", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：marketId\n" +
-                        "返回：obj = {\n" +
-                        " topCtList = [ { 见/api/user/current } ] \n" +
-                        " topPostList = [ ... ]\n" +
-                        " topLikedList = [ ... ]\n" +
-                        "}")
-    @RequestMapping("/market/user/top")
-    public Object marketUserTop(HttpServletRequest request, String markId) {
-        try {
-            HashMap<String, Object> ret = new HashMap<>();
-            ret.put("topCtList", marketService.queryTopCTUser(markId));
-            ret.put("topPostList", marketService.queryTopPostUser(markId));
-            ret.put("topLikedList", marketService.queryTopLikedUser(markId));
-            return Wrapper.success(ret);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            return Wrapper.sysError();
-        }
-    }
+    // @ApiOperation(value = "市场top用户", httpMethod = "POST", response = Wrapper.class,
+    //             notes = "参数：marketId\n" +
+    //                     "返回：obj = {\n" +
+    //                     " topCtList = [ { 见/api/user/current } ] \n" +
+    //                     " topPostList = [ ... ]\n" +
+    //                     " topLikedList = [ ... ]\n" +
+    //                     "}")
+    // @RequestMapping("/market/user/top")
+    // public Object marketUserTop(HttpServletRequest request, String markId) {
+    //     try {
+    //         HashMap<String, Object> ret = new HashMap<>();
+    //         ret.put("topCtList", marketService.queryTopCTUser(markId));
+    //         ret.put("topPostList", marketService.queryTopPostUser(markId));
+    //         ret.put("topLikedList", marketService.queryTopLikedUser(markId));
+    //         return Wrapper.success(ret);
+    //     } catch (Exception e) {
+    //         log.error(e.getMessage(), e);
+    //         return Wrapper.sysError();
+    //     }
+    // }
 
 }

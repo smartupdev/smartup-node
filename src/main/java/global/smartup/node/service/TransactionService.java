@@ -105,6 +105,24 @@ public class TransactionService {
         transactionMapper.updateByPrimaryKey(tr);
     }
 
+    public void modCreateMarketFinish(String txHash, boolean isSuccess, String userAddress, String marketAddress,
+                                      String marketId, String marketName, BigDecimal sut, Date blockTime) {
+        Transaction tr = query(txHash);
+        if (tr == null) {
+            return;
+        }
+        tr.setStage(isSuccess ? PoConstant.TxStage.Success : PoConstant.TxStage.Fail);
+        Map<String, Object> detail = MapBuilder.<String, Object>create()
+                .put("userAddress", userAddress)
+                .put("marketAddress", marketAddress).put("marketId", marketId)
+                .put("marketName", marketName)
+                .put("sut", sut)
+                .build();
+        tr.setDetail(JSON.toJSONString(detail, SerializerFeature.WriteBigDecimalAsPlain));
+        tr.setBlockTime(blockTime);
+        transactionMapper.updateByPrimaryKey(tr);
+    }
+
     public void addCreateMarket(String txHash, String marketId, String userAddress) {
         Transaction tr = query(txHash);
         if (tr == null) {
@@ -112,25 +130,6 @@ public class TransactionService {
                     null, null, new Date(), null);
         } else {
             log.error("Add create market transaction error, repeat txHash = {}" , txHash);
-        }
-    }
-
-    public void modCreateMarketFinish(String txHash, String stage, String userAddress, String marketId,
-                                      String marketAddress, BigDecimal sutAmount, Date blockTime) {
-        Transaction tr = query(txHash);
-        HashMap<String, Object> map = new HashMap<>();
-        map.put("marketId", marketId);
-        map.put("marketAddress", marketAddress);
-        map.put("sut", sutAmount);
-        if (tr == null) {
-            add(txHash, stage, PoConstant.Transaction.Type.CreateMarket, marketAddress, map,
-                    new Date(), blockTime);
-        } else {
-            tr.setStage(stage);
-            tr.setUserAddress(userAddress);
-            tr.setDetail(JSON.toJSONString(map, SerializerFeature.WriteBigDecimalAsPlain));
-            tr.setBlockTime(blockTime);
-            transactionMapper.updateByPrimaryKey(tr);
         }
     }
 
@@ -205,6 +204,17 @@ public class TransactionService {
 
     public boolean isExistTransaction(String txHash) {
         return transactionMapper.selectByPrimaryKey(txHash) != null;
+    }
+
+    public boolean isTxHashNotExistOrHandled(String txHash) {
+        Transaction tr = query(txHash);
+        if (tr == null) {
+            return true;
+        }
+        if (!PoConstant.TxStage.Pending.equals(tr.getStage())) {
+            return true;
+        }
+        return false;
     }
 
     public List<Transaction> queryPendingList() {

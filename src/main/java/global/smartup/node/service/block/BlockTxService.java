@@ -32,21 +32,27 @@ public class BlockTxService {
     @Autowired
     private BlockFundService blockFundService;
 
+    @Autowired
+    private BlockMarketService blockMarketService;
+
     /**
      * 处理数据库中pending中的交易
      */
     public void handlePendingTransaction() {
         List<Transaction> transactionList = transactionService.queryPendingList();
         for (global.smartup.node.po.Transaction tr : transactionList) {
-            // 有可能txHash是错误的
             org.web3j.protocol.core.methods.response.Transaction tx = ethClient.getTx(tr.getTxHash());
-            if (tx == null) {
+            BigInteger blockNumber;
+            // 可能还未打包，无法获取blockNumber
+            try {
+                blockNumber = tx.getBlockNumber();
+            } catch (Exception e) {
                 continue;
             }
-            // 有可能节点还没有同步到receipt收据
             TransactionReceipt receipt = ethClient.getTxReceipt(tx.getHash());
-            EthBlock.Block block = ethClient.getBlockByNumber(tx.getBlockNumber(), false);
-            if (receipt == null || block == null) {
+            EthBlock.Block block = ethClient.getBlockByNumber(blockNumber, false);
+            // 可能节点还没有同步到收据
+            if (tx == null || receipt == null || block == null) {
                 continue;
             }
             Date blockTime = new Date(block.getTimestamp().longValue() * 1000);
@@ -85,6 +91,12 @@ public class BlockTxService {
             if (tr.getType().startsWith(PoConstant.Transaction.Type.AdminWithdrawEth)) {
                 blockFundService.handleAdminWithdrawEth(tx, receipt, blockTime);
             }
+
+            // 创建市场
+            // if (tr.getType().startsWith(PoConstant.Transaction.Type.CreateMarket)) {
+            //     blockMarketService.handleMarketCreate(tx, receipt, blockTime);
+            // }
+
         }
     }
 
