@@ -8,6 +8,7 @@ import global.smartup.node.po.Market;
 import global.smartup.node.service.GlobalService;
 import global.smartup.node.service.MarketService;
 import global.smartup.node.service.UserAccountService;
+import global.smartup.node.util.Common;
 import global.smartup.node.util.Pagination;
 import global.smartup.node.util.Wrapper;
 import io.swagger.annotations.Api;
@@ -69,12 +70,12 @@ public class MarketController extends BaseController {
     }
 
     @ApiOperation(value = "检查创建市场设置", httpMethod = "POST", response = Wrapper.class,
-            notes = "参数：ctCount, ctPrice, percentOfCtPrice\n" +
+            notes = "参数：ctCount, ctPrice, ctRecyclePrice\n" +
                     "返回：见/api/market/create/check/info")
     @RequestMapping("/market/create/check/setting")
-    public Object checkSetting(HttpServletRequest request, BigDecimal ctCount, BigDecimal ctPrice, BigDecimal percentOfCtPrice) {
+    public Object checkSetting(HttpServletRequest request, BigDecimal ctCount, BigDecimal ctPrice, BigDecimal ctRecyclePrice) {
         try {
-            Map<String, String> err = marketService.checkMarketSetting(ctCount, ctPrice, percentOfCtPrice);
+            Map<String, String> err = marketService.checkMarketSetting(ctCount, ctPrice, ctRecyclePrice);
             if (err.size() != 0) {
                 return Wrapper.paramError(err);
             } else {
@@ -100,36 +101,8 @@ public class MarketController extends BaseController {
         }
     }
 
-    @ApiOperation(value = "获取需要签名的信息", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：marketId(可空) ctCount, ctPrice, percentOfCtPrice\n" +
-                        "返回：obj = {\n" +
-                        "　userAddress, sut, marketId, ctCount, ctPrice, ctRecyclePrice\n" +
-                        "}\n" +
-                        "\n" +
-                        "gasFee：计算方式，见文档。 签名时gasFee需要以wei为单位，转为字符串。\n" +
-                        "\n" +
-                        "签名：依如下顺序，对字符串做hash，签名。注意marketId有两次\n" +
-                        "　userAddress, sut, marketId, marketId, ctCount, ctPrice, ctRecyclePrice, gasFee\n" +
-                        "　hash = web3.utils.soliditySha3(userAddress, web3.utils.toBN(sut), marketId, marketId, web3.utils.toBN(ctCount), web3.utils.toBN(ctPrice), web3.utils.toBN(ctRecyclePrice), web3.utils.toBN(gasFee))\n" +
-                        "　sign = web3.personal.sign(hash, userAddress)")
-    @RequestMapping("/user/market/create/get/sign/info")
-    public Object getSignInfo(HttpServletRequest request, String marketId, BigDecimal ctCount, BigDecimal ctPrice, BigDecimal percentOfCtPrice) {
-        try {
-            Map<String, String> err = marketService.checkMarketSetting(ctCount, ctPrice, percentOfCtPrice);
-            if (err.size() != 0) {
-                return Wrapper.paramError(err);
-            }
-            String userAddress = getLoginUserAddress(request);
-            Map<String,Object> map = marketService.getCreateInfoForSign(marketId, userAddress, ctCount, ctPrice, percentOfCtPrice);
-            return Wrapper.success(map);
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            return Wrapper.sysError();
-        }
-    }
-
     @ApiOperation(value = "创建/修改 市场", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：marketId, name, description, photo, cover, ctCount, ctPrice, percentOfCtPrice, gasPrice, gasLimit, sign\n" +
+                notes = "参数：marketId, name, description, photo, cover, ctCount, ctPrice, ctRecyclePrice, gasLimit, gasPrice, sign\n" +
                         "返回：\n" +
                         "　如果参数错误，code = 4, 见/api/market/create/check/info\n" +
                         "　如果创建失败，code = 2, msg = 'xxxx' \n" +
@@ -138,13 +111,16 @@ public class MarketController extends BaseController {
                         "　　market.status = 'creating' 付款失败，可以通过marketId，获取市场信息重新付款 "
     )
     @RequestMapping("/user/market/create")
-    public Object createDo(HttpServletRequest request, String marketId, String name, String description, String photo,
-                       String cover, BigDecimal ctCount, BigDecimal ctPrice, BigDecimal percentOfCtPrice,
-                       BigInteger gasPrice, BigInteger gasLimit, String sign) {
+    public Object create(HttpServletRequest request, String marketId, String name, String description, String photo,
+                           String cover, BigDecimal ctCount, BigDecimal ctPrice, BigDecimal ctRecyclePrice,
+                           BigInteger gasLimit, BigInteger gasPrice, String sign) {
         try {
             String userAddress = getLoginUserAddress(request);
 
             // check has creating market
+            if (!Common.isRightMarketId(marketId)) {
+                return Wrapper.alert(getLocaleMsg(LangHandle.MarketIdFormatError));
+            }
             Market current = marketService.queryCurrentCreating(getLoginUserAddress(request));
             if (current != null) {
                 if (PoConstant.Market.Status.Locked.equals(current.getStatus())) {
@@ -153,12 +129,16 @@ public class MarketController extends BaseController {
                 if (!current.getMarketId().equals(marketId)) {
                     return Wrapper.alert(getLocaleMsg(LangHandle.MarketIsCreating));
                 }
+            } else {
+                if (marketService.isIdRepeat(marketId)) {
+                    return Wrapper.alert(getLocaleMsg(LangHandle.MarketIdRepeat));
+                }
             }
 
             // check param
             Map<String, String> err = new HashMap<>();
             Map<String, String> err1 = marketService.checkMarketInfo(userAddress, name, description, photo, cover);
-            Map<String, String> err2 = marketService.checkMarketSetting(ctCount, ctPrice, percentOfCtPrice);
+            Map<String, String> err2 = marketService.checkMarketSetting(ctCount, ctPrice, ctRecyclePrice);
             if (err1.size() > 0 || err2.size() > 0) {
                 err.putAll(err1);
                 err.putAll(err2);
@@ -181,7 +161,7 @@ public class MarketController extends BaseController {
 
             // create market
             Market market = marketService.saveAndPay(marketId, userAddress, name, description, photo, cover, ctCount,
-                    ctPrice, percentOfCtPrice, gasLimit, gasPrice,  sign);
+                    ctPrice, ctRecyclePrice, gasLimit, gasPrice,  sign);
             return Wrapper.success(market);
         } catch (Exception e) {
             log.error(e.getMessage(), e);

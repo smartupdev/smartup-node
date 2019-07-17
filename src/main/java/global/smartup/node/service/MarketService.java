@@ -108,7 +108,7 @@ public class MarketService extends BaseService {
         return err;
     }
 
-    public Map<String, String> checkMarketSetting(BigDecimal ctCount, BigDecimal ctPrice, BigDecimal percentOfCtPrice) {
+    public Map<String, String> checkMarketSetting(BigDecimal ctCount, BigDecimal ctPrice, BigDecimal ctRecyclePrice) {
         Map<String, String> err = new HashMap<>();
         if (ctCount == null) {
             err.put("ctCount", getLocaleMsg(LangHandle.MarketCtCountNotNull));
@@ -124,11 +124,11 @@ public class MarketService extends BaseService {
                 err.put("ctPrice", getLocaleMsg(LangHandle.MarketCtPriceOverZero));
             }
         }
-        if (percentOfCtPrice == null) {
+        if (ctRecyclePrice == null) {
             err.put("percentOfCtPrice", getLocaleMsg(LangHandle.MarketPercentOfCtPriceNotNull));
         } else {
-            if (percentOfCtPrice.compareTo(BigDecimal.ZERO) < 0
-                    || percentOfCtPrice.compareTo(BigDecimal.valueOf(100)) > 0) {
+            if (ctRecyclePrice.compareTo(BigDecimal.ZERO) < 0
+                    || ctRecyclePrice.compareTo(ctPrice) > 0) {
                 err.put("percentOfCtPrice", getLocaleMsg(LangHandle.MarketPercentOfCtPriceRangeError));
             }
         }
@@ -155,11 +155,8 @@ public class MarketService extends BaseService {
     }
 
     public Market saveAndPay(String marketId, String userAddress, String name, String description, String photo,
-                             String cover, BigDecimal ctCount, BigDecimal ctPrice, BigDecimal percentOfCtPrice,
+                             String cover, BigDecimal ctCount, BigDecimal ctPrice, BigDecimal ctRecyclePrice,
                              BigInteger gasLimit, BigInteger gasPrice, String sign) {
-        BigDecimal ctRecyclePrice = ctPrice
-                .multiply(percentOfCtPrice)
-                .divide(BigDecimal.valueOf(100), 18, BigDecimal.ROUND_DOWN);
 
         // insert or update market
         Market market = queryById(marketId);
@@ -410,6 +407,10 @@ public class MarketService extends BaseService {
         cdt.setName(name);
         List<Market> list = marketMapper.select(cdt);
         return list.size() > 0;
+    }
+
+    public boolean isIdRepeat(String id) {
+        return marketMapper.selectByPrimaryKey(id) != null;
     }
 
     public boolean isMarketAddressInCache(String marketAddress) {

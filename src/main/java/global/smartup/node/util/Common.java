@@ -372,4 +372,22 @@ public class Common {
         }
     }
 
+    public static boolean isRightMarketId(String marketId) {
+        if (StringUtils.isBlank(marketId)) {
+            return false;
+        }
+        if (8 > marketId.length() || marketId.length() > 15) {
+            return false;
+        }
+        if (!isLetterDigit(marketId)) {
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean isLetterDigit(String str) {
+        String regex = "^[a-z0-9A-Z]+$";
+        return str.matches(regex);
+    }
+
 }

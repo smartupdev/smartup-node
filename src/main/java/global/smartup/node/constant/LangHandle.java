@@ -97,6 +97,8 @@ public class LangHandle {
 
 	public static final String MarketCoverNotNull = "market_cover_not_null";
 
+	public static final String MarketIdFormatError = "market_id_format_error";
+
 	public static final String AccountSutNotEnough = "account_sut_not_enough";
 
 	public static final String PostDescriptionEmptyError = "post_description_empty_error";
@@ -136,6 +138,8 @@ public class LangHandle {
 	public static final String ReplyContentLengthError = "reply_content_length_error";
 
 	public static final String NotificationTitleSellCtSuccess = "notification_title_sell_ct_success";
+
+	public static final String MarketIdRepeat = "market_id_repeat";
 
 	public static final String MarketTxHashEmptyError = "market_tx_hash_empty_error";
 
