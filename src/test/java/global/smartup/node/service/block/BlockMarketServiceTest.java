@@ -2,6 +2,7 @@ package global.smartup.node.service.block;
 
 import global.smartup.node.Starter;
 import global.smartup.node.eth.EthClient;
+import global.smartup.node.eth.constract.event.CreateMarketEvent;
 import global.smartup.node.eth.constract.func.CreateMarketFunc;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.web3j.protocol.core.methods.response.Transaction;
+import org.web3j.protocol.core.methods.response.TransactionReceipt;
 
 @ActiveProfiles("unit")
 @RunWith(SpringRunner.class)
@@ -24,10 +26,14 @@ public class BlockMarketServiceTest {
 
     @Test
     public void parseTx() {
-        String txHash = "0x8f6896763cc2635db19ebca53ffa064ba2d4437c2085f7ec42017be182c7bbc8";
+        String txHash = "0x0704dd3c45571279b9c8f1cf1900061421533fc1e15d0ea3cc5f31bd5b6d37cf";
         Transaction tx = ethClient.getTx(txHash);
         CreateMarketFunc func = CreateMarketFunc.parse(tx);
-        System.out.println("");
+
+        TransactionReceipt receipt = ethClient.getTxReceipt(txHash);
+        CreateMarketEvent event = CreateMarketEvent.parse(receipt);
+
+        System.out.println("end");
     }
 
 }

@@ -47,7 +47,7 @@ public class NotificationController extends BaseController {
     }
 
     @ApiOperation(value = "通知列表", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：unread(true/false/null), pageNumb, pageSize\n" +
+                notes = "参数：unread(true/false/可空), pageNumb, pageSize\n" +
                         "返回：obj = {\n" +
                         "　list = [\n" +
                         "　　{notificationId, userAddress, style(personal, system), type, title, text, content, isRead, createTime} , ... \n" +
@@ -58,7 +58,7 @@ public class NotificationController extends BaseController {
                         "type = ChargeEthFinish, content = {txHash, isSuccess, eth, userAddress}\n" +
                         "type = WithdrawSutFinish, content = {txHash, isSuccess, sut, userAddress}\n" +
                         "type = WithdrawEthFinish, content = {txHash, isSuccess, eth, userAddress}\n" +
-                        "type = MarketCreateFinish, content = {...}\n" +
+                        "type = MarketCreateFinish, content = {txHash, isSuccess, marketId, marketName, initSut}\n" +
                         "type = TradeFinish, content = {...}")
     @RequestMapping("/list")
     public Object list(HttpServletRequest request, Boolean unread, Integer pageNumb, Integer pageSize) {

@@ -105,18 +105,18 @@ public class TransactionService {
         transactionMapper.updateByPrimaryKey(tr);
     }
 
-    public void modCreateMarketFinish(String txHash, boolean isSuccess, String userAddress, String marketAddress,
-                                      String marketId, String marketName, BigDecimal sut, Date blockTime) {
+    public void modCreateMarketFinish(String txHash, boolean isSuccess, String marketAddress, String marketId,
+                                      String marketName, BigDecimal initSut, Date blockTime) {
         Transaction tr = query(txHash);
         if (tr == null) {
             return;
         }
         tr.setStage(isSuccess ? PoConstant.TxStage.Success : PoConstant.TxStage.Fail);
         Map<String, Object> detail = MapBuilder.<String, Object>create()
-                .put("userAddress", userAddress)
-                .put("marketAddress", marketAddress).put("marketId", marketId)
+                .put("marketAddress", marketAddress)
+                .put("marketId", marketId)
                 .put("marketName", marketName)
-                .put("sut", sut)
+                .put("initSut", initSut)
                 .build();
         tr.setDetail(JSON.toJSONString(detail, SerializerFeature.WriteBigDecimalAsPlain));
         tr.setBlockTime(blockTime);

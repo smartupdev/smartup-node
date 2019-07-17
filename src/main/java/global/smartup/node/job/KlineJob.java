@@ -24,12 +24,12 @@ public class KlineJob {
 
     @Scheduled(cron = "1 0 * * * ?")
     public void keepNodeContinue() {
-        List<String> markets = marketService.queryBuiltAndHasTrade();
-        for (String market : markets) {
-            for (String segment : PoConstant.KLineNode.Segment.All) {
-                klineNodeService.keepNodeContinue(market, segment);
-            }
-        }
+        // List<String> markets = marketService.queryBuiltAndHasTrade();
+        // for (String market : markets) {
+        //     for (String segment : PoConstant.KLineNode.Segment.All) {
+        //         klineNodeService.keepNodeContinue(market, segment);
+        //     }
+        // }
     }
 
 }

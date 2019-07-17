@@ -223,7 +223,8 @@ public class MarketService extends BaseService {
     /**
      * 创建市场完成
      */
-    public void updateCreateMarketFinish(String marketId, boolean isSuccess, String marketAddress) {
+    public void updateCreateMarketFinish(String marketId, boolean isSuccess, String marketAddress,
+                                         BigDecimal initSut, BigDecimal ctCount, BigDecimal ctPrice, BigDecimal ctRecyclePrice) {
         Market market = queryById(marketId);
         if (market == null) {
             return;
@@ -231,6 +232,10 @@ public class MarketService extends BaseService {
         if (isSuccess) {
             market.setMarketAddress(marketAddress);
             market.setStatus(PoConstant.Market.Status.Open);
+            market.setInitSut(initSut);
+            market.setCtCount(ctCount);
+            market.setCtPrice(ctPrice);
+            market.setCtRecyclePrice(ctRecyclePrice);
             marketMapper.updateByPrimaryKey(market);
 
             MarketData data = new MarketData();
@@ -247,7 +252,11 @@ public class MarketService extends BaseService {
             marketDataMapper.insert(data);
         } else {
             market.setMarketAddress(marketAddress);
-            market.setStatus(PoConstant.Market.Status.Fail);
+            market.setStatus(PoConstant.Market.Status.Creating);
+            market.setInitSut(initSut);
+            market.setCtCount(ctCount);
+            market.setCtPrice(ctPrice);
+            market.setCtRecyclePrice(ctRecyclePrice);
             marketMapper.updateByPrimaryKey(market);
         }
 

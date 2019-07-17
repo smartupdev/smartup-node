@@ -36,6 +36,10 @@ public class Const {
 
             public static final String AdminWithdrawSign = "0x379612486dbf6da40d2087b9ab46f0630c963e9c92d24087c00af355ef39fe0d";
 
+            public static final String CreateMarketA = "0xab80d4f237153664013aad30815c82af95ab8234bfb2d63a6518a3656e4d3a8c";
+
+            public static final String CreateMarketB = "0xf4e3f146ef01bfe65e811aade3a860b33927625771e1f2c45ae705ae2e44d3e8";
+
         }
 
     }

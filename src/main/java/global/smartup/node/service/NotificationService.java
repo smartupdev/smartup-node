@@ -100,14 +100,14 @@ public class NotificationService {
         send(userAddress, PoConstant.Notification.Style.Personal, PoConstant.Notification.Type.WithdrawEthFinish, content);
     }
 
-    public void sendMarketCreateFinish(String txHash, boolean isSuccess, String userAddress, String marketId, String marketName, BigDecimal sut) {
+    public void sendMarketCreateFinish(String txHash, boolean isSuccess, String userAddress, String marketId, String marketName, BigDecimal initSut) {
         userAddress = Keys.toChecksumAddress(userAddress);
         Map<String, Object> content = MapBuilder.<String, Object>create()
                 .put("txHash", txHash)
                 .put("isSuccess", isSuccess)
                 .put("marketId", marketId)
                 .put("marketName", marketName)
-                .put("sut", sut)
+                .put("initSut", initSut)
                 .build();
         send(userAddress, PoConstant.Notification.Style.Personal, PoConstant.Notification.Type.MarketCreateFinish, content);
     }

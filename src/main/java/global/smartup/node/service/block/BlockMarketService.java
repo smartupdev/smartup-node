@@ -2,7 +2,6 @@ package global.smartup.node.service.block;
 
 import global.smartup.node.eth.EthClient;
 import global.smartup.node.eth.ExchangeClient;
-import global.smartup.node.eth.SmartupClient;
 import global.smartup.node.eth.constract.event.CreateMarketEvent;
 import global.smartup.node.eth.constract.func.CreateMarketFunc;
 import global.smartup.node.po.Market;
@@ -77,10 +76,10 @@ public class BlockMarketService {
         }
 
         // update market
-        marketService.updateCreateMarketFinish(market.getMarketId(), isSuccess, marketAddress);
+        marketService.updateCreateMarketFinish(market.getMarketId(), isSuccess, marketAddress, func.getDeposit(), func.getSupply(), func.getRate(), func.getLastRate());
 
         // update tr
-        transactionService.modCreateMarketFinish(tx.getHash(), isSuccess, userAddress, marketAddress, market.getMarketId(), market.getName(), func.getDeposit(), blockTime);
+        transactionService.modCreateMarketFinish(tx.getHash(), isSuccess, marketAddress, market.getMarketId(), market.getName(), func.getDeposit(), blockTime);
 
         // save fund record
         fundFlowService.addCreateMarket(tx.getHash(), isSuccess, userAddress, func.getDeposit(), func.getGasFee());

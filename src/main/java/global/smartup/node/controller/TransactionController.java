@@ -40,14 +40,14 @@ public class TransactionController extends BaseController {
                     "　type = ChargeEth, detail = {eth}\n" +
                     "　type = WithdrawSut, detail = {sut}\n" +
                     "　type = WithdrawEth, detail = {eth}\n" +
-                    "　type = CreateMarket, detail = {...}\n" +
+                    "　type = CreateMarket, detail = {marketId, marketName, marketAddress, initSut}\n" +
                     "　type = BuyCT, detail = {...}\n" +
                     "　type = SellCT, detail = {...}\n" +
                     "}")
     @RequestMapping("/user/transaction/list")
-    public Object transactionList(HttpServletRequest request, Integer pageNumb, Integer pageSize) {
+    public Object transactionList(HttpServletRequest request, String type, Integer pageNumb, Integer pageSize) {
         try {
-            Pagination page = transactionService.queryPage(getLoginUserAddress(request), pageNumb, pageSize);
+            Pagination page = transactionService.queryPage(getLoginUserAddress(request), type, pageNumb, pageSize);
             return Wrapper.success(page);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -56,7 +56,8 @@ public class TransactionController extends BaseController {
     }
 
     @ApiOperation(value = "上传区块交易哈希", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：txHash, type(见/user/transaction/list [ChargeSut/ChargeEth/WithdrawSut/WithdrawEth]), amount\n" +
+                notes = "仅限充值提现\n" +
+                        "参数：txHash, type(见/user/transaction/list [ChargeSut/ChargeEth/WithdrawSut/WithdrawEth]), amount\n" +
                         "返回：是否成功")
     @RequestMapping("/user/transaction/upload/tx/hash")
     public Object uploadTxHash(HttpServletRequest request, String txHash, String type, BigDecimal amount) {

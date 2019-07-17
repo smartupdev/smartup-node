@@ -54,10 +54,11 @@ create table market (
   cover varchar(64),
   photo varchar(64),
   description varchar(2048),
-  type varchar(16),
-  stage varchar(16),
   status varchar(16),
   init_sut decimal(40, 20),
+  ct_count decimal(40,20),
+  ct_price decimal(40,20),
+  ct_recycle_price decimal(40,20),
   create_time datetime
 );
 
