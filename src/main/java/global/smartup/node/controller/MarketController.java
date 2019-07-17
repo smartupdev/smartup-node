@@ -1,5 +1,6 @@
 package global.smartup.node.controller;
 
+import global.smartup.node.compoment.IdGenerator;
 import global.smartup.node.constant.BuConstant;
 import global.smartup.node.constant.LangHandle;
 import global.smartup.node.constant.PoConstant;
@@ -30,6 +31,9 @@ import java.util.Map;
 public class MarketController extends BaseController {
 
     private static final Logger log = LoggerFactory.getLogger(MarketController.class);
+
+    @Autowired
+    private IdGenerator idGenerator;
 
     @Autowired
     private MarketService marketService;
@@ -76,6 +80,20 @@ public class MarketController extends BaseController {
             } else {
                 return Wrapper.success();
             }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return Wrapper.sysError();
+        }
+    }
+
+    @ApiOperation(value = "生成一个市场id", httpMethod = "POST", response = Wrapper.class,
+                notes = "参数：无\n" +
+                        "返回：obj = {marketId}")
+    @RequestMapping("/market/create/generate/id")
+    public Object generateId(HttpServletRequest request) {
+        try {
+            String id = idGenerator.getHexStringId();
+            return Wrapper.success(id);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return Wrapper.sysError();
