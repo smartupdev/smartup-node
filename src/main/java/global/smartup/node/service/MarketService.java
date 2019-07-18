@@ -125,33 +125,14 @@ public class MarketService extends BaseService {
             }
         }
         if (ctRecyclePrice == null) {
-            err.put("percentOfCtPrice", getLocaleMsg(LangHandle.MarketPercentOfCtPriceNotNull));
+            err.put("ctRecyclePrice", getLocaleMsg(LangHandle.MarketPercentOfCtPriceNotNull));
         } else {
             if (ctRecyclePrice.compareTo(BigDecimal.ZERO) < 0
                     || ctRecyclePrice.compareTo(ctPrice) > 0) {
-                err.put("percentOfCtPrice", getLocaleMsg(LangHandle.MarketPercentOfCtPriceRangeError));
+                err.put("ctRecyclePrice", getLocaleMsg(LangHandle.MarketPercentOfCtPriceRangeError));
             }
         }
         return err;
-    }
-
-    public Map<String, Object> getCreateInfoForSign(String marketId, String userAddress, BigDecimal ctCount, BigDecimal ctPrice,
-                                                    BigDecimal percentOfCtPrice) {
-        BigDecimal ctRecyclePrice = ctPrice
-                .multiply(percentOfCtPrice)
-                .divide(BigDecimal.valueOf(100), 18, BigDecimal.ROUND_DOWN);
-        if (StringUtils.isBlank(marketId)) {
-            marketId = idGenerator.getHexStringId();
-        }
-
-        Map<String, Object> ret = new HashMap<>();
-        ret.put("userAddress", userAddress);
-        ret.put("sut", Convert.toWei(BuConstant.MarketInitSut, Convert.Unit.ETHER).setScale(0).toPlainString());
-        ret.put("marketId", marketId);
-        ret.put("ctCount", Convert.toWei(ctCount, Convert.Unit.ETHER).setScale(0).toPlainString());
-        ret.put("ctPrice", Convert.toWei(ctPrice, Convert.Unit.ETHER).setScale(0).toPlainString());
-        ret.put("ctRecyclePrice", Convert.toWei(ctRecyclePrice, Convert.Unit.ETHER).setScale(0).toPlainString());
-        return ret;
     }
 
     public Market saveAndPay(String marketId, String userAddress, String name, String description, String photo,
