@@ -43,4 +43,20 @@ public class NotificationServiceTest {
         System.out.println(JSON.toJSONString(page));
     }
 
+    @Test
+    public void fillI18n() {
+        Notification not = notificationMapper.selectByPrimaryKey("38560505870159872");
+        notificationService.fillI18n(not);
+        System.out.println(JSON.toJSONString(not));
+    }
+
+    @Test
+    public void fixNot() {
+        List<Notification> list = notificationMapper.selectAll();
+        list.forEach(n -> {
+            notificationService.fillI18n(n);
+            notificationMapper.updateByPrimaryKey(n);
+        });
+    }
+
 }

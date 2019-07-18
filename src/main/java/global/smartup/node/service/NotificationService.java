@@ -115,12 +115,17 @@ public class NotificationService {
     public void send(String userAddress, String style, String type, Map content) {
         Notification n = new Notification();
         n.setUserAddress(userAddress);
-        n.setNotificationId(idGenerator.getStringId());
+        n.setNotificationId(idGenerator.getHexStringId());
         n.setStyle(style);
         n.setType(type);
         n.setContent(JSON.toJSONString(content, SerializerFeature.WriteBigDecimalAsPlain));
         n.setIsRead(false);
         n.setCreateTime(new Date());
+
+        // fill i18n
+        fillI18n(n);
+
+        // insert
         notificationMapper.insert(n);
 
         //clear cache
@@ -236,15 +241,46 @@ public class NotificationService {
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), list);
     }
 
+    public void fillI18n(Notification not) {
+        fillI18n(not, Locale.ENGLISH);
+        not.setTitleEn(not.getTitle());
+        not.setTextEn(not.getText());
+
+        fillI18n(not, Locale.SIMPLIFIED_CHINESE);
+        not.setTitleZhCn(not.getTitle());
+        not.setTextZhCn(not.getText());
+
+        fillI18n(not, Locale.TRADITIONAL_CHINESE);
+        not.setTitleZhTw(not.getTitle());
+        not.setTextZhTw(not.getText());
+    }
+
     private List<Ntfc> transferVo(List<Notification> list, Locale locale) {
+        if (locale == null) {
+            locale = Locale.ENGLISH;
+        }
+
         List<Ntfc> ret = new ArrayList<>();
-        for (Notification notification : list) {
-            fillI18n(notification, locale);
-            Ntfc ntfc = new Ntfc();
-            BeanUtils.copyProperties(notification, ntfc, "content");
-            HashMap<String, Object> map = JSON.parseObject(notification.getContent(), HashMap.class, Feature.UseBigDecimal);
-            ntfc.setContent(map);
-            ret.add(ntfc);
+        for (Notification not : list) {
+            String title = null, text = null;
+            if (Locale.ENGLISH.equals(locale)) {
+                title = not.getTitleEn();
+                text = not.getTextEn();
+            } else if (Locale.SIMPLIFIED_CHINESE.equals(locale)) {
+                title = not.getTitleZhCn();
+                text = not.getTextZhCn();
+            } else if (Locale.TRADITIONAL_CHINESE.equals(locale)) {
+                title = not.getTitleZhTw();
+                text = not.getTitleZhTw();
+            }
+            not.setTitle(title);
+            not.setText(text);
+
+            Ntfc notVo = new Ntfc();
+            BeanUtils.copyProperties(not, notVo, "content");
+            HashMap<String, Object> map = JSON.parseObject(not.getContent(), HashMap.class, Feature.UseBigDecimal);
+            notVo.setContent(map);
+            ret.add(notVo);
         }
         return ret;
     }
@@ -304,7 +340,7 @@ public class NotificationService {
         if (PoConstant.Notification.Type.MarketCreateFinish.equals(not.getType())) {
             Boolean isS = (Boolean) map.get("isSuccess");
             String marketName = (String) map.get("marketName");
-            String sut = ((BigDecimal) map.get("sut")).setScale(2, BigDecimal.ROUND_DOWN).toPlainString();
+            String sut = ((BigDecimal) map.get("initSut")).setScale(2, BigDecimal.ROUND_DOWN).toPlainString();
             if (isS) {
                 title = messageSource.getMessage(LangHandle.NotificationTitleMarketCreateSuccess, null, locale);
                 text = messageSource.getMessage(LangHandle.NotificationTextMarketCreateSuccess, new String[]{sut, marketName}, locale);

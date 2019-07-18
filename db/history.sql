@@ -310,9 +310,17 @@ alter table transaction drop column market_address;
 insert into dict values ('admin_public_key', '');
 insert into dict values ('admin_private_key', '');
 
-# 2019-07-06
+# 2019-07-16
 alter table market add column ct_count decimal(40,20);
 alter table market add column ct_price decimal(40,20);
 alter table market add column ct_recycle_price decimal(40,20);
 alter table market drop column stage;
 alter table market drop column type;
+
+# 2019-07-18
+alter table notification add column title_en varchar(512);
+alter table notification add column title_zh_cn varchar(512);
+alter table notification add column title_zh_tw varchar(512);
+alter table notification add column text_en varchar(512);
+alter table notification add column text_zh_cn varchar(512);
+alter table notification add column text_zh_tw varchar(512);

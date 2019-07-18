@@ -107,7 +107,7 @@ public class MarketController extends BaseController {
                         "　如果参数错误，code = 4, 见/api/market/create/check/info\n" +
                         "　如果创建失败，code = 2, msg = 'xxxx' \n" +
                         "　如果创建成功, code = 0, obj = { 见/api/market/one }\n" +
-                        "　　market.status = 'locked' 付款成功" +
+                        "　　market.status = 'locked' 付款成功\n" +
                         "　　market.status = 'creating' 付款失败，可以通过marketId，获取市场信息重新付款 "
     )
     @RequestMapping("/user/market/create")
@@ -225,7 +225,7 @@ public class MarketController extends BaseController {
                     "返回：obj = {\n" +
                     "　marketId, txHash, creatorAddress, marketAddress, name, description, createTime\n" +
                     "　ctCount, ctPrice, ctRecyclePrice\n" +
-                    "　status(creating=编辑, locked=锁定, open=开放, close=关闭, fail=失败)" +
+                    "　status(creating=编辑, locked=锁定, open=开放, close=关闭, fail=失败)\n" +
                     "　data = { latelyChange, last, latelyVolume, amount, ctAmount, ctTopAmount, count, postCount, userCount } \n" +
                     "　creator = { 见/api/user/current } \n" +
                     "}")

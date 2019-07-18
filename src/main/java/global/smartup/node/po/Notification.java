@@ -5,6 +5,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.util.Date;
+import java.util.Locale;
 
 @Table(name = "notification")
 public class Notification {
@@ -30,6 +31,25 @@ public class Notification {
 
     @Column(name="create_time")
     private Date createTime;
+
+    @Column(name="title_en")
+    private String titleEn;
+
+    @Column(name="title_zh_cn")
+    private String titleZhCn;
+
+    @Column(name="title_zh_tw")
+    private String titleZhTw;
+
+    @Column(name="text_en")
+    private String textEn;
+
+    @Column(name="text_zh_cn")
+    private String textZhCn;
+
+    @Column(name="text_zh_tw")
+    private String textZhTw;
+
 
 
     @Transient
@@ -110,4 +130,53 @@ public class Notification {
     public void setCreateTime(Date createTime) {
         this.createTime = createTime;
     }
+
+    public String getTitleEn() {
+        return titleEn;
+    }
+
+    public void setTitleEn(String titleEn) {
+        this.titleEn = titleEn;
+    }
+
+    public String getTitleZhCn() {
+        return titleZhCn;
+    }
+
+    public void setTitleZhCn(String titleZhCn) {
+        this.titleZhCn = titleZhCn;
+    }
+
+    public String getTitleZhTw() {
+        return titleZhTw;
+    }
+
+    public void setTitleZhTw(String titleZhTw) {
+        this.titleZhTw = titleZhTw;
+    }
+
+    public String getTextEn() {
+        return textEn;
+    }
+
+    public void setTextEn(String textEn) {
+        this.textEn = textEn;
+    }
+
+    public String getTextZhCn() {
+        return textZhCn;
+    }
+
+    public void setTextZhCn(String textZhCn) {
+        this.textZhCn = textZhCn;
+    }
+
+    public String getTextZhTw() {
+        return textZhTw;
+    }
+
+    public void setTextZhTw(String textZhTw) {
+        this.textZhTw = textZhTw;
+    }
+
 }
