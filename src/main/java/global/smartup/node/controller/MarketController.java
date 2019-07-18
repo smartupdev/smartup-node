@@ -304,18 +304,18 @@ public class MarketController extends BaseController {
     //     }
     // }
 
-    // @ApiOperation(value = "全部市场数据", httpMethod = "POST", response = Wrapper.class,
-    //             notes = "参数：无\n" +
-    //                     "返回：sutAmount, marketCount, latelyPostCount")
-    // @RequestMapping("/market/global/data")
-    // public Object marketGlobalData(HttpServletRequest request) {
-    //     try {
-    //         return Wrapper.success(globalService.queryGlobalData());
-    //     } catch (Exception e) {
-    //         log.error(e.getMessage(), e);
-    //         return Wrapper.sysError();
-    //     }
-    // }
+    @ApiOperation(value = "全部市场数据", httpMethod = "POST", response = Wrapper.class,
+                notes = "参数：无\n" +
+                        "返回：sutAmount, marketCount, latelyPostCount")
+    @RequestMapping("/market/global/data")
+    public Object marketGlobalData(HttpServletRequest request) {
+        try {
+            return Wrapper.success(globalService.queryGlobalData());
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return Wrapper.sysError();
+        }
+    }
 
     // @ApiOperation(value = "市场top用户", httpMethod = "POST", response = Wrapper.class,
     //             notes = "参数：marketId\n" +
