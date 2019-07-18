@@ -434,7 +434,9 @@ public class MarketService extends BaseService {
         Example example = new Example(Market.class);
         example.createCriteria()
                 .andEqualTo("creatorAddress", userAddress)
-                .andIn("status", Arrays.asList(PoConstant.Market.Status.Creating, PoConstant.Market.Status.Locked));
+                .andIn("status",
+                        Arrays.asList(PoConstant.Market.Status.Creating, PoConstant.Market.Status.Locked, PoConstant.Market.Status.Fail)
+                );
         List<Market> list = marketMapper.selectByExample(example);
         if (list.size() == 0) {
             return null;
