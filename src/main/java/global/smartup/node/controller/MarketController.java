@@ -107,8 +107,8 @@ public class MarketController extends BaseController {
                         "　如果参数错误，code = 4, 见/api/market/create/check/info\n" +
                         "　如果创建失败，code = 2, msg = 'xxxx' \n" +
                         "　如果创建成功, code = 0, obj = { 见/api/market/one }\n" +
-                        "　　market.status = 'locked' 付款成功\n" +
-                        "　　market.status = 'creating' 付款失败，可以通过marketId，获取市场信息重新付款 "
+                        "　　market.status = 'creating' 发送交易失败，可以通过marketId，获取市场信息重新付款\n" +
+                        "　　market.status = 'locked' 发送交易成功"
     )
     @RequestMapping("/user/market/create")
     public Object create(HttpServletRequest request, String marketId, String name, String description, String photo,
