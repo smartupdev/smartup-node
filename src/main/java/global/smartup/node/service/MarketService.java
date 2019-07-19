@@ -127,9 +127,11 @@ public class MarketService extends BaseService {
         if (ctRecyclePrice == null) {
             err.put("ctRecyclePrice", getLocaleMsg(LangHandle.MarketPercentOfCtPriceNotNull));
         } else {
-            if (ctRecyclePrice.compareTo(BigDecimal.ZERO) < 0
-                    || ctRecyclePrice.compareTo(ctPrice) > 0) {
-                err.put("ctRecyclePrice", getLocaleMsg(LangHandle.MarketPercentOfCtPriceRangeError));
+            if (ctPrice != null) {
+                if (ctRecyclePrice.compareTo(BigDecimal.ZERO) < 0
+                        || ctRecyclePrice.compareTo(ctPrice) > 0) {
+                    err.put("ctRecyclePrice", getLocaleMsg(LangHandle.MarketPercentOfCtPriceRangeError));
+                }
             }
         }
         return err;
