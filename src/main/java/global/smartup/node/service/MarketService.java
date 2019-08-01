@@ -80,7 +80,7 @@ public class MarketService extends BaseService {
     private BlockMarketService blockMarketService;
 
 
-    public Map<String, String> checkMarketInfo(String userAddress, String name, String description, String photo, String cover) {
+    public Map<String, String> checkMarketInfo(String userAddress, String name, String symbol, String description, String photo, String cover) {
         Map<String, String> err = new HashMap<>();
         if (name == null || 3 > name.length() || name.length() > 40) {
             err.put("name", getLocaleMsg(LangHandle.MarketNameLengthError));
@@ -95,6 +95,20 @@ public class MarketService extends BaseService {
                 }
             }
         }
+        if (symbol == null || 3 > symbol.length() || symbol.length() > 6 || !Common.isLetterDigit(symbol)) {
+            err.put("symbol", getLocaleMsg(LangHandle.MarketSymbolLengthError));
+        } else {
+            if (StringUtils.isBlank(userAddress)) {
+                if (isSymbolRepet(symbol)) {
+                    err.put("symbol", getLocaleMsg(LangHandle.MarketSymbolRepeatError));
+                }
+            } else {
+                if (isSymbolRepet(userAddress, symbol)) {
+                    err.put("symbol", getLocaleMsg(LangHandle.MarketSymbolRepeatError));
+                }
+            }
+
+        }
         if (!isDescriptionLenRight(description)) {
             err.put("description", getLocaleMsg(LangHandle.MarketDescriptionLengthError));
         }
@@ -108,7 +122,7 @@ public class MarketService extends BaseService {
         return err;
     }
 
-    public Map<String, String> checkMarketSetting(BigDecimal ctCount, BigDecimal ctPrice, BigDecimal ctRecyclePrice) {
+    public Map<String, String> checkMarketSetting(BigDecimal ctCount, BigDecimal ctPrice, BigDecimal ctRecyclePrice, Long closingTime) {
         Map<String, String> err = new HashMap<>();
         if (ctCount == null) {
             err.put("ctCount", getLocaleMsg(LangHandle.MarketCtCountNotNull));
@@ -134,11 +148,20 @@ public class MarketService extends BaseService {
                 }
             }
         }
+        if (closingTime == null) {
+            err.put("closingTime", getLocaleMsg(LangHandle.MarketClosingTimeNullError));
+        } else {
+            long now = System.currentTimeMillis();
+            closingTime = closingTime * 1000;
+            if (closingTime < now + 24 * 60 * 60 * 1000L || closingTime > now + 90 * 24 * 60 * 60 * 1000L) {
+                err.put("closingTime", getLocaleMsg(LangHandle.MarketClosingTimeRangeError));
+            }
+        }
         return err;
     }
 
-    public Market saveAndPay(String marketId, String userAddress, String name, String description, String photo,
-                             String cover, BigDecimal ctCount, BigDecimal ctPrice, BigDecimal ctRecyclePrice,
+    public Market saveAndPay(String marketId, String userAddress, String name, String symbol, String description, String photo,
+                             String cover, BigDecimal ctCount, BigDecimal ctPrice, BigDecimal ctRecyclePrice, Long closingTime,
                              BigInteger gasLimit, BigInteger gasPrice, String sign) {
 
         // insert or update market
@@ -147,6 +170,7 @@ public class MarketService extends BaseService {
             market = new Market();
             market.setMarketId(marketId);
             market.setName(name);
+            market.setSymbol(symbol);
             market.setCreatorAddress(userAddress);
             market.setDescription(description);
             market.setPhoto(photo);
@@ -155,11 +179,13 @@ public class MarketService extends BaseService {
             market.setCtCount(ctCount);
             market.setCtPrice(ctPrice);
             market.setCtRecyclePrice(ctRecyclePrice);
+            market.setClosingTime(new Date(closingTime * 1000));
             market.setCreateTime(new Date());
             market.setStatus(PoConstant.Market.Status.Creating);
             marketMapper.insert(market);
         } else {
             market.setName(name);
+            market.setSymbol(symbol);
             market.setCreatorAddress(userAddress);
             market.setDescription(description);
             market.setPhoto(photo);
@@ -168,14 +194,15 @@ public class MarketService extends BaseService {
             market.setCtCount(ctCount);
             market.setCtPrice(ctPrice);
             market.setCtRecyclePrice(ctRecyclePrice);
+            market.setClosingTime(new Date(closingTime * 1000));
             market.setCreateTime(new Date());
             market.setStatus(PoConstant.Market.Status.Creating);
             marketMapper.updateByPrimaryKey(market);
         }
 
         // pay and update market
-        String txHash = blockMarketService.createMarket(userAddress, BuConstant.MarketInitSut, marketId, ctCount,
-                ctPrice, ctRecyclePrice, gasLimit, gasPrice, sign);
+        String txHash = blockMarketService.createMarket(userAddress, BuConstant.MarketInitSut, marketId, symbol, ctCount,
+                ctPrice, ctRecyclePrice, closingTime, gasLimit, gasPrice, sign);
         if (txHash != null) {
             market.setStatus(PoConstant.Market.Status.Locked);
             market.setTxHash(txHash);
@@ -232,7 +259,7 @@ public class MarketService extends BaseService {
             marketDataMapper.insert(data);
         } else {
             market.setMarketAddress(marketAddress);
-            market.setStatus(PoConstant.Market.Status.Creating);
+            market.setStatus(PoConstant.Market.Status.Fail);
             market.setInitSut(initSut);
             market.setCtCount(ctCount);
             market.setCtPrice(ctPrice);
@@ -375,7 +402,12 @@ public class MarketService extends BaseService {
         while (iterator.hasNext()) {
             Market m = iterator.next();
             if (m.getCreatorAddress().equals(userAddress)
-                    && PoConstant.Market.Status.Creating.equals(m.getStatus())) {
+                &&
+                (
+                    PoConstant.Market.Status.Creating.equals(m.getStatus())
+                        || PoConstant.Market.Status.Fail.equals(m.getStatus())
+                )
+            ) {
                 iterator.remove();
             }
         }
@@ -390,6 +422,36 @@ public class MarketService extends BaseService {
         cdt.setName(name);
         List<Market> list = marketMapper.select(cdt);
         return list.size() > 0;
+    }
+
+    public boolean isSymbolRepet(String symbol) {
+        Market cdt = new Market();
+        cdt.setSymbol(symbol);
+        List<Market> list = marketMapper.select(cdt);
+        return list.size() > 0;
+    }
+
+    public boolean isSymbolRepet(String userAddress, String symbol) {
+        Market cdt = new Market();
+        cdt.setSymbol(symbol);
+        List<Market> list = marketMapper.select(cdt);
+        Iterator<Market> iterator = list.iterator();
+        while (iterator.hasNext()) {
+            Market m = iterator.next();
+            if (m.getCreatorAddress().equals(userAddress)
+                &&
+                (
+                    PoConstant.Market.Status.Creating.equals(m.getStatus())
+                        || PoConstant.Market.Status.Fail.equals(m.getStatus())
+                )
+            ) {
+                iterator.remove();
+            }
+        }
+        if (list.size() > 0) {
+            return true;
+        }
+        return false;
     }
 
     public boolean isIdRepeat(String id) {

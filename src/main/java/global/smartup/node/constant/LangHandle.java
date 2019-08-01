@@ -21,7 +21,11 @@ public class LangHandle {
 
 	public static final String NotificationTextMarketCreateFail = "notification_text_market_create_fail";
 
+	public static final String MarketSymbolLengthError = "market_symbol_length_error";
+
 	public static final String NotificationTextWithdrawEthFail = "notification_text_withdraw_eth_fail";
+
+	public static final String MarketClosingTimeRangeError = "market_closing_time_range_error";
 
 	public static final String TradeTxHashRepeat = "trade_tx_hash_repeat";
 
@@ -111,6 +115,8 @@ public class LangHandle {
 
 	public static final String NotificationTitleChargeEthFail = "notification_title_charge_eth_fail";
 
+	public static final String MarketSymbolRepeatError = "market_symbol_repeat_error";
+
 	public static final String NotificationTitleSellCtFail = "notification_title_sell_ct_fail";
 
 	public static final String PostNotExist = "post_not_exist";
@@ -130,6 +136,8 @@ public class LangHandle {
 	public static final String MarketCtCountOverZero = "market_ct_count_over_zero";
 
 	public static final String NotificationTitleMarketCreateSuccess = "notification_title_market_create_success";
+
+	public static final String MarketClosingTimeNullError = "market_closing_time_null_error";
 
 	public static final String NotificationTitleChargeEthSuccess = "notification_title_charge_eth_success";
 

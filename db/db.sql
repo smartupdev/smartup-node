@@ -51,6 +51,7 @@ create table market (
   creator_address varchar(42) not null,
   market_address varchar(42),
   name varchar(64) not null ,
+  symbol varchar(64),
   cover varchar(64),
   photo varchar(64),
   description varchar(2048),
@@ -59,6 +60,7 @@ create table market (
   ct_count decimal(40,20),
   ct_price decimal(40,20),
   ct_recycle_price decimal(40,20),
+  closing_time datetime,
   create_time datetime
 );
 

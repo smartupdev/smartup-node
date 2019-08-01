@@ -148,8 +148,8 @@ public class ExchangeClient {
         return txHash;
     }
 
-    public String createMarket(String userAddress, BigDecimal sut, String marketId, BigDecimal ctCount,
-                               BigDecimal ctPrice, BigDecimal ctRecyclePrice, BigInteger gasLimit, BigInteger gasPrice,
+    public String createMarket(String userAddress, BigDecimal sut, String marketId, String symbol, BigDecimal ctCount,
+                               BigDecimal ctPrice, BigDecimal ctRecyclePrice, Long closingTime, BigInteger gasLimit, BigInteger gasPrice,
                                String sign) {
         String txHash = null;
 
@@ -171,11 +171,12 @@ public class ExchangeClient {
                         new Address(userAddress),
                         new Uint256(_sut),
                         new Utf8String(marketId),
-                        new Utf8String(marketId),
+                        new Utf8String(symbol),
                         new Uint256(_ctCount),
                         new Uint256(_ctPrice),
                         new Uint256(_ctRecyclePrice),
                         new Uint256(_gasFee),
+                        new Uint256(closingTime),
                         new DynamicBytes(Numeric.hexStringToByteArray(sign))
                 ),
                 emptyList()

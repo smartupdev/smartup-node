@@ -32,11 +32,13 @@ public class StartupListener implements ApplicationListener<ApplicationReadyEven
     public void onApplicationEvent(ApplicationReadyEvent event) {
         String publicKey = dictService.query("admin_public_key");
         String privateKey = dictService.query("admin_private_key");
-        if (StringUtils.isAnyBlank(publicKey, privateKey)) {
+        String blockNumber = dictService.query("block_number");
+        if (StringUtils.isAnyBlank(publicKey, privateKey, blockNumber)) {
             log.error("---------------------------------------------------------------------");
-            log.error("|You must set admin public key and private key in your db table 'dict'|");
-            log.error("|  eg. admin_public_key='xx'                                          |");
+            log.error("|You must set some config in your db table 'dict'                     |");
+            log.error("|      admin_public_key='xx'                                          |");
             log.error("|      admin_private_key='xx'                                         |");
+            log.error("|      block_number='0'                                               |");
             log.error("|Application will be closed                                           |");
             log.error("---------------------------------------------------------------------");
             context.close();

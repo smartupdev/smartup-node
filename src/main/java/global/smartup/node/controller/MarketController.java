@@ -23,6 +23,7 @@ import org.web3j.utils.Convert;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,7 +48,7 @@ public class MarketController extends BaseController {
 
 
     @ApiOperation(value = "检查创建市场信息", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：name, description, photo, cover\n" +
+                notes = "参数：name, symbol, description, photo, cover\n" +
                         "返回： \n" +
                         "　如果参数正确 code = 0, obj = null \n" +
                         "　如果参数错误 code = 4, obj = {\n" +
@@ -55,9 +56,9 @@ public class MarketController extends BaseController {
                         "　　... \n" +
                         "　}")
     @RequestMapping("/market/create/check/info")
-    public Object checkInfo(HttpServletRequest request, String name, String description, String photo, String cover) {
+    public Object checkInfo(HttpServletRequest request, String name, String symbol, String description, String photo, String cover) {
         try {
-            Map<String, String> err = marketService.checkMarketInfo(null, name, description, photo, cover);
+            Map<String, String> err = marketService.checkMarketInfo(null, name, symbol, description, photo, cover);
             if (err.size() != 0) {
                 return Wrapper.paramError(err);
             } else {
@@ -70,12 +71,12 @@ public class MarketController extends BaseController {
     }
 
     @ApiOperation(value = "检查创建市场设置", httpMethod = "POST", response = Wrapper.class,
-            notes = "参数：ctCount, ctPrice, ctRecyclePrice\n" +
+            notes = "参数：ctCount, ctPrice, ctRecyclePrice, closingTime\n" +
                     "返回：见/api/market/create/check/info")
     @RequestMapping("/market/create/check/setting")
-    public Object checkSetting(HttpServletRequest request, BigDecimal ctCount, BigDecimal ctPrice, BigDecimal ctRecyclePrice) {
+    public Object checkSetting(HttpServletRequest request, BigDecimal ctCount, BigDecimal ctPrice, BigDecimal ctRecyclePrice, Long closingTime) {
         try {
-            Map<String, String> err = marketService.checkMarketSetting(ctCount, ctPrice, ctRecyclePrice);
+            Map<String, String> err = marketService.checkMarketSetting(ctCount, ctPrice, ctRecyclePrice, closingTime);
             if (err.size() != 0) {
                 return Wrapper.paramError(err);
             } else {
@@ -102,7 +103,8 @@ public class MarketController extends BaseController {
     }
 
     @ApiOperation(value = "创建/修改 市场", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：marketId, name, description, photo, cover, ctCount, ctPrice, ctRecyclePrice, gasLimit, gasPrice, sign\n" +
+                notes = "参数：marketId, name, symbol, description, photo, cover, ctCount, ctPrice, ctRecyclePrice, \n" +
+                        "closingTime(过期时间，未来的一个时间的时间戳，以秒为单位), gasLimit, gasPrice, sign\n" +
                         "返回：\n" +
                         "　如果参数错误，code = 4, 见/api/market/create/check/info\n" +
                         "　如果创建失败，code = 2, msg = 'xxxx' \n" +
@@ -111,8 +113,8 @@ public class MarketController extends BaseController {
                         "　　market.status = 'locked' 发送交易成功"
     )
     @RequestMapping("/user/market/create")
-    public Object create(HttpServletRequest request, String marketId, String name, String description, String photo,
-                           String cover, BigDecimal ctCount, BigDecimal ctPrice, BigDecimal ctRecyclePrice,
+    public Object create(HttpServletRequest request, String marketId, String name, String symbol, String description, String photo,
+                           String cover, BigDecimal ctCount, BigDecimal ctPrice, BigDecimal ctRecyclePrice, Long closingTime,
                            BigInteger gasLimit, BigInteger gasPrice, String sign) {
         try {
             String userAddress = getLoginUserAddress(request);
@@ -137,8 +139,8 @@ public class MarketController extends BaseController {
 
             // check param
             Map<String, String> err = new HashMap<>();
-            Map<String, String> err1 = marketService.checkMarketInfo(userAddress, name, description, photo, cover);
-            Map<String, String> err2 = marketService.checkMarketSetting(ctCount, ctPrice, ctRecyclePrice);
+            Map<String, String> err1 = marketService.checkMarketInfo(userAddress, name, symbol, description, photo, cover);
+            Map<String, String> err2 = marketService.checkMarketSetting(ctCount, ctPrice, ctRecyclePrice, closingTime);
             if (err1.size() > 0 || err2.size() > 0) {
                 err.putAll(err1);
                 err.putAll(err2);
@@ -160,8 +162,8 @@ public class MarketController extends BaseController {
             }
 
             // create market
-            Market market = marketService.saveAndPay(marketId, userAddress, name, description, photo, cover, ctCount,
-                    ctPrice, ctRecyclePrice, gasLimit, gasPrice,  sign);
+            Market market = marketService.saveAndPay(marketId, userAddress, name, symbol, description, photo, cover,
+                ctCount, ctPrice, ctRecyclePrice, closingTime, gasLimit, gasPrice, sign);
             return Wrapper.success(market);
         } catch (Exception e) {
             log.error(e.getMessage(), e);

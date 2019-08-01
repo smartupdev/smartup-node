@@ -40,6 +40,8 @@ public class CreateMarketFunc {
 
     private BigDecimal gasFee;
 
+    private Long closingTime;
+
     private String signature;
 
 
@@ -47,13 +49,13 @@ public class CreateMarketFunc {
         CreateMarketFunc func = new CreateMarketFunc();
         try {
             String input = tx.getInput();
-            // String input = "0x0d4f100900000000000000000000000095320bf4e0997743779e5fd7b03454bd9958207b0000000000000000000000000000000000000000000000878678326eac9000000000000000000000000000000000000000000000000000000000000000000120000000000000000000000000000000000000000000000000000000000000016000000000000000000000000000000000000000000000021e19e0c9bab24000000000000000000000000000000000000000000000000000008ac7230489e800000000000000000000000000000000000000000000000000003782dace9d900000000000000000000000000000000000000000000000000000004380663abb800000000000000000000000000000000000000000000000000000000000000001a0000000000000000000000000000000000000000000000000000000000000000b6166383933637173777a6b000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b6166383933637173777a6b000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008430786334653938653066393935323036643239653864366130346637323263633331353234643734613037656637383334636565303663356636613232346135626532653936643036623838633032636533393266373662653538643133616639306362613664303332336235393161316439326364666265643066333233653635316200000000000000000000000000000000000000000000000000000000";
             String str = input.substring(10);
             List<Type> params = FunctionReturnDecoder.decode(str, Arrays.asList(new TypeReference[]{
                     TypeReference.create(Address.class),
                     TypeReference.create(Uint256.class),
                     TypeReference.create(Utf8String.class),
                     TypeReference.create(Utf8String.class),
+                    TypeReference.create(Uint256.class),
                     TypeReference.create(Uint256.class),
                     TypeReference.create(Uint256.class),
                     TypeReference.create(Uint256.class),
@@ -68,10 +70,21 @@ public class CreateMarketFunc {
             func.setRate(Convert.fromWei(params.get(5).getValue().toString(), Convert.Unit.ETHER).setScale(BuConstant.DefaultScale));
             func.setLastRate(Convert.fromWei(params.get(6).getValue().toString(), Convert.Unit.ETHER).setScale(BuConstant.DefaultScale));
             func.setGasFee(Convert.fromWei(params.get(7).getValue().toString(), Convert.Unit.ETHER).setScale(BuConstant.DefaultScale));
+            func.setClosingTime(Long.valueOf(params.get(8).getValue().toString()));
         } catch (Exception e) {
             return null;
         }
         return func;
+    }
+
+
+    public Long getClosingTime() {
+        return closingTime;
+    }
+
+    public CreateMarketFunc setClosingTime(Long closingTime) {
+        this.closingTime = closingTime;
+        return this;
     }
 
     public String getCreator() {

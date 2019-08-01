@@ -57,7 +57,7 @@ public class BlockMarketService {
         if (func == null) {
             return;
         }
-        Market market = marketService.queryById(func.getMarketSymbol());
+        Market market = marketService.queryById(func.getMarketName());
         if (market == null) {
             return;
         }
@@ -89,10 +89,10 @@ public class BlockMarketService {
 
     }
 
-    public String createMarket(String userAddress, BigDecimal sut, String marketId, BigDecimal ctCount,
-                               BigDecimal ctPrice, BigDecimal ctRecyclePrice, BigInteger gasLimit, BigInteger gasPrice,
+    public String createMarket(String userAddress, BigDecimal sut, String marketId, String symbol, BigDecimal ctCount,
+                               BigDecimal ctPrice, BigDecimal ctRecyclePrice, Long closingTime, BigInteger gasLimit, BigInteger gasPrice,
                                String sign) {
-        return exchangeClient.createMarket(userAddress, sut, marketId, ctCount, ctPrice, ctRecyclePrice, gasLimit, gasPrice, sign);
+        return exchangeClient.createMarket(userAddress, sut, marketId, symbol, ctCount, ctPrice, ctRecyclePrice, closingTime, gasLimit, gasPrice, sign);
     }
 
 }

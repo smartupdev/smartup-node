@@ -23,6 +23,9 @@ public class Market {
     @Column(name="name")
     private String name;
 
+    @Column(name="symbol")
+    private String symbol;
+
     @Column(name="cover")
     private String cover;
 
@@ -53,6 +56,9 @@ public class Market {
     @Column(name = "ct_recycle_price")
     private BigDecimal ctRecyclePrice;
 
+    @Column(name = "closing_time")
+    private Date closingTime;
+
     @Column(name="create_time")
     private Date createTime;
 
@@ -71,6 +77,24 @@ public class Market {
     private User creator;
 
 
+
+    public Date getClosingTime() {
+        return closingTime;
+    }
+
+    public Market setClosingTime(Date closingTime) {
+        this.closingTime = closingTime;
+        return this;
+    }
+
+    public String getSymbol() {
+        return symbol;
+    }
+
+    public Market setSymbol(String symbol) {
+        this.symbol = symbol;
+        return this;
+    }
 
     public BigDecimal getInitSut() {
         return initSut;
