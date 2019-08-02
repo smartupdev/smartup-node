@@ -5,6 +5,8 @@ public class LangHandle {
 
 	public static final String NotificationTextWithdrawSutSuccess = "notification_text_withdraw_sut_success";
 
+	public static final String MarketDetailMaxLengthError = "market_detail_max_length_error";
+
 	public static final String ReplyContentEmptyError = "reply_content_empty_error";
 
 	public static final String NotificationTextSellCtFail = "notification_text_sell_ct_fail";

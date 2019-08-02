@@ -55,6 +55,7 @@ create table market (
   cover varchar(64),
   photo varchar(64),
   description varchar(2048),
+  detail mediumtext,
   status varchar(16),
   init_sut decimal(40, 20),
   ct_count decimal(40,20),

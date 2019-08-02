@@ -35,6 +35,9 @@ public class Market {
     @Column(name="description")
     private String description;
 
+    @Column(name="detail")
+    private String detail;
+
     @Column(name="tx_hash")
     private String txHash;
 
@@ -77,6 +80,15 @@ public class Market {
     private User creator;
 
 
+
+    public String getDetail() {
+        return detail;
+    }
+
+    public Market setDetail(String detail) {
+        this.detail = detail;
+        return this;
+    }
 
     public Date getClosingTime() {
         return closingTime;

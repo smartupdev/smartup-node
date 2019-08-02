@@ -47,7 +47,7 @@ public class MarketController extends BaseController {
 
 
     @ApiOperation(value = "检查创建市场信息", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：name, description, photo, cover\n" +
+                notes = "参数：name, description, detail, photo, cover\n" +
                         "返回： \n" +
                         "　如果参数正确 code = 0, obj = null \n" +
                         "　如果参数错误 code = 4, obj = {\n" +
@@ -55,9 +55,9 @@ public class MarketController extends BaseController {
                         "　　... \n" +
                         "　}")
     @RequestMapping("/market/create/check/info")
-    public Object checkInfo(HttpServletRequest request, String name, String description, String photo, String cover) {
+    public Object checkInfo(HttpServletRequest request, String name, String description, String detail, String photo, String cover) {
         try {
-            Map<String, String> err = marketService.checkMarketInfo(null, name, description, photo, cover);
+            Map<String, String> err = marketService.checkMarketInfo(null, name, description, detail, photo, cover);
             if (err.size() != 0) {
                 return Wrapper.paramError(err);
             } else {
@@ -102,7 +102,7 @@ public class MarketController extends BaseController {
     }
 
     @ApiOperation(value = "创建/修改 市场", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：marketId, name, symbol, description, photo, cover, ctCount, ctPrice, ctRecyclePrice, \n" +
+                notes = "参数：marketId, name, symbol, description, detail, photo, cover, ctCount, ctPrice, ctRecyclePrice, \n" +
                         "closingTime(过期时间，未来的一个时间的时间戳，以秒为单位), gasLimit, gasPrice, sign\n" +
                         "返回：\n" +
                         "　如果参数错误，code = 4, 见/api/market/create/check/info\n" +
@@ -112,8 +112,9 @@ public class MarketController extends BaseController {
                         "　　market.status = 'locked' 发送交易成功"
     )
     @RequestMapping("/user/market/create")
-    public Object create(HttpServletRequest request, String marketId, String name, String symbol, String description, String photo,
-                           String cover, BigDecimal ctCount, BigDecimal ctPrice, BigDecimal ctRecyclePrice, Long closingTime,
+    public Object create(HttpServletRequest request, String marketId, String name, String symbol, String description,
+                         String detail, String photo, String cover,
+                         BigDecimal ctCount, BigDecimal ctPrice, BigDecimal ctRecyclePrice, Long closingTime,
                            BigInteger gasLimit, BigInteger gasPrice, String sign) {
         try {
             String userAddress = getLoginUserAddress(request);
@@ -138,7 +139,7 @@ public class MarketController extends BaseController {
 
             // check param
             Map<String, String> err = new HashMap<>();
-            Map<String, String> err1 = marketService.checkMarketInfo(userAddress, name, description, photo, cover);
+            Map<String, String> err1 = marketService.checkMarketInfo(userAddress, name, description, detail, photo, cover);
             Map<String, String> err2 = marketService.checkMarketSetting(userAddress, symbol, ctCount, ctPrice, ctRecyclePrice, closingTime);
             if (err1.size() > 0 || err2.size() > 0) {
                 err.putAll(err1);
@@ -225,7 +226,7 @@ public class MarketController extends BaseController {
     @ApiOperation(value = "市场详情", httpMethod = "POST", response = Wrapper.class,
             notes = "参数：marketId\n" +
                     "返回：obj = {\n" +
-                    "　marketId, txHash, creatorAddress, marketAddress, name, description, createTime\n" +
+                    "　marketId, txHash, creatorAddress, marketAddress, name, description, detail, createTime\n" +
                     "　ctCount, ctPrice, ctRecyclePrice\n" +
                     "　status(creating=编辑, locked=锁定, open=开放, close=关闭, fail=失败)\n" +
                     "　data = { latelyChange, last, latelyVolume, amount, ctAmount, ctTopAmount, count, postCount, userCount } \n" +

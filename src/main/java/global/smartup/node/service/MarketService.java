@@ -80,7 +80,7 @@ public class MarketService extends BaseService {
     private BlockMarketService blockMarketService;
 
 
-    public Map<String, String> checkMarketInfo(String userAddress, String name, String description, String photo, String cover) {
+    public Map<String, String> checkMarketInfo(String userAddress, String name, String description, String detail, String photo, String cover) {
         Map<String, String> err = new HashMap<>();
         if (name == null || 3 > name.length() || name.length() > 40) {
             err.put("name", getLocaleMsg(LangHandle.MarketNameLengthError));
@@ -95,9 +95,13 @@ public class MarketService extends BaseService {
                 }
             }
         }
-        // TODO 富文本正文长度限制
         if (!isDescriptionLenRight(description)) {
             err.put("description", getLocaleMsg(LangHandle.MarketDescriptionLengthError));
+        }
+        if (StringUtils.isNotBlank(detail)) {
+            if (detail.getBytes().length >  16_777_215) {
+                err.put("detail", getLocaleMsg(LangHandle.MarketDetailMaxLengthError));
+            }
         }
         if (StringUtils.isBlank(photo)) {
             err.put("photo", getLocaleMsg(LangHandle.MarketPhotoNotNull));
@@ -785,11 +789,11 @@ public class MarketService extends BaseService {
 
     public boolean isDescriptionLenRight(String des) {
         if (StringUtils.isBlank(des)) {
-            return true;
+            return false;
         } else {
             int len = Common.getLenOfChinese(des) * 2;
             len += Common.getLenOfNotChinese(des);
-            if (len <= 2000) {
+            if (len > 1 && len <= 2000) {
                 return true;
             } else {
                 return false;

@@ -328,3 +328,4 @@ alter table notification add column text_zh_tw varchar(512);
 # 2019-08-01
 alter table market add column symbol varchar(64);
 alter table market add column closing_time datetime;
+alter table market add column detail mediumtext;
