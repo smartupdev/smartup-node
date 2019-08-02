@@ -80,7 +80,7 @@ public class MarketService extends BaseService {
     private BlockMarketService blockMarketService;
 
 
-    public Map<String, String> checkMarketInfo(String userAddress, String name, String symbol, String description, String photo, String cover) {
+    public Map<String, String> checkMarketInfo(String userAddress, String name, String description, String photo, String cover) {
         Map<String, String> err = new HashMap<>();
         if (name == null || 3 > name.length() || name.length() > 40) {
             err.put("name", getLocaleMsg(LangHandle.MarketNameLengthError));
@@ -95,20 +95,7 @@ public class MarketService extends BaseService {
                 }
             }
         }
-        if (symbol == null || 3 > symbol.length() || symbol.length() > 6 || !Common.isLetterDigit(symbol)) {
-            err.put("symbol", getLocaleMsg(LangHandle.MarketSymbolLengthError));
-        } else {
-            if (StringUtils.isBlank(userAddress)) {
-                if (isSymbolRepet(symbol)) {
-                    err.put("symbol", getLocaleMsg(LangHandle.MarketSymbolRepeatError));
-                }
-            } else {
-                if (isSymbolRepet(userAddress, symbol)) {
-                    err.put("symbol", getLocaleMsg(LangHandle.MarketSymbolRepeatError));
-                }
-            }
-
-        }
+        // TODO 富文本正文长度限制
         if (!isDescriptionLenRight(description)) {
             err.put("description", getLocaleMsg(LangHandle.MarketDescriptionLengthError));
         }
@@ -122,8 +109,21 @@ public class MarketService extends BaseService {
         return err;
     }
 
-    public Map<String, String> checkMarketSetting(BigDecimal ctCount, BigDecimal ctPrice, BigDecimal ctRecyclePrice, Long closingTime) {
+    public Map<String, String> checkMarketSetting(String userAddress, String symbol, BigDecimal ctCount, BigDecimal ctPrice, BigDecimal ctRecyclePrice, Long closingTime) {
         Map<String, String> err = new HashMap<>();
+        if (symbol == null || 3 > symbol.length() || symbol.length() > 6 || !Common.isLetterDigit(symbol)) {
+            err.put("symbol", getLocaleMsg(LangHandle.MarketSymbolLengthError));
+        } else {
+            if (StringUtils.isBlank(userAddress)) {
+                if (isSymbolRepet(symbol)) {
+                    err.put("symbol", getLocaleMsg(LangHandle.MarketSymbolRepeatError));
+                }
+            } else {
+                if (isSymbolRepet(userAddress, symbol)) {
+                    err.put("symbol", getLocaleMsg(LangHandle.MarketSymbolRepeatError));
+                }
+            }
+        }
         if (ctCount == null) {
             err.put("ctCount", getLocaleMsg(LangHandle.MarketCtCountNotNull));
         } else {
