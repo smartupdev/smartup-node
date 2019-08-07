@@ -23,10 +23,10 @@ public class CreateMarketFunc {
     // 初始押金
     private BigDecimal deposit;
 
-    // 市场名字
-    private String marketName;
-
     // 市场id
+    private String marketId;
+
+    // 市场符号
     private String marketSymbol;
 
     // ct发行量
@@ -64,7 +64,7 @@ public class CreateMarketFunc {
             }));
             func.setCreator(Keys.toChecksumAddress(params.get(0).getValue().toString()));
             func.setDeposit(Convert.fromWei(params.get(1).getValue().toString(), Convert.Unit.ETHER).setScale(BuConstant.DefaultScale));
-            func.setMarketName(params.get(2).toString());
+            func.setMarketId(params.get(2).toString());
             func.setMarketSymbol(params.get(3).toString());
             func.setSupply(Convert.fromWei(params.get(4).getValue().toString(), Convert.Unit.ETHER).setScale(BuConstant.DefaultScale));
             func.setRate(Convert.fromWei(params.get(5).getValue().toString(), Convert.Unit.ETHER).setScale(BuConstant.DefaultScale));
@@ -103,12 +103,12 @@ public class CreateMarketFunc {
         this.deposit = deposit;
     }
 
-    public String getMarketName() {
-        return marketName;
+    public String getMarketId() {
+        return marketId;
     }
 
-    public void setMarketName(String marketName) {
-        this.marketName = marketName;
+    public void setMarketId(String marketId) {
+        this.marketId = marketId;
     }
 
     public String getMarketSymbol() {

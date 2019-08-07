@@ -329,3 +329,6 @@ alter table notification add column text_zh_tw varchar(512);
 alter table market add column symbol varchar(64);
 alter table market add column closing_time datetime;
 alter table market add column detail mediumtext;
+
+# 2019-08-07
+# 更新了trade表 添加了 trade_child

@@ -24,7 +24,9 @@ public class Const {
 
             public static final String AdminWithdraw = "0x8b6aa4b2";
 
-            public static final String CreateMarket = "0x...";
+            public static final String CreateMarket = "0x435dbf35";
+
+            public static final String FirstStageBuy = "0xc3198905";
 
         }
 
@@ -39,6 +41,8 @@ public class Const {
             public static final String CreateMarketA = "0xab80d4f237153664013aad30815c82af95ab8234bfb2d63a6518a3656e4d3a8c";
 
             public static final String CreateMarketB = "0xf4e3f146ef01bfe65e811aade3a860b33927625771e1f2c45ae705ae2e44d3e8";
+
+            public static final String FirstStageBuy = "0x50e93854cadfd287beac9039b6a35a542b5d0d63737f6e379e0248048a579002";
 
         }
 

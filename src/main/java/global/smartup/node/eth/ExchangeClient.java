@@ -7,12 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.web3j.abi.FunctionEncoder;
 import org.web3j.abi.TypeReference;
-import org.web3j.abi.datatypes.Address;
-import org.web3j.abi.datatypes.DynamicBytes;
-import org.web3j.abi.datatypes.Function;
-import org.web3j.abi.datatypes.Utf8String;
+import org.web3j.abi.datatypes.*;
+import org.web3j.abi.datatypes.generated.Bytes32;
 import org.web3j.abi.datatypes.generated.Uint256;
 import org.web3j.crypto.Credentials;
+import org.web3j.crypto.Hash;
 import org.web3j.crypto.RawTransaction;
 import org.web3j.crypto.TransactionEncoder;
 import org.web3j.protocol.Web3j;
@@ -25,11 +24,13 @@ import org.web3j.utils.Numeric;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.unmodifiableCollection;
 
 @Component
 public class ExchangeClient {
@@ -207,5 +208,57 @@ public class ExchangeClient {
         return txHash;
     }
 
+    public String firstStageBuy(String userAddress, String marketAddress, BigDecimal ctCount,
+                                BigInteger gasLimit, BigInteger gasPrice, String timestamp, String sign) {
+        String txHash = null;
+
+        BigInteger nonce = ethClient.getTransactionCount(config.ethAdminPublicKey);
+        if (nonce == null) {
+            return null;
+        }
+
+        BigInteger _ctCount = Convert.toWei(ctCount, Convert.Unit.ETHER).toBigInteger();
+        BigInteger _gasPrice = Convert.toWei(new BigDecimal(gasPrice), Convert.Unit.GWEI).toBigInteger();
+        BigInteger _gasFee = gasLimit.multiply(_gasPrice);
+        byte[] timeHash = Hash.sha3(timestamp.getBytes(StandardCharsets.UTF_8));
+
+
+        Function fn = new Function(
+            "buyCt",
+            Arrays.asList(
+                new Address(marketAddress),
+                new Uint256(_ctCount),
+                new Address(userAddress),
+                new Uint256(_gasFee),
+                new Bytes32(timeHash),
+                new DynamicBytes(Numeric.hexStringToByteArray(sign))
+            ),
+            emptyList()
+        );
+
+        String data = FunctionEncoder.encode(fn);
+        RawTransaction rawTx = RawTransaction.createTransaction(nonce, _gasPrice, gasLimit, config.ethExchangeContract, BigInteger.ZERO, data);
+        Credentials credentials = Credentials.create(config.ethAdminPrivateKey);
+        byte[] message = TransactionEncoder.signMessage(rawTx, credentials);
+
+        EthSendTransaction resp = null;
+        try {
+            resp = ethClient.web3j.ethSendRawTransaction(Numeric.toHexString(message)).send();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (resp != null) {
+            if (!resp.hasError()) {
+                txHash = resp.getTransactionHash();
+                log.info("[First stage buy success] txHash = {}", txHash);
+            } else {
+                log.error("[First stage buy error] code = {}, msg = {}", resp.getError().getCode(), resp.getError().getMessage());
+            }
+        } else {
+            log.error("[First stage buy error] no response");
+        }
+
+        return txHash;
+    }
 
 }

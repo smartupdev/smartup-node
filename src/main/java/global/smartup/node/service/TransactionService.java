@@ -8,6 +8,7 @@ import com.github.pagehelper.PageHelper;
 import global.smartup.node.constant.PoConstant;
 import global.smartup.node.eth.EthClient;
 import global.smartup.node.mapper.TransactionMapper;
+import global.smartup.node.po.Trade;
 import global.smartup.node.po.Transaction;
 import global.smartup.node.util.Common;
 import global.smartup.node.util.MapBuilder;
@@ -42,7 +43,7 @@ public class TransactionService {
      * @param txHash
      * @param type
      */
-    public void addPending(String txHash, String userAddress, String type) {
+    public Transaction addPending(String txHash, String userAddress, String type) {
         Transaction tr = transactionMapper.selectByPrimaryKey(txHash);
         if (tr == null) {
             tr = new Transaction();
@@ -53,9 +54,10 @@ public class TransactionService {
             tr.setCreateTime(new Date());
             transactionMapper.insert(tr);
         }
+        return tr;
     }
 
-    public void addPending(String txHash, String userAddress, String type, String detail) {
+    public Transaction addPending(String txHash, String userAddress, String type, String detail) {
         Transaction tr = transactionMapper.selectByPrimaryKey(txHash);
         if (tr == null) {
             tr = new Transaction();
@@ -67,6 +69,7 @@ public class TransactionService {
             tr.setCreateTime(new Date());
             transactionMapper.insert(tr);
         }
+        return tr;
     }
 
     public void modChargeSutFinish(String txHash, boolean isSuccess, BigDecimal sut, Date blockTime) {
@@ -118,6 +121,24 @@ public class TransactionService {
                 .put("marketName", marketName)
                 .put("initSut", initSut)
                 .build();
+        tr.setDetail(JSON.toJSONString(detail, SerializerFeature.WriteBigDecimalAsPlain));
+        tr.setBlockTime(blockTime);
+        transactionMapper.updateByPrimaryKey(tr);
+    }
+
+    public void modFirstBuyFinish(String txHash, boolean isSuccess, String marketId, String marketName,
+                                  BigDecimal ctCount, BigDecimal ctPrice, Date blockTime) {
+        Transaction tr = query(txHash);
+        if (tr == null) {
+            return;
+        }
+        tr.setStage(isSuccess ? PoConstant.TxStage.Success : PoConstant.TxStage.Fail);
+        Map<String, Object> detail = MapBuilder.<String, Object>create()
+            .put("marketId", marketId)
+            .put("marketName", marketName)
+            .put("ctCount", ctCount)
+            .put("ctPrice", ctPrice)
+            .build();
         tr.setDetail(JSON.toJSONString(detail, SerializerFeature.WriteBigDecimalAsPlain));
         tr.setBlockTime(blockTime);
         transactionMapper.updateByPrimaryKey(tr);
@@ -222,6 +243,12 @@ public class TransactionService {
         example.createCriteria()
                 .andEqualTo("stage", PoConstant.TxStage.Pending)
                 .andGreaterThan("createTime", Common.getSomeHoursAgo(new Date(), 24));
+        return transactionMapper.selectByExample(example);
+    }
+
+    public List<Transaction> queryList(List<String> txHashList) {
+        Example example = new Example(Transaction.class);
+        example.createCriteria().andIn("txHash", txHashList);
         return transactionMapper.selectByExample(example);
     }
 

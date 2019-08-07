@@ -48,18 +48,18 @@ public class NotificationController extends BaseController {
 
     @ApiOperation(value = "通知列表", httpMethod = "POST", response = Wrapper.class,
                 notes = "参数：unread(true/false/可空), pageNumb, pageSize\n" +
-                        "返回：obj = {\n" +
-                        "　list = [\n" +
-                        "　　{notificationId, userAddress, style(personal, system), type, title, text, content, isRead, createTime} , ... \n" +
-                        "　]\n" +
-                        "}\n" +
-                        "type, content 说明：\n" +
-                        "type = ChargeSutFinish, content = {txHash, isSuccess, sut, userAddress}\n" +
-                        "type = ChargeEthFinish, content = {txHash, isSuccess, eth, userAddress}\n" +
-                        "type = WithdrawSutFinish, content = {txHash, isSuccess, sut, userAddress}\n" +
-                        "type = WithdrawEthFinish, content = {txHash, isSuccess, eth, userAddress}\n" +
-                        "type = MarketCreateFinish, content = {txHash, isSuccess, marketId, marketName, initSut}\n" +
-                        "type = TradeFinish, content = {...}")
+                    "返回：obj = {\n" +
+                    "　list = [\n" +
+                    "　　{notificationId, userAddress, style(personal, system), type, title, text, content, isRead, createTime} , ... \n" +
+                    "　]\n" +
+                    "}\n" +
+                    "type, content 说明：\n" +
+                    "type = ChargeSutFinish, content = {txHash, isSuccess, sut, userAddress}\n" +
+                    "type = ChargeEthFinish, content = {txHash, isSuccess, eth, userAddress}\n" +
+                    "type = WithdrawSutFinish, content = {txHash, isSuccess, sut, userAddress}\n" +
+                    "type = WithdrawEthFinish, content = {txHash, isSuccess, eth, userAddress}\n" +
+                    "type = MarketCreateFinish, content = {txHash, isSuccess, marketId, marketName, initSut}\n" +
+                    "type = FirstStageBuyCT, content = {txHash, isSuccess, marketId, marketName, ctCount, ctPrice}\n")
     @RequestMapping("/list")
     public Object list(HttpServletRequest request, Boolean unread, Integer pageNumb, Integer pageSize) {
         try {

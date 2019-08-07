@@ -31,6 +31,8 @@ public class LangHandle {
 
 	public static final String TradeTxHashRepeat = "trade_tx_hash_repeat";
 
+	public static final String NotificationTextFirstStageBuyFail = "notification_text_first_stage_buy_fail";
+
 	public static final String MarketTxHashFormatError = "market_tx_hash_format_error";
 
 	public static final String MarketCtCountNotNull = "market_ct_count_not_null";
@@ -145,9 +147,13 @@ public class LangHandle {
 
 	public static final String MarketSaveWhenLock = "market_save_when_lock";
 
+	public static final String MarketNotExist = "market_not_exist";
+
 	public static final String ReplyContentLengthError = "reply_content_length_error";
 
 	public static final String NotificationTitleSellCtSuccess = "notification_title_sell_ct_success";
+
+	public static final String NotificationTitleFirstStageBuySuccess = "notification_title_first_stage_buy_success";
 
 	public static final String MarketIdRepeat = "market_id_repeat";
 
@@ -163,6 +169,8 @@ public class LangHandle {
 
 	public static final String MarketPercentOfCtPriceRangeError = "market_percent_of_ct_price_range_error";
 
+	public static final String NotificationTextFirstStageBuySuccess = "notification_text_first_stage_buy_success";
+
 	public static final String NotificationTitleWithdrawSutFail = "notification_title_withdraw_sut_fail";
 
 	public static final String NotificationTextBuyCtSuccess = "notification_text_buy_ct_success";
@@ -174,6 +182,8 @@ public class LangHandle {
 	public static final String MarketPhotoNotNull = "market_photo_not_null";
 
 	public static final String TradeMarketAddressFormatError = "trade_market_address_format_error";
+
+	public static final String NotificationTitleFirstStageBuyFail = "notification_title_first_stage_buy_fail";
 
 	public static final String TransactionTxHashError = "transaction_tx_hash_error";
 

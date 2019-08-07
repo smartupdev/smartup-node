@@ -36,6 +36,9 @@ public class BlockTxService {
     @Autowired
     private BlockMarketService blockMarketService;
 
+    @Autowired
+    private BlockTradeService blockTradeService;
+
     /**
      * 处理数据库中pending中的交易
      */
@@ -96,6 +99,11 @@ public class BlockTxService {
             // 创建市场
             if (tr.getType().startsWith(PoConstant.Transaction.Type.CreateMarket)) {
                 blockMarketService.handleMarketCreate(tx, receipt, blockTime);
+            }
+
+            // 第一阶段买入
+            if (tr.getType().startsWith(PoConstant.Transaction.Type.FirstStageBuyCT)) {
+                blockTradeService.handleFirstStageBuy(tx, receipt, blockTime);
             }
 
         }

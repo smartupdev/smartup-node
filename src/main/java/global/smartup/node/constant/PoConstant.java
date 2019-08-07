@@ -86,16 +86,34 @@ public class PoConstant {
 
         public static class Type {
 
+            public static final String FirstStageBuy = "firstStageBuy";
+
             public static final String Buy = "buy";
 
             public static final String Sell = "sell";
 
             public static boolean isRight(String type) {
-                if (Buy.equals(type) || Sell.equals(type)) {
+                if (FirstStageBuy.equals(type) || Buy.equals(type) || Sell.equals(type)) {
                     return true;
                 }
                 return false;
             }
+
+        }
+
+        public static class State {
+
+            public static final String Trading = "trading";
+
+            public static final String Cancel = "cancel";
+
+            public static final String Half = "half";
+
+            public static final String HalfCancel = "halfCancel";
+
+            public static final String Fail = "fail";
+
+            public static final String Done = "done";
 
         }
 
@@ -159,6 +177,8 @@ public class PoConstant {
 
             public static final String MarketCreateFinish = "MarketCreateFinish";
 
+            public static final String FirstStageBuyCT = "FirstStageBuyCT";
+
             public static final String TradeFinish = "TradeFinish";
 
             public static final String ProposalSutCreateFinish = "ProposalSutCreateFinish";
@@ -214,6 +234,8 @@ public class PoConstant {
             public static final String AdminWithdrawEth = "AdminWithdrawEth";
 
             public static final String CreateMarket = "CreateMarket";
+
+            public static final String FirstStageBuyCT = "FirstStageBuyCT";
 
             public static final String BuyCT = "BuyCT";
 

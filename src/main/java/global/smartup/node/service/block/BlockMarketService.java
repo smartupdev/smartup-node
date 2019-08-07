@@ -57,11 +57,11 @@ public class BlockMarketService {
         if (func == null) {
             return;
         }
-        Market market = marketService.queryById(func.getMarketName());
+        Market market = marketService.queryById(func.getMarketId());
         if (market == null) {
             return;
         }
-        String userAddress = Keys.toChecksumAddress(tx.getFrom());
+        String userAddress = Keys.toChecksumAddress(func.getCreator());
         boolean isSuccess = false;
         String marketAddress = null;
         if (ethClient.isTransactionSuccess(receipt)) {

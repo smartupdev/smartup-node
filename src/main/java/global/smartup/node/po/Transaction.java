@@ -35,60 +35,66 @@ public class Transaction {
     private Date blockTime;
 
 
-
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
     public String getTxHash() {
         return txHash;
     }
 
-    public void setTxHash(String txHash) {
+    public Transaction setTxHash(String txHash) {
         this.txHash = txHash;
+        return this;
     }
 
     public String getStage() {
         return stage;
     }
 
-    public void setStage(String stage) {
+    public Transaction setStage(String stage) {
         this.stage = stage;
+        return this;
     }
 
     public String getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public Transaction setType(String type) {
         this.type = type;
+        return this;
     }
 
     public String getUserAddress() {
         return userAddress;
     }
 
-    public void setUserAddress(String userAddress) {
+    public Transaction setUserAddress(String userAddress) {
         this.userAddress = userAddress;
+        return this;
     }
 
     public String getDetail() {
         return detail;
     }
 
-    public void setDetail(String detail) {
+    public Transaction setDetail(String detail) {
         this.detail = detail;
+        return this;
+    }
+
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public Transaction setCreateTime(Date createTime) {
+        this.createTime = createTime;
+        return this;
     }
 
     public Date getBlockTime() {
         return blockTime;
     }
 
-    public void setBlockTime(Date blockTime) {
+    public Transaction setBlockTime(Date blockTime) {
         this.blockTime = blockTime;
+        return this;
     }
 }

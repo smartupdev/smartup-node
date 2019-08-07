@@ -43,26 +43,6 @@ public class SmartupClientTest {
     }
 
     @Test
-    public void getBuyPrice() {
-        String txHash = "0x9176544ade43a7ab7ebd9b5fc8a912108b48c56e1312f9456ecb88b5f00d944e";
-        TransactionReceipt receipt = smartupClient.queryReceipt(txHash);
-        if (receipt != null) {
-            Trade trade = smartupClient.getBuyPrice(receipt);
-            System.out.println(JSON.toJSONString(trade));
-        }
-    }
-
-    @Test
-    public void getSellPrice() {
-        String txHash = "0x7bc4de2789f14da90d290d5032fe50fcefb6dd13ae09c7c7b6778091d1e89c44";
-        TransactionReceipt receipt = smartupClient.queryReceipt(txHash);
-        if (receipt != null) {
-            Trade trade = smartupClient.getSellPrice(receipt);
-            System.out.println(JSON.toJSONString(trade));
-        }
-    }
-
-    @Test
     public void getBlockTime() {
         String txHash = "0x9176544ade43a7ab7ebd9b5fc8a912108b48c56e1312f9456ecb88b5f00d944e";
         TransactionReceipt receipt = smartupClient.queryReceipt(txHash);

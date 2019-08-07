@@ -6,130 +6,179 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 @Table(name = "trade")
 public class Trade {
 
     @Id
-    @Column(name="tx_hash")
-    private String txHash;
-
-    @Column(name="stage")
-    private String stage;
+    @Column(name="trade_id")
+    private String tradeId;
 
     @Column(name="user_address")
     private String userAddress;
 
-    @Column(name="market_address")
-    private String marketAddress;
+    @Column(name="market_Id")
+    private String marketId;
 
     @Column(name="type")
     private String type;
 
-    @Column(name="sut_offer")
-    private BigDecimal sutOffer;
+    @Column(name="state")
+    private String state;
 
-    @Column(name="sut_amount")
-    private BigDecimal sutAmount;
+    @Column(name="entrust_volume")
+    private BigDecimal entrustVolume;
 
-    @Column(name="ct_amount")
-    private BigDecimal ctAmount;
+    @Column(name="entrust_price")
+    private BigDecimal entrustPrice;
+
+    @Column(name="trade_volume")
+    private BigDecimal tradeVolume;
+
+    @Column(name="trade_price")
+    private BigDecimal tradePrice;
+
+    @Column(name="fee")
+    private BigDecimal fee;
 
     @Column(name="create_time")
     private Date createTime;
 
-    @Column(name="block_time")
-    private Date blockTime;
+    @Column(name="update_time")
+    private Date updateTime;
+
 
     @Transient
     private User user;
 
+    @Transient
+    private List<TradeChild> childList;
 
-    public User getUser() {
-        return user;
+
+    public String getTradeId() {
+        return tradeId;
     }
 
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public Date getBlockTime() {
-        return blockTime;
-    }
-
-    public void setBlockTime(Date blockTime) {
-        this.blockTime = blockTime;
-    }
-
-    public String getTxHash() {
-        return txHash;
-    }
-
-    public void setTxHash(String txHash) {
-        this.txHash = txHash;
-    }
-
-    public String getStage() {
-        return stage;
-    }
-
-    public void setStage(String stage) {
-        this.stage = stage;
+    public Trade setTradeId(String tradeId) {
+        this.tradeId = tradeId;
+        return this;
     }
 
     public String getUserAddress() {
         return userAddress;
     }
 
-    public void setUserAddress(String userAddress) {
+    public Trade setUserAddress(String userAddress) {
         this.userAddress = userAddress;
+        return this;
     }
 
-    public String getMarketAddress() {
-        return marketAddress;
+    public String getMarketId() {
+        return marketId;
     }
 
-    public void setMarketAddress(String marketAddress) {
-        this.marketAddress = marketAddress;
+    public Trade setMarketId(String marketId) {
+        this.marketId = marketId;
+        return this;
     }
 
     public String getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public Trade setType(String type) {
         this.type = type;
+        return this;
     }
 
-    public BigDecimal getSutOffer() {
-        return sutOffer;
+    public String getState() {
+        return state;
     }
 
-    public void setSutOffer(BigDecimal sutOffer) {
-        this.sutOffer = sutOffer;
+    public Trade setState(String state) {
+        this.state = state;
+        return this;
     }
 
-    public BigDecimal getSutAmount() {
-        return sutAmount;
+    public BigDecimal getEntrustVolume() {
+        return entrustVolume;
     }
 
-    public void setSutAmount(BigDecimal sutAmount) {
-        this.sutAmount = sutAmount;
+    public Trade setEntrustVolume(BigDecimal entrustVolume) {
+        this.entrustVolume = entrustVolume;
+        return this;
     }
 
-    public BigDecimal getCtAmount() {
-        return ctAmount;
+    public BigDecimal getEntrustPrice() {
+        return entrustPrice;
     }
 
-    public void setCtAmount(BigDecimal ctAmount) {
-        this.ctAmount = ctAmount;
+    public Trade setEntrustPrice(BigDecimal entrustPrice) {
+        this.entrustPrice = entrustPrice;
+        return this;
+    }
+
+    public BigDecimal getTradeVolume() {
+        return tradeVolume;
+    }
+
+    public Trade setTradeVolume(BigDecimal tradeVolume) {
+        this.tradeVolume = tradeVolume;
+        return this;
+    }
+
+    public BigDecimal getTradePrice() {
+        return tradePrice;
+    }
+
+    public Trade setTradePrice(BigDecimal tradePrice) {
+        this.tradePrice = tradePrice;
+        return this;
+    }
+
+    public BigDecimal getFee() {
+        return fee;
+    }
+
+    public Trade setFee(BigDecimal fee) {
+        this.fee = fee;
+        return this;
     }
 
     public Date getCreateTime() {
         return createTime;
     }
 
-    public void setCreateTime(Date createTime) {
+    public Trade setCreateTime(Date createTime) {
         this.createTime = createTime;
+        return this;
+    }
+
+    public Date getUpdateTime() {
+        return updateTime;
+    }
+
+    public Trade setUpdateTime(Date updateTime) {
+        this.updateTime = updateTime;
+        return this;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public Trade setUser(User user) {
+        this.user = user;
+        return this;
+    }
+
+    public List<TradeChild> getChildList() {
+        return childList;
+    }
+
+    public Trade setChildList(List<TradeChild> childList) {
+        this.childList = childList;
+        return this;
     }
 }

@@ -67,16 +67,27 @@ create table market (
 
 drop table if exists trade;
 create table trade (
-  tx_hash varchar(66) primary key ,
-  stage varchar(16),
+  trade_id varchar(16) primary key,
   user_address varchar(42),
-  market_address varchar(42),
+  market_id varchar(16),
   type varchar(16),
-  sut_offer decimal(40,20),
-  sut_amount decimal(40,20),
-  ct_amount decimal(40,20),
+  state varchar(16),
+  entrust_volume decimal(40,20),
+  entrust_price decimal(40,20),
+  trade_volume decimal(40,20),
+  trade_price decimal(40,20),
+  fee decimal(40,20),
   create_time datetime,
-  block_time datetime
+  update_time datetime
+);
+
+drop table if exists trade_child;
+create table trade_child (
+  tx_hash varchar(66) primary key,
+  trade_id varchar(16),
+  volume decimal(40,20),
+  price decimal(40,20),
+  create_time datetime
 );
 
 drop table if exists post;

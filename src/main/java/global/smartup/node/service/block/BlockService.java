@@ -94,6 +94,11 @@ public class BlockService {
             if (input.startsWith(Const.Exchange.Func.CreateMarket)) {
                 transactionService.addPending(tx.getHash(), userAddress, PoConstant.Transaction.Type.CreateMarket);
             }
+
+            // 第一阶段买入
+            if (input.startsWith(Const.Exchange.Func.FirstStageBuy)) {
+                transactionService.addPending(tx.getHash(), userAddress, PoConstant.Transaction.Type.FirstStageBuyCT);
+            }
         }
 
     }

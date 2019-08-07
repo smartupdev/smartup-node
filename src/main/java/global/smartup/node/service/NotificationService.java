@@ -112,6 +112,19 @@ public class NotificationService {
         send(userAddress, PoConstant.Notification.Style.Personal, PoConstant.Notification.Type.MarketCreateFinish, content);
     }
 
+    public void sendFirstStageBuyFinish(String txHash, boolean isSuccess, String userAddress, String marketId, String marketName, BigDecimal ctCount, BigDecimal ctPrice) {
+        userAddress = Keys.toChecksumAddress(userAddress);
+        Map<String, Object> content = MapBuilder.<String, Object>create()
+            .put("txHash", txHash)
+            .put("isSuccess", isSuccess)
+            .put("marketId", marketId)
+            .put("marketName", marketName)
+            .put("ctCount", ctCount)
+            .put("ctPrice", ctPrice)
+            .build();
+        send(userAddress, PoConstant.Notification.Style.Personal, PoConstant.Notification.Type.FirstStageBuyCT, content);
+    }
+
     public void send(String userAddress, String style, String type, Map content) {
         Notification n = new Notification();
         n.setUserAddress(userAddress);
@@ -347,6 +360,19 @@ public class NotificationService {
             } else {
                 title = messageSource.getMessage(LangHandle.NotificationTitleMarketCreateFail, null, locale);
                 text = messageSource.getMessage(LangHandle.NotificationTextMarketCreateFail, new String[]{sut, marketName}, locale);
+            }
+        }
+
+        if (PoConstant.Notification.Type.FirstStageBuyCT.equals(not.getType())) {
+            Boolean isS = (Boolean) map.get("isSuccess");
+            String marketName = (String) map.get("marketName");
+            String ctCount = ((BigDecimal) map.get("ctCount")).setScale(2, BigDecimal.ROUND_DOWN).toPlainString();
+            if (isS) {
+                title = messageSource.getMessage(LangHandle.NotificationTitleMarketCreateSuccess, null, locale);
+                text = messageSource.getMessage(LangHandle.NotificationTextMarketCreateSuccess, new String[]{marketName, ctCount}, locale);
+            } else {
+                title = messageSource.getMessage(LangHandle.NotificationTitleMarketCreateFail, null, locale);
+                text = messageSource.getMessage(LangHandle.NotificationTextMarketCreateFail, new String[]{marketName, ctCount}, locale);
             }
         }
 
