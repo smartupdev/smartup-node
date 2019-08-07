@@ -21,6 +21,7 @@ import org.web3j.utils.Convert;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.List;
 
 @Api(description = "交易")
@@ -71,10 +72,12 @@ public class TradeController extends BaseController {
                     "　list = [ 见/api/trade/one ]\n" +
                     "}")
     @RequestMapping("/user/trade/list")
-    public Object userTradeList(HttpServletRequest request, List<String> types, List<String> states, Integer pageNumb, Integer pageSize) {
+    public Object userTradeList(HttpServletRequest request, String[] types, String[] states, Integer pageNumb, Integer pageSize) {
         try {
             String userAddress = getLoginUserAddress(request);
-            Pagination page = tradeService.queryByUserTrade(userAddress, types, states, pageNumb, pageSize);
+            types = types != null ? types : new String[0];
+            states = states != null ? states : new String[0];
+            Pagination page = tradeService.queryByUserTrade(userAddress, Arrays.asList(types), Arrays.asList(states), pageNumb, pageSize);
             return Wrapper.success(page);
         } catch (Exception e) {
             log.error(e.getMessage(), e);

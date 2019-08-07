@@ -1,5 +1,7 @@
 package global.smartup.node.po;
 
+import global.smartup.node.vo.Tx;
+
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -28,16 +30,15 @@ public class TradeChild {
 
 
     @Transient
-    private Transaction transaction;
+    private Tx tx;
 
 
-
-    public Transaction getTransaction() {
-        return transaction;
+    public Tx getTx() {
+        return tx;
     }
 
-    public TradeChild setTransaction(Transaction transaction) {
-        this.transaction = transaction;
+    public TradeChild setTx(Tx tx) {
+        this.tx = tx;
         return this;
     }
 

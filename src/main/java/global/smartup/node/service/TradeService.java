@@ -11,6 +11,7 @@ import global.smartup.node.po.Trade;
 import global.smartup.node.po.TradeChild;
 import global.smartup.node.po.Transaction;
 import global.smartup.node.util.Pagination;
+import global.smartup.node.vo.Tx;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,7 +74,7 @@ public class TradeService {
         Transaction tr = transactionService.addPending(txHash, userAddress, PoConstant.Transaction.Type.FirstStageBuyCT);
 
         TradeChild child = new TradeChild();
-        child.setTradeId(id).setTxHash(txHash).setVolume(ctCount).setPrice(ctPrice).setCreateTime(current).setTransaction(tr);
+        child.setTradeId(id).setTxHash(txHash).setVolume(ctCount).setPrice(ctPrice).setCreateTime(current).setTx(transactionService.transferVo(tr));
         tradeChildMapper.insert(child);
         trade.setChildList(Arrays.asList(child));
 
@@ -151,10 +152,10 @@ public class TradeService {
         for (Trade trade : trades) {
             txHashList.addAll(trade.getChildList().stream().map(c -> c.getTxHash()).collect(Collectors.toList()));
         }
-        List<Transaction> transactionList = transactionService.queryList(txHashList);
+        List<Tx> transactionList = transactionService.queryTxList(txHashList);
         for (Trade trade : trades) {
             for (TradeChild child : trade.getChildList()) {
-                child.setTransaction(transactionList.stream().filter(t -> t.getTxHash().equals(child.getTxHash())).findFirst().orElse(null));
+                child.setTx(transactionList.stream().filter(t -> t.getTxHash().equals(child.getTxHash())).findFirst().orElse(null));
             }
         }
     }

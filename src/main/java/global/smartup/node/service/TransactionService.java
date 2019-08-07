@@ -252,6 +252,12 @@ public class TransactionService {
         return transactionMapper.selectByExample(example);
     }
 
+    public List<Tx> queryTxList(List<String> txHashList) {
+        Example example = new Example(Transaction.class);
+        example.createCriteria().andIn("txHash", txHashList);
+        return transferVo(transactionMapper.selectByExample(example));
+    }
+
     public Transaction query(String txHash) {
         return transactionMapper.selectByPrimaryKey(txHash);
     }
@@ -273,7 +279,7 @@ public class TransactionService {
         return Pagination.init(page.getTotal(), page.getPageSize(), page.getPageNum(), transferVo(page.getResult()));
     }
 
-    private List<Tx> transferVo(List<Transaction> list) {
+    public List<Tx> transferVo(List<Transaction> list) {
         List<Tx> ret = new ArrayList<>();
         list.forEach(tr -> {
             Tx tx = new Tx();
@@ -285,5 +291,13 @@ public class TransactionService {
             }
         });
         return ret;
+    }
+
+    public Tx transferVo(Transaction tr) {
+        List<Tx> txs = transferVo(Arrays.asList(tr));
+        if (txs.size() > 0) {
+            return txs.get(0);
+        }
+        return null;
     }
 }
