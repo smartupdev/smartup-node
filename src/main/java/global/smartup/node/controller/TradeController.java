@@ -45,7 +45,7 @@ public class TradeController extends BaseController {
                 notes = "参数：tradeId\n" +
                     "返回：obj = {\n" +
                     "　tradeId, userAddress, marketId, entrustVolume, entrustPrice, tradeVolume, tradePrice, fee, createTime, updateTime" +
-                    "　type(firstStageBuy/buy/sell), state(nothing/cancel/half/halfCancel/done),\n" +
+                    "　type(firstStageBuy/buy/sell), state(trading/done),\n" +
                     "　　childList = [\n" +
                     "　　　{\n" +
                     "　　　　tradeId, txHash, volume, price, createTime\n" +
