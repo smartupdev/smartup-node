@@ -1,5 +1,6 @@
 package global.smartup.node.service.block;
 
+import com.alibaba.fastjson.JSON;
 import global.smartup.node.Starter;
 import global.smartup.node.eth.EthClient;
 import global.smartup.node.eth.constract.event.CreateMarketEvent;
@@ -26,14 +27,14 @@ public class BlockMarketServiceTest {
 
     @Test
     public void parseTx() {
-        String txHash = "0x0704dd3c45571279b9c8f1cf1900061421533fc1e15d0ea3cc5f31bd5b6d37cf";
+        String txHash = "0xb605570d63d41f6b63490344249880ab043ce25e61b254c96087c51f87328908";
         Transaction tx = ethClient.getTx(txHash);
         CreateMarketFunc func = CreateMarketFunc.parse(tx);
+        System.out.println(JSON.toJSONString(func));
 
         TransactionReceipt receipt = ethClient.getTxReceipt(txHash);
         CreateMarketEvent event = CreateMarketEvent.parse(receipt);
-
-        System.out.println("end");
+        System.out.println(JSON.toJSONString(event));
     }
 
 }

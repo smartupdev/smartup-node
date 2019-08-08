@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.Keys;
-import org.web3j.utils.Convert;
 import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
@@ -119,11 +118,11 @@ public class MarketService extends BaseService {
             err.put("symbol", getLocaleMsg(LangHandle.MarketSymbolLengthError));
         } else {
             if (StringUtils.isBlank(userAddress)) {
-                if (isSymbolRepet(symbol)) {
+                if (isSymbolRepeat(symbol)) {
                     err.put("symbol", getLocaleMsg(LangHandle.MarketSymbolRepeatError));
                 }
             } else {
-                if (isSymbolRepet(userAddress, symbol)) {
+                if (isSymbolRepeat(userAddress, symbol)) {
                     err.put("symbol", getLocaleMsg(LangHandle.MarketSymbolRepeatError));
                 }
             }
@@ -402,19 +401,10 @@ public class MarketService extends BaseService {
         Market cdt = new Market();
         cdt.setName(name);
         List<Market> list = marketMapper.select(cdt);
-        Iterator<Market> iterator = list.iterator();
-        while (iterator.hasNext()) {
-            Market m = iterator.next();
-            if (m.getCreatorAddress().equals(userAddress)
-                &&
-                (
-                    PoConstant.Market.Status.Creating.equals(m.getStatus())
-                        || PoConstant.Market.Status.Fail.equals(m.getStatus())
-                )
-            ) {
-                iterator.remove();
-            }
-        }
+        list.removeIf(m ->
+            m.getCreatorAddress().equals(userAddress)
+                && (PoConstant.Market.Status.Creating.equals(m.getStatus()) || PoConstant.Market.Status.Fail.equals(m.getStatus()))
+        );
         if (list.size() > 0) {
             return true;
         }
@@ -428,14 +418,14 @@ public class MarketService extends BaseService {
         return list.size() > 0;
     }
 
-    public boolean isSymbolRepet(String symbol) {
+    public boolean isSymbolRepeat(String symbol) {
         Market cdt = new Market();
         cdt.setSymbol(symbol);
         List<Market> list = marketMapper.select(cdt);
         return list.size() > 0;
     }
 
-    public boolean isSymbolRepet(String userAddress, String symbol) {
+    public boolean isSymbolRepeat(String userAddress, String symbol) {
         Market cdt = new Market();
         cdt.setSymbol(symbol);
         List<Market> list = marketMapper.select(cdt);
