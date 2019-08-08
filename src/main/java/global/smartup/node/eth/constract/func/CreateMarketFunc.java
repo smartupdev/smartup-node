@@ -1,6 +1,7 @@
 package global.smartup.node.eth.constract.func;
 
 import global.smartup.node.constant.BuConstant;
+import global.smartup.node.util.Common;
 import org.web3j.abi.FunctionReturnDecoder;
 import org.web3j.abi.TypeReference;
 import org.web3j.abi.datatypes.Address;
@@ -71,6 +72,7 @@ public class CreateMarketFunc {
             func.setLastRate(Convert.fromWei(params.get(6).getValue().toString(), Convert.Unit.ETHER).setScale(BuConstant.DefaultScale));
             func.setGasFee(Convert.fromWei(params.get(7).getValue().toString(), Convert.Unit.ETHER).setScale(BuConstant.DefaultScale));
             func.setClosingTime(Long.valueOf(params.get(8).getValue().toString()));
+            func.setSignature(Common.bytesToHex(((DynamicBytes) params.get(9)).getValue()));
         } catch (Exception e) {
             return null;
         }
