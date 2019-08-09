@@ -7,6 +7,7 @@ import global.smartup.node.po.Trade;
 import global.smartup.node.service.MarketService;
 import global.smartup.node.service.TradeService;
 import global.smartup.node.service.UserAccountService;
+import global.smartup.node.util.Checker;
 import global.smartup.node.util.Pagination;
 import global.smartup.node.util.Wrapper;
 import io.swagger.annotations.Api;
@@ -98,6 +99,11 @@ public class TradeController extends BaseController {
             Market market = marketService.queryByAddress(marketAddress);
             if (market == null) {
                 return Wrapper.alert(getLocaleMsg(LangHandle.MarketNotExist));
+            }
+
+            // check gas price
+            if (Checker.isGasPriceRight(gasPrice)) {
+                return Wrapper.alert(getLocaleMsg(LangHandle.TransactionGasPriceError));
             }
 
             // check balance

@@ -8,6 +8,7 @@ import global.smartup.node.po.Market;
 import global.smartup.node.service.GlobalService;
 import global.smartup.node.service.MarketService;
 import global.smartup.node.service.UserAccountService;
+import global.smartup.node.util.Checker;
 import global.smartup.node.util.Common;
 import global.smartup.node.util.Pagination;
 import global.smartup.node.util.Wrapper;
@@ -115,7 +116,7 @@ public class MarketController extends BaseController {
     public Object create(HttpServletRequest request, String marketId, String name, String symbol, String description,
                          String detail, String photo, String cover,
                          BigDecimal ctCount, BigDecimal ctPrice, BigDecimal ctRecyclePrice, Long closingTime,
-                           BigInteger gasLimit, BigInteger gasPrice, String sign) {
+                         BigInteger gasLimit, BigInteger gasPrice, String sign) {
         try {
             String userAddress = getLoginUserAddress(request);
 
@@ -145,6 +146,11 @@ public class MarketController extends BaseController {
                 err.putAll(err1);
                 err.putAll(err2);
                 return Wrapper.paramError(err);
+            }
+
+            // check gas price
+            if (Checker.isGasPriceRight(gasPrice)) {
+                return Wrapper.alert(getLocaleMsg(LangHandle.TransactionGasPriceError));
             }
 
             // check balance

@@ -5,7 +5,32 @@ import global.smartup.node.constant.PoConstant;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class Checker {
+
+    private static final List<BigInteger> GasPriceList = Arrays.asList(
+        BigInteger.valueOf(5L),
+        BigInteger.valueOf(10L),
+        BigInteger.valueOf(20L),
+        BigInteger.valueOf(30L),
+        BigInteger.valueOf(50L)
+    );
+
+    public static boolean isGasPriceRight(BigInteger gasPrice) {
+        if (gasPrice != null) {
+            for (BigInteger bigInteger : GasPriceList) {
+                if (bigInteger.compareTo(gasPrice) == 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     public static boolean isAddress(String address) {
         if (StringUtils.isBlank(address)) {

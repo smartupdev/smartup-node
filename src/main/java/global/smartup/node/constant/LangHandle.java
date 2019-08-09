@@ -109,6 +109,8 @@ public class LangHandle {
 
 	public static final String AccountSutNotEnough = "account_sut_not_enough";
 
+	public static final String TransactionGasPriceError = "transaction_gas_price_error";
+
 	public static final String PostDescriptionEmptyError = "post_description_empty_error";
 
 	public static final String MarketStageIsPending = "market_stage_is_pending";
