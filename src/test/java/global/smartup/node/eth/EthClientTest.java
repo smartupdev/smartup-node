@@ -61,8 +61,8 @@ public class EthClientTest {
         // Hi_i_am_string
 
         String address = "0xB44940Be0eeA81a3D0dA22CC15208AF4744BeA8E";
-        String message = "8086083001000";
-        String sign = "0xd8292beaaa42fee39a246d5372ac089a98574c8d9160118afe25d9c64badbee764be7e17384066610dd35d69642da8998edd51bf5e778f565bd313d7895b65791b";
+        String message = "123123";
+        String sign = "0x8bd0b1aeea7d96a4fc20b9c693d31d8dbb9641b7db5092b5e8f92926f82a08c0735170f7df041adfff47f0ae6921ee1a7ad60262f22dd16b35fefc9830c826de1c";
 
         boolean ret = ethClient.recoverSignature(
                 address,

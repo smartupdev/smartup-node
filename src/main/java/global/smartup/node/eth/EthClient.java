@@ -140,18 +140,7 @@ public class EthClient {
             }
             String prefix = PERSONAL_MESSAGE_PREFIX + message.length();
             byte[] msgHash = Hash.sha3((prefix + message).getBytes());
-            byte[] signatureBytes = Numeric.hexStringToByteArray(signature);
-
-            byte v = signatureBytes[64];
-            if (v < 27) {
-                v += 27;
-            }
-
-            Sign.SignatureData sd = new Sign.SignatureData(
-                    v,
-                    Arrays.copyOfRange(signatureBytes, 0, 32),
-                    Arrays.copyOfRange(signatureBytes, 32, 64));
-
+            Sign.SignatureData sd = EthUtil.getSignData(signature);
             for (int i = 0; i < 4; i++) {
                 BigInteger k = Sign.recoverFromSignature(
                         (byte) i,
