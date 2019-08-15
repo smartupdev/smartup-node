@@ -189,4 +189,24 @@ public class EthClient {
         return ret;
     }
 
+    public BigDecimal getBalance(String address) {
+        BigDecimal ret = null;
+        try {
+            EthGetBalance resp = web3j.ethGetBalance(address, DefaultBlockParameterName.LATEST).send();
+            if (resp != null) {
+                if (!resp.hasError()) {
+                    BigInteger bi = resp.getBalance();
+                    ret = Convert.fromWei(new BigDecimal(bi), Convert.Unit.ETHER);
+                } else {
+                    log.error("[ETH getBalance error] code = {}, msg = {}", resp.getError().getCode(), resp.getError().getMessage());
+                }
+            } else {
+                log.error("[ETH getBalance error] server no response");
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        return ret;
+    }
+
 }

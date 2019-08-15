@@ -11,6 +11,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.web3j.protocol.core.methods.response.EthBlock;
 import org.web3j.protocol.core.methods.response.Transaction;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 
@@ -43,6 +44,12 @@ public class EthClientTest {
             }
         }
 
+    }
+
+    @Test
+    public void getBalance() {
+        BigDecimal d = ethClient.getBalance("0xB44940Be0eeA81a3D0dA22CC15208AF4744BeA8E");
+        System.out.println(d.toPlainString());
     }
 
     @Test
