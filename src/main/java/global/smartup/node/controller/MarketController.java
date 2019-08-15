@@ -149,7 +149,7 @@ public class MarketController extends BaseController {
             }
 
             // check gas price
-            if (Checker.isGasPriceRight(gasPrice)) {
+            if (!Checker.isGasPriceRight(gasPrice)) {
                 return Wrapper.alert(getLocaleMsg(LangHandle.TransactionGasPriceError));
             }
 
