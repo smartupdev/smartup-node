@@ -49,7 +49,7 @@ public class EthClientTest {
     @Test
     public void getBalance() {
         BigDecimal d = ethClient.getBalance("0xB44940Be0eeA81a3D0dA22CC15208AF4744BeA8E");
-        System.out.println(d.toPlainString());
+        System.out.println("balance : " + d.toPlainString());
     }
 
     @Test
@@ -60,6 +60,12 @@ public class EthClientTest {
     @Test
     public void getTxReceipt() {
         ethClient.getTxReceipt("0xa13d9bf332e4f2de35f50618517d3718195c222b633b602057a6d8b86ba18e41");
+    }
+
+    @Test
+    public void getTransactionCount() {
+        BigInteger c = ethClient.getTransactionCount("0xB44940Be0eeA81a3D0dA22CC15208AF4744BeA8E");
+        System.out.println("count : " + c);
     }
 
     @Test
