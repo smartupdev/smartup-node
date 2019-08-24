@@ -5,10 +5,12 @@ import com.github.pagehelper.PageHelper;
 import global.smartup.node.compoment.IdGenerator;
 import global.smartup.node.constant.PoConstant;
 import global.smartup.node.eth.ExchangeClient;
+import global.smartup.node.mapper.TradeChildMapMapper;
 import global.smartup.node.mapper.TradeChildMapper;
 import global.smartup.node.mapper.TradeMapper;
 import global.smartup.node.po.Trade;
 import global.smartup.node.po.TradeChild;
+import global.smartup.node.po.TradeChildMap;
 import global.smartup.node.po.Transaction;
 import global.smartup.node.util.Pagination;
 import global.smartup.node.vo.Tx;
@@ -39,6 +41,9 @@ public class TradeService {
     private TradeChildMapper tradeChildMapper;
 
     @Autowired
+    private TradeChildMapMapper tradeChildMapMapper;
+
+    @Autowired
     private TransactionService transactionService;
 
     @Autowired
@@ -48,9 +53,9 @@ public class TradeService {
     private IdGenerator idGenerator;
 
 
-    public Trade firstStageBuy(String userAddress, String marketId, String marketAddress,
-                                BigDecimal ctCount, BigDecimal ctPrice,
-                                BigInteger gasLimit, BigInteger gasPrice, String timestamp, String sign) {
+    public Trade addFirstStageBuy(String userAddress, String marketId, String marketAddress,
+                                  BigDecimal ctCount, BigDecimal ctPrice,
+                                  BigInteger gasLimit, BigInteger gasPrice, String timestamp, String sign) {
         String txHash = null;
         try {
             txHash = exchangeClient.firstStageBuy(userAddress, marketAddress, ctCount, gasLimit, gasPrice, timestamp, sign);
@@ -67,18 +72,35 @@ public class TradeService {
         trade.setTradeId(id).setUserAddress(userAddress).setMarketId(marketId)
             .setType(PoConstant.Trade.Type.FirstStageBuy)
             .setEntrustVolume(ctCount).setEntrustPrice(ctPrice)
-            .setTradeVolume(BigDecimal.ZERO).setTradePrice(BigDecimal.ZERO)
+            .setFilledVolume(BigDecimal.ZERO).setAvgPrice(BigDecimal.ZERO)
             .setState(PoConstant.Trade.State.Trading).setFee(gasFee).setCreateTime(current).setUpdateTime(current);
         tradeMapper.insert(trade);
 
         Transaction tr = transactionService.addPending(txHash, userAddress, PoConstant.Transaction.Type.FirstStageBuyCT);
 
         TradeChild child = new TradeChild();
-        child.setTradeId(id).setTxHash(txHash).setVolume(ctCount).setPrice(ctPrice).setCreateTime(current).setTx(transactionService.transferVo(tr));
+        String childId = idGenerator.getHexStringId();
+        child.setChildId(childId).setTxHash(txHash).setVolume(ctCount).setPrice(ctPrice).setCreateTime(current)
+            .setTx(transactionService.transferVo(tr));
         tradeChildMapper.insert(child);
+
+        TradeChildMap map = new TradeChildMap();
+        map.setTradeId(id).setChildId(childId);
+        tradeChildMapMapper.insert(map);
+
         trade.setChildList(Arrays.asList(child));
 
         return trade;
+    }
+
+    public void addTrade(String userAddress, String marketId, BigDecimal ctCount, BigDecimal ctPrice,
+                         BigInteger gasLimit, BigInteger gasPrice, String timestamp, String sign) {
+
+
+    }
+
+    public void addTradeChild(String marketId, String buyTradeId, String sellTradeId, BigDecimal price, BigDecimal volume) {
+
     }
 
     public void modFirstBuyFinish(String txHash, boolean isSuccess) {
@@ -86,10 +108,10 @@ public class TradeService {
         if (child == null) {
             return;
         }
-        Trade trade = tradeMapper.selectByPrimaryKey(child.getTradeId());
+        Trade trade = tradeMapper.selectByPrimaryKey(child.getTxHash());
         if (isSuccess) {
-            trade.setTradeVolume(trade.getEntrustVolume());
-            trade.setTradePrice(trade.getEntrustPrice());
+            trade.setFilledVolume(trade.getEntrustVolume());
+            trade.setAvgPrice(trade.getEntrustPrice());
         }
         trade.setState(PoConstant.Trade.State.Done);
         trade.setUpdateTime(new Date());
@@ -98,11 +120,22 @@ public class TradeService {
 
     public Trade queryById(String tradeId) {
         Trade trade = tradeMapper.selectByPrimaryKey(tradeId);
+        trade.setSign(null);
         if (trade != null) {
             fillChild(Arrays.asList(trade));
             fillTransaction(Arrays.asList(trade));
         }
         return trade;
+    }
+
+    public List<TradeChild> queryChild(String tradeId) {
+        TradeChildMap map = new TradeChildMap();
+        map.setTradeId(tradeId);
+        List<TradeChildMap> maps = tradeChildMapMapper.select(map);
+        List<String> ids = maps.stream().map(m -> m.getChildId()).collect(Collectors.toList());
+        Example example = new Example(TradeChild.class);
+        example.createCriteria().andIn("childId", ids);
+        return tradeChildMapper.selectByExample(example);
     }
 
     public Pagination<Trade> queryByUserTrade(String userAddress, List<String> types, List<String> states, Integer pageNumb, Integer pageSize) {
@@ -119,6 +152,7 @@ public class TradeService {
 
         Page<Trade> page = PageHelper.startPage(pageNumb, pageSize);
         tradeMapper.selectByExample(example);
+        page.getResult().stream().forEach(t -> t.setSign(null));
         fillChild(page.getResult());
         fillTransaction(page.getResult());
         return Pagination.init(page.getTotal(), page.getPageNum(), page.getPageSize(), page.getResult());
@@ -128,20 +162,30 @@ public class TradeService {
         if (trades == null || trades.size() == 0) {
             return;
         }
-        List<String> ids = trades.stream().map(t -> t.getTradeId()).collect(Collectors.toList());
-        Example example = new Example(TradeChild.class);
-        example.createCriteria().andIn("tradeId", ids);
-        example.orderBy("createTime").asc();
-        List<TradeChild> children = tradeChildMapper.selectByExample(example);
-        for (Trade trade : trades) {
-            List<TradeChild> tc = new ArrayList<>();
-            for (TradeChild child : children) {
-                if (child.getTradeId().equals(trade.getTradeId())) {
-                    tc.add(child);
-                }
+        List<String> ids = trades.stream().map(Trade::getTradeId).collect(Collectors.toList());
+        Example te = new Example(TradeChildMap.class);
+        te.createCriteria().andIn("tradeId", ids);
+        List<TradeChildMap> maps = tradeChildMapMapper.selectByExample(te);
+
+        List<String> childIds = maps.stream().map(TradeChildMap::getChildId).collect(Collectors.toList());
+        Example tce = new Example(TradeChild.class);
+        tce.createCriteria().andIn("childId", childIds);
+        List<TradeChild> children =  tradeChildMapper.selectByExample(tce);
+        children.sort((a,b) -> a.getCreateTime().compareTo(b.getCreateTime()) * -1);
+
+        trades.forEach(t -> {
+            if (t.getChildList() == null) {
+                t.setChildList(new ArrayList<>());
             }
-            trade.setChildList(tc);
-        }
+            List<String> cIds = maps.stream()
+                .filter(m -> m.getTradeId().equals(t.getTradeId()))
+                .map(TradeChildMap::getChildId).collect(Collectors.toList());
+            children.forEach(c -> {
+                if (cIds.contains(c.getChildId())) {
+                    t.getChildList().add(c);
+                }
+            });
+        });
     }
 
     private void fillTransaction(List<Trade> trades) {

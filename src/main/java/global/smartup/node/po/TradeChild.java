@@ -13,11 +13,14 @@ import java.util.Date;
 public class TradeChild {
 
     @Id
+    @Column(name = "child_id")
+    private String childId;
+
+    @Column(name = "market_id")
+    private String marketId;
+
     @Column(name = "tx_hash")
     private String txHash;
-
-    @Column(name="trade_id")
-    private String tradeId;
 
     @Column(name="volume")
     private BigDecimal volume;
@@ -33,21 +36,30 @@ public class TradeChild {
     private Tx tx;
 
 
+    public String getMarketId() {
+        return marketId;
+    }
+
+    public TradeChild setMarketId(String marketId) {
+        this.marketId = marketId;
+        return this;
+    }
+
+    public String getChildId() {
+        return childId;
+    }
+
+    public TradeChild setChildId(String childId) {
+        this.childId = childId;
+        return this;
+    }
+
     public Tx getTx() {
         return tx;
     }
 
     public TradeChild setTx(Tx tx) {
         this.tx = tx;
-        return this;
-    }
-
-    public String getTradeId() {
-        return tradeId;
-    }
-
-    public TradeChild setTradeId(String tradeId) {
-        this.tradeId = tradeId;
         return this;
     }
 

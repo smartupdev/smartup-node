@@ -2,40 +2,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="global.smartup.node.mapper.TradeMapper">
 
-    <resultMap id="widthUser" type="global.smartup.node.po.Trade">
-        <id column="tx_hash" jdbcType="VARCHAR" property="txHash" />
-        <result column="stage" jdbcType="VARCHAR" property="stage" />
-        <result column="user_address" jdbcType="VARCHAR" property="userAddress" />
-        <result column="market_address" jdbcType="VARCHAR" property="marketAddress" />
-        <result column="type" jdbcType="VARCHAR" property="type" />
-        <result column="sut_offer" jdbcType="DECIMAL" property="sutOffer" />
-        <result column="sut_amount" jdbcType="DECIMAL" property="sutAmount" />
-        <result column="ct_amount" jdbcType="DECIMAL" property="ctAmount" />
-        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
-        <result column="block_time" jdbcType="TIMESTAMP" property="blockTime" />
-        <association property="user" javaType="global.smartup.node.po.User">
-            <id column="user_address" jdbcType="VARCHAR" property="userAddress" />
-            <result column="user_name" jdbcType="VARCHAR" property="name" />
-            <result column="avatar_ipfs_hash" jdbcType="VARCHAR" property="avatarIpfsHash" />
-            <!--<result column="code" jdbcType="VARCHAR" property="code" />-->
-            <result column="user_create_time" jdbcType="TIMESTAMP" property="createTime" />
-        </association>
-    </resultMap>
-
-    <select id="selectOrderBy" resultMap="widthUser">
-        select t.*, u.name as user_name, u.avatar_ipfs_hash, u.create_time as user_create_time
-        from (
-            select *
-            from trade
-            where market_address = #{marketAddress}
-            <if test="type != null">
-                and type = #{type}
-            </if>
-        ) t
-        left join user u on t.user_address = u.user_address
-        order by t.create_time
-        <if test="asc"> asc </if>
-        <if test="!asc"> desc </if>
+    <select id="selectPage" resultType="global.smartup.node.po.Trade">
+        select * from trade where market_id = #{marketId} and state = #{state} order by create_time asc limit #{offset}, #{size};
     </select>
 
 </mapper>

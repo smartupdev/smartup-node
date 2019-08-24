@@ -41,7 +41,7 @@ public class MarketServiceTest {
 
     @Test
     public void querySearchPage() {
-        Pagination page = marketService.querySearchPage(null, "%", "lately_change", false, null, null);
+        Pagination page = marketService.querySearchPage(null, "1", "lately_change", false, null, null);
         System.out.println(JSON.toJSONString(page));
     }
 

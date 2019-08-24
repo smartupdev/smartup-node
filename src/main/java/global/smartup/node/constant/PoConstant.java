@@ -107,11 +107,7 @@ public class PoConstant {
 
             public static final String Cancel = "cancel";
 
-            public static final String Half = "half";
-
-            public static final String HalfCancel = "halfCancel";
-
-            public static final String Fail = "fail";
+            public static final String CancelPart = "cancelPart";
 
             public static final String Done = "done";
 

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="global.smartup.node.mapper.TradeChildMapper">
+
+    <select id="selectTop" resultType="global.smartup.node.po.TradeChild">
+        select * from trade_child where market_id = #{marketId} order by create_time desc limit #{top};
+    </select>
+
+</mapper>

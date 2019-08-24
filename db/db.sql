@@ -74,20 +74,29 @@ create table trade (
   state varchar(16),
   entrust_volume decimal(40,20),
   entrust_price decimal(40,20),
-  trade_volume decimal(40,20),
-  trade_price decimal(40,20),
+  filled_volume decimal(40,20),
+  avg_price decimal(40,20),
   fee decimal(40,20),
+  sign varchar(512),
   create_time datetime,
   update_time datetime
 );
 
 drop table if exists trade_child;
 create table trade_child (
-  tx_hash varchar(66) primary key,
-  trade_id varchar(16),
+  child_id varchar(16) primary key,
+  market_id varchar(16),
+  tx_hash varchar(66),
   volume decimal(40,20),
   price decimal(40,20),
   create_time datetime
+);
+
+drop table if exists trade_child_map;
+create table trade_child_map (
+  trade_id varchar(16),
+  child_id varchar(16),
+  primary key(trade_id, child_id)
 );
 
 drop table if exists post;

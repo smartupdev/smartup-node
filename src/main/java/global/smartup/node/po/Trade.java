@@ -21,9 +21,15 @@ public class Trade {
     @Column(name="market_Id")
     private String marketId;
 
+    /**
+     * {@link global.smartup.node.constant.PoConstant.Trade.Type}
+     */
     @Column(name="type")
     private String type;
 
+    /**
+     * {@link global.smartup.node.constant.PoConstant.Trade.State}
+     */
     @Column(name="state")
     private String state;
 
@@ -33,14 +39,17 @@ public class Trade {
     @Column(name="entrust_price")
     private BigDecimal entrustPrice;
 
-    @Column(name="trade_volume")
-    private BigDecimal tradeVolume;
+    @Column(name="filled_volume")
+    private BigDecimal filledVolume;
 
-    @Column(name="trade_price")
-    private BigDecimal tradePrice;
+    @Column(name="avg_price")
+    private BigDecimal avgPrice;
 
     @Column(name="fee")
     private BigDecimal fee;
+
+    @Column(name="sign")
+    private String sign;
 
     @Column(name="create_time")
     private Date createTime;
@@ -55,6 +64,15 @@ public class Trade {
     @Transient
     private List<TradeChild> childList;
 
+
+    public String getSign() {
+        return sign;
+    }
+
+    public Trade setSign(String sign) {
+        this.sign = sign;
+        return this;
+    }
 
     public String getTradeId() {
         return tradeId;
@@ -119,21 +137,21 @@ public class Trade {
         return this;
     }
 
-    public BigDecimal getTradeVolume() {
-        return tradeVolume;
+    public BigDecimal getFilledVolume() {
+        return filledVolume;
     }
 
-    public Trade setTradeVolume(BigDecimal tradeVolume) {
-        this.tradeVolume = tradeVolume;
+    public Trade setFilledVolume(BigDecimal filledVolume) {
+        this.filledVolume = filledVolume;
         return this;
     }
 
-    public BigDecimal getTradePrice() {
-        return tradePrice;
+    public BigDecimal getAvgPrice() {
+        return avgPrice;
     }
 
-    public Trade setTradePrice(BigDecimal tradePrice) {
-        this.tradePrice = tradePrice;
+    public Trade setAvgPrice(BigDecimal avgPrice) {
+        this.avgPrice = avgPrice;
         return this;
     }
 
