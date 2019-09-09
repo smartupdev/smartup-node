@@ -4,6 +4,7 @@ import global.smartup.node.eth.EthClient;
 import global.smartup.node.eth.ExchangeClient;
 import global.smartup.node.eth.constract.event.CreateMarketEvent;
 import global.smartup.node.eth.constract.func.CreateMarketFunc;
+import global.smartup.node.match.service.MatchService;
 import global.smartup.node.po.Market;
 import global.smartup.node.service.*;
 import org.slf4j.Logger;
@@ -48,6 +49,9 @@ public class BlockMarketService {
     @Autowired
     private UserAccountService userAccountService;
 
+    @Autowired
+    private MatchService matchService;
+
 
     public void handleMarketCreate(Transaction tx, TransactionReceipt receipt, Date blockTime) {
         if (transactionService.isTxHashNotExistOrHandled(tx.getHash())) {
@@ -73,6 +77,10 @@ public class BlockMarketService {
             marketAddress = event.getCtAddress();
             // update account
             userAccountService.updateSutAndEth(userAddress, event.getSutRemain(), event.getEthRemain());
+        }
+
+        if (isSuccess) {
+            matchService.addNewMarket(market.getMarketId());
         }
 
         // update market

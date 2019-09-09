@@ -102,6 +102,12 @@ public class MatchService {
         log.info("Match engine load order over");
     }
 
+    // 用户创建市场
+    public void addNewMarket(String marketId) {
+        MatchEngine engine = new MatchEngine(orderService, marketId);
+        matchEngines.put(marketId, engine);
+    }
+
     public Map<String, Object> queryMatchTime(String marketId, String type, BigDecimal price, BigDecimal volume) {
         MatchEngine engine = matchEngines.get(marketId);
         if (isNotReady(engine)) {
