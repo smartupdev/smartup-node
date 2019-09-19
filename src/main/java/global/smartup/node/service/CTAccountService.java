@@ -2,6 +2,7 @@ package global.smartup.node.service;
 
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.sun.nio.sctp.AbstractNotificationHandler;
 import global.smartup.node.eth.SmartupClient;
 import global.smartup.node.mapper.CTAccountMapper;
 import global.smartup.node.po.CTAccount;
@@ -27,19 +28,17 @@ public class CTAccountService {
     private CTAccountMapper ctAccountMapper;
 
     @Autowired
-    private SmartupClient smartupClient;
-
-    @Autowired
     private MarketService marketService;
 
 
-    public void create(String marketAddress, String userAddress, BigDecimal init) {
+    public void create(String marketAddress, String userAddress, BigDecimal add) {
         CTAccount account = new CTAccount();
         account.setMarketAddress(marketAddress);
         account.setUserAddress(userAddress);
+        account.setAmountLock(BigDecimal.ZERO);
         account.setLastUpdateTime(new Date());
-        if (init.compareTo(BigDecimal.ZERO) > 0) {
-            account.setAmount(init);
+        if (add.compareTo(BigDecimal.ZERO) > 0) {
+            account.setAmount(add);
         } else {
             account.setAmount(BigDecimal.ZERO);
         }
@@ -57,29 +56,16 @@ public class CTAccountService {
         }
     }
 
-    public void updateFromChain(String marketAddress, String userAddress) {
-        BigDecimal balance = smartupClient.getCtBalance(marketAddress, userAddress);
-        if (balance == null) {
-            return;
-        }
+    public boolean hasEnoughCt(String marketAddress, String userAddress, BigDecimal ct) {
         CTAccount account = queryAccount(marketAddress, userAddress);
-        if (account == null) {
-            create(marketAddress, userAddress, balance);
-            if (balance.compareTo(BigDecimal.ZERO) > 0) {
-                marketService.updateUserCount(marketAddress, 1);
-            }
-        } else {
-            account.setAmount(balance);
-            account.setLastUpdateTime(new Date());
-            ctAccountMapper.updateByPrimaryKey(account);
-            if (account.getAmount().compareTo(BigDecimal.ZERO) <= 0 && balance.compareTo(BigDecimal.ZERO) > 0) {
-                marketService.updateUserCount(marketAddress, 1);
-            }
-            if (account.getAmount().compareTo(BigDecimal.ZERO) > 0 && balance.compareTo(BigDecimal.ZERO) <= 0) {
-                marketService.updateUserCount(marketAddress, -1);
+        if (account != null) {
+            if (account.getAmount().compareTo(ct) >= 0) {
+                return true;
             }
         }
+        return false;
     }
+
 
     public CTAccount queryAccount(String marketAddress, String userAddress) {
         CTAccount key = new CTAccount();

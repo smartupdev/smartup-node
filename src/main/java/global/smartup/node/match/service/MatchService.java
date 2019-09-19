@@ -16,10 +16,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class MatchService {
@@ -29,10 +26,10 @@ public class MatchService {
     private HashMap<String, MatchEngine> matchEngines;
 
     @Autowired
-    private MatchMarketService marketService;
+    private MMarketService marketService;
 
     @Autowired
-    private OrderService orderService;
+    private MOrderService orderService;
 
     @PostConstruct
     public void initEngine() {
@@ -41,7 +38,7 @@ public class MatchService {
         List<Market> markets =  marketService.loadAllMarket();
         markets.forEach(m -> {
             String id = m.getMarketId();
-            MatchEngine engine = new MatchEngine(orderService, id);
+            MatchEngine engine = new MatchEngine(orderService, id, m.getMarketAddress());
             matchEngines.put(id, engine);
         });
         loadOrder();
@@ -102,10 +99,19 @@ public class MatchService {
         log.info("Match engine load order over");
     }
 
-    // 用户创建市场
-    public void addNewMarket(String marketId) {
-        MatchEngine engine = new MatchEngine(orderService, marketId);
+    public void loadFirstStageOrder(String marketId, Date time, BigDecimal price, BigDecimal volume) {
+        MatchEngine engine = matchEngines.get(marketId);
+        if (engine == null) {
+            return;
+        }
+        engine.loadLatelyOrder(time, price, volume);
+    }
+
+    // 用户创建新市场
+    public void addNewMarket(String marketId, String marketAddress) {
+        MatchEngine engine = new MatchEngine(orderService, marketId, marketAddress);
         matchEngines.put(marketId, engine);
+        engine.ready();
     }
 
     public Map<String, Object> queryMatchTime(String marketId, String type, BigDecimal price, BigDecimal volume) {
@@ -121,23 +127,24 @@ public class MatchService {
     }
 
     public Map<String, Object> addBuyOrder(
-        String marketId, String userId, BigDecimal price, BigDecimal volume, Integer times, BigDecimal fee, String sign
+        String marketId, String userId, BigDecimal price, BigDecimal volume, Integer times, Long gasPrice, Long gasLimit,
+        Long timestamp, String makeSign, String takeSign
     ) {
         MatchEngine engine = matchEngines.get(marketId);
         if (isNotReady(engine)) {
             return notReady();
         }
-        return engine.makeBuyOrder(userId, price, volume, times, fee, sign);
+        return engine.makeBuyOrder(userId, price, volume, times, gasPrice, gasLimit, timestamp, makeSign, takeSign);
     }
 
     public Map<String, Object> addSellOrder(
-        String marketId, String userId, BigDecimal price, BigDecimal volume, Integer times, BigDecimal fee, String sign
+        String marketId, String userId, BigDecimal price, BigDecimal volume, Long timestamp, String sign
     ) {
         MatchEngine engine = matchEngines.get(marketId);
         if (isNotReady(engine)) {
             return notReady();
         }
-        return engine.makeSellOrder(userId, price, volume, times, fee, sign);
+        return engine.makeSellOrder(userId, price, volume, timestamp, sign);
     }
 
     public Map<String, Object> queryMatchTimeForUpdate(
@@ -166,14 +173,18 @@ public class MatchService {
         return engine.updateSellOrder(userId, cancelOrderIds, lockOrderIds, newOrders);
     }
 
-    public Map<String, Object> cancelBuyOrder(String marketId, String userId, String orderId) {
+    public Map<String, Object> cancelBuyOrder(String marketId, String orderId) {
         MatchEngine engine = matchEngines.get(marketId);
         if (isNotReady(engine)) {
             return notReady();
         }
-        boolean success = engine.cancelBuyOrder(userId, orderId);
+        boolean success = engine.cancelBuyOrder(orderId);
         Map<String, Object> ret = new HashMap<>();
-        ret.put("code", success ? Const.Success : Const.OrderAlreadyDone);
+        if (success) {
+            ret.put("code", Const.Success);
+        } else {
+            ret.put("code", Const.OrderAlreadyDone);
+        }
         return ret;
     }
 

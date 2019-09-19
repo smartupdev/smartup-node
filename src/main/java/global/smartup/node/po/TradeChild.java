@@ -19,6 +19,9 @@ public class TradeChild {
     @Column(name = "market_id")
     private String marketId;
 
+    @Column(name = "take_plan_id")
+    private String takePlanId;
+
     @Column(name = "tx_hash")
     private String txHash;
 
@@ -33,8 +36,29 @@ public class TradeChild {
 
 
     @Transient
+    private String tradeId;
+
+    @Transient
     private Tx tx;
 
+
+    public String getTakePlanId() {
+        return takePlanId;
+    }
+
+    public TradeChild setTakePlanId(String takePlanId) {
+        this.takePlanId = takePlanId;
+        return this;
+    }
+
+    public String getTradeId() {
+        return tradeId;
+    }
+
+    public TradeChild setTradeId(String tradeId) {
+        this.tradeId = tradeId;
+        return this;
+    }
 
     public String getMarketId() {
         return marketId;

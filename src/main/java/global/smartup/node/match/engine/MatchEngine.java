@@ -1,23 +1,30 @@
 package global.smartup.node.match.engine;
 
 import global.smartup.node.match.bo.Order;
+import global.smartup.node.match.bo.OrderChild;
 import global.smartup.node.match.common.Const;
 import global.smartup.node.match.common.OrderType;
-import global.smartup.node.match.service.OrderService;
+import global.smartup.node.match.service.MOrderService;
+import global.smartup.node.po.Trade;
+import global.smartup.node.po.TradeChild;
 import global.smartup.node.util.MapBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.web3j.utils.Convert;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 
 public class MatchEngine {
 
     private static final Logger log = LoggerFactory.getLogger(MatchEngine.class);
 
-    private OrderService orderService;
+    private MOrderService orderService;
 
     private String marketId;
+
+    private String marketAddress;
 
     private boolean isReady = false;
 
@@ -31,9 +38,10 @@ public class MatchEngine {
 
     private OrderBook buyBook;
 
-    public MatchEngine(OrderService orderService,String marketId) {
+    public MatchEngine(MOrderService orderService, String marketId, String marketAddress) {
         this.orderService = orderService;
         this.marketId = marketId;
+        this.marketAddress = marketAddress;
         this.latelyOrderChild = new LinkedList<>();
         this.sellBook = new OrderBook(this, OrderType.Sell, null);
         this.buyBook = new OrderBook(this, OrderType.Buy, null);
@@ -72,46 +80,38 @@ public class MatchEngine {
     public synchronized Integer queryMatchTimes(String type, BigDecimal price, BigDecimal volume) {
         Integer times;
         if (OrderType.Sell.getValue().equals(type)) {
-            times = sellBook.takeCalculate(price, volume);
-        } else {
             times = buyBook.takeCalculate(price, volume);
+        } else {
+            times = sellBook.takeCalculate(price, volume);
         }
         return times;
     }
 
     /**
-     * 挂卖单
+     * 第一阶段买入后，挂卖单
      * @param userId
      * @param price
      * @param volume
-     * @param times
      * @return
      */
     public synchronized Map<String, Object> makeSellOrder(
-        String userId, BigDecimal price, BigDecimal volume, Integer times, BigDecimal fee, String sign
+        String userId, BigDecimal price, BigDecimal volume, Long timestamp, String makeSign
     ) {
         Map<String, Object> ret = new HashMap<>();
         Integer t = buyBook.takeCalculate(price, volume);
-        times = times == null ? 0 : times;
-        if (t.compareTo(0) > times) {
-            // 返回匹配次数
-            ret.put("code", Const.FeeNotEnough);
-            ret.put("obj", MapBuilder.create().put("times", times).build());
-            return ret;
-        }
 
-        // save order
-        String id = orderService.saveOrder(marketId, userId, OrderType.Sell.getValue(), price, volume, fee, sign);
+        // save trade
+        Trade trade = orderService.saveOrder(marketId, marketAddress, userId, OrderType.Sell.getValue(), price, volume, BigDecimal.ZERO, timestamp, makeSign);
+
+        // make order
         Order order = new Order();
-        order.setOrderId(id)
+        order.setOrderId(trade.getTradeId())
             .setUserAddress(userId)
             .setEntrustPrice(price)
             .setEntrustVolume(volume)
             .setUnfilledVolume(volume)
-            .setTimes(times)
+            .setTimes(0)
             .setType(OrderType.Sell);
-
-        // make order
         sellBook.makeOrder(order);
 
         // take order
@@ -131,15 +131,21 @@ public class MatchEngine {
      * @param price
      * @param volume
      * @param times
+     * @param gasPrice
+     * @param gasLimit
+     * @param timestamp
+     * @param makeSign
+     * @param takeSign
      * @return
      */
     public synchronized Map<String, Object> makeBuyOrder(
-        String userId, BigDecimal price, BigDecimal volume, Integer times, BigDecimal fee, String sign
+        String userId, BigDecimal price, BigDecimal volume, Integer times, Long gasPrice, Long gasLimit, Long timestamp,
+        String makeSign, String takeSign
     ) {
         Map<String, Object> ret = new HashMap<>();
         Integer t = sellBook.takeCalculate(price, volume);
         times = times == null ? 0 : times;
-        if (t.compareTo(0) > times) {
+        if (t.compareTo(times) > 0) {
             // 返回匹配次数
             ret.put("code", Const.FeeNotEnough);
             ret.put("obj", MapBuilder.create().put("times", times).build());
@@ -147,9 +153,10 @@ public class MatchEngine {
         }
 
         // save order
-        String id = orderService.saveOrder(marketId, userId, OrderType.Buy.getValue(), price, volume, fee, sign);
+        BigDecimal fee = Convert.fromWei(new BigDecimal(BigInteger.valueOf(gasPrice).multiply(BigInteger.valueOf(gasLimit))), Convert.Unit.GWEI);
+        Trade trade = orderService.saveOrder(marketId, marketAddress, userId, OrderType.Buy.getValue(), price, volume, fee, timestamp, makeSign);
         Order order = new Order();
-        order.setOrderId(id)
+        order.setOrderId(trade.getTradeId())
             .setUserAddress(userId)
             .setEntrustPrice(price)
             .setEntrustVolume(volume)
@@ -157,17 +164,24 @@ public class MatchEngine {
             .setTimes(times)
             .setType(OrderType.Buy);
 
+        // add take plan
+        String takePlanId = orderService.addTakePlan(trade.getTradeId(), t, gasPrice, gasLimit, timestamp, takeSign);
+
         // make order
         buyBook.makeOrder(order);
 
         // take order
         if (t.compareTo(0) > 0) {
-            sellBook.take(order);
+            List<OrderChild> orderChild = sellBook.take(order);
             buyBook.clearBucketOrder(order);
+
+            // save child
+            List<TradeChild> tradeChild = orderService.saveChildUpdateTrade(marketId, takePlanId, orderChild);
+            trade.setChildList(tradeChild);
         }
 
         ret.put("code", Const.Success);
-        ret.put("obj", MapBuilder.create().put("order", order).build());
+        ret.put("obj", trade);
         return ret;
     }
 
@@ -233,8 +247,11 @@ public class MatchEngine {
      *   price: xx
      *   volume: xx
      *   times: xx
-     *   fee: xx
-     *   sign: xx
+     *   gasPrice: xx
+     *   gasLimit: xx
+     *   timestamp: xx
+     *   makeSign: xx
+     *   takeSign: xx
      * @return
      */
     public synchronized Map<String, Object> updateSellOrder(
@@ -272,16 +289,16 @@ public class MatchEngine {
         }
 
         // 检查匹配次数
-        Integer times = 0;
+        Integer timesCount = 0;
         for (Map<String, Object> map : newOrders) {
-            times += (Integer) map.get("times");
+            timesCount += (Integer) map.get("times");
         }
         buyBook.takeCalculate(newOrders);
         Integer takeTimes = 0;
         for (Map<String, Object> map : newOrders) {
             takeTimes += (Integer) map.get("times");
         }
-        if (times.compareTo(takeTimes) < 0) {
+        if (timesCount.compareTo(takeTimes) < 0) {
             ret.put("code", Const.FeeNotEnough);
             return ret;
         }
@@ -289,49 +306,61 @@ public class MatchEngine {
         // 修改移除订单部分
         sellBook.updateCancelLeft(cancelOrderIds);
 
-        // 生成新订单
-        // 匹配
-        // 更新新订单
+        List<Trade> tradeList = new ArrayList<>();
         List<Order> orders = new ArrayList<>();
         for (Map<String, Object> map : newOrders) {
-            String id = orderService.saveOrder(marketId, userId,
-                OrderType.Sell.getValue(),
-                (BigDecimal) map.get("price"),
-                (BigDecimal) map.get("volume"),
-                (BigDecimal) map.get("fee"),
-                map.get("sign").toString());
+            BigDecimal price = (BigDecimal) map.get("price");
+            BigDecimal volume = (BigDecimal) map.get("volume");
+            Integer times = (Integer) map.get("times");
+            Long gasPrice = (Long) map.get("gasPrice");
+            Long gasLimit = (Long) map.get("gasLimit");
+            Long timestamp = (Long) map.get("timestamp");
+            String makeSign = (String) map.get("makeSign");
+            String takeSign = (String) map.get("takeSign");
 
+            // save trade
+            BigDecimal fee = Convert.fromWei(new BigDecimal(BigInteger.valueOf(gasPrice).multiply(BigInteger.valueOf(gasLimit))), Convert.Unit.GWEI);
+            Trade trade = orderService.saveOrder(marketId, marketAddress, userId, OrderType.Sell.getValue(), price, volume, fee, timestamp, makeSign);
+            tradeList.add(trade);
+
+            // save take plan
+            String takePlanId = orderService.addTakePlan(trade.getTradeId(), times, gasPrice, gasLimit, timestamp, takeSign);
+
+            // make order
             Order o = new Order();
-            o.setOrderId(id);
+            o.setOrderId(trade.getTradeId());
             o.setUserAddress(userId);
-            o.setEntrustPrice((BigDecimal) map.get("price"));
-            o.setEntrustVolume((BigDecimal) map.get("volume"));
-            o.setUnfilledVolume((BigDecimal) map.get("volume"));
-            o.setTimes((Integer) map.get("times"));
+            o.setEntrustPrice(price);
+            o.setEntrustVolume(volume);
+            o.setUnfilledVolume(volume);
+            o.setTimes(times);
             o.setType(OrderType.Sell);
             orders.add(o);
-
             sellBook.makeOrder(o);
 
+            // take
             if (o.getTimes().compareTo(0) > 0) {
-                buyBook.take(o);
+                List<OrderChild> orderChild = buyBook.take(o);
                 sellBook.clearBucketOrder(o);
+
+                // save child
+                List<TradeChild> tradeChild = orderService.saveChildUpdateTrade(marketId, takePlanId, orderChild);
+                trade.setChildList(tradeChild);
             }
         }
 
         ret.put("code", Const.Success);
-        ret.put("orders", orders);
+        ret.put("orders", tradeList);
         return ret;
     }
 
     /**
      * 取消买单
-     * @param userId
      * @param orderId
      * @return
      */
-    public synchronized boolean cancelBuyOrder(String userId, String orderId) {
-        return buyBook.cancelOrder(userId, orderId) != null;
+    public synchronized boolean cancelBuyOrder(String orderId) {
+        return buyBook.cancelOrder(orderId) != null;
     }
 
     /**
@@ -385,7 +414,7 @@ public class MatchEngine {
         return isReady;
     }
 
-    public OrderService getOrderService() {
+    public MOrderService getOrderService() {
         return orderService;
     }
 

@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.web3j.crypto.Keys;
-import org.web3j.crypto.SignedRawTransaction;
 import org.web3j.protocol.core.methods.response.Transaction;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.web3j.utils.Convert;
@@ -65,7 +64,7 @@ public class BlockFundService {
             if (event == null) {
                 return;
             }
-            userAccountService.updateSut(userAddress, event.getTotal());
+            userAccountService.updateSut(userAddress, sut);
         }
 
         // update tr
@@ -95,7 +94,7 @@ public class BlockFundService {
             if (event == null) {
                 return;
             }
-            userAccountService.updateEth(userAddress, event.getTotal());
+            userAccountService.updateEth(userAddress, eth);
         }
 
         // update tr
@@ -123,7 +122,7 @@ public class BlockFundService {
             if (event == null) {
                 return;
             }
-            userAccountService.updateSut(userAddress, event.getReamain());
+            userAccountService.updateSut(userAddress, sut.negate());
         }
 
         // update tr
@@ -151,7 +150,7 @@ public class BlockFundService {
             if (event == null) {
                 return;
             }
-            userAccountService.updateEth(userAddress, event.getReamain());
+            userAccountService.updateEth(userAddress, eth.negate());
         }
 
         // update tr
@@ -179,7 +178,7 @@ public class BlockFundService {
             if (event == null) {
                 return;
             }
-            userAccountService.updateSut(userAddress, event.getReamain());
+            userAccountService.updateSut(userAddress, sut.negate());
         }
 
         // update tr
@@ -207,7 +206,7 @@ public class BlockFundService {
             if (event == null) {
                 return;
             }
-            userAccountService.updateEth(userAddress, event.getReamain());
+            userAccountService.updateEth(userAddress, eth.negate());
         }
 
         // update tr

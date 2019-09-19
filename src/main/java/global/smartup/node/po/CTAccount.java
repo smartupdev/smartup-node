@@ -20,9 +20,21 @@ public class CTAccount {
     @Column(name="amount")
     private BigDecimal amount;
 
+    @Column(name="amount_lock")
+    private BigDecimal amountLock;
+
     @Column(name="last_update_time")
     private Date lastUpdateTime;
 
+
+    public BigDecimal getAmountLock() {
+        return amountLock;
+    }
+
+    public CTAccount setAmountLock(BigDecimal amountLock) {
+        this.amountLock = amountLock;
+        return this;
+    }
 
     public String getUserAddress() {
         return userAddress;

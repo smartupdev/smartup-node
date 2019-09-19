@@ -1,8 +1,10 @@
 package global.smartup.node.match.engine;
 
 import global.smartup.node.match.bo.Order;
+import global.smartup.node.match.bo.OrderChild;
 import global.smartup.node.match.common.OrderType;
-import global.smartup.node.match.service.OrderService;
+import global.smartup.node.match.service.MOrderService;
+import global.smartup.node.po.TradeChild;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +16,7 @@ public class OrderBook {
 
     private static final Logger log = LoggerFactory.getLogger(OrderBook.class);
 
-    private OrderService orderService;
+    private MOrderService orderService;
 
     private MatchEngine engine;
 
@@ -80,7 +82,7 @@ public class OrderBook {
     }
 
     /**
-     * 匹配计算
+     * 估算匹配计算
      * 计算当前价格可以匹配多少次交易，多少量
      * @param price 价格
      * @param volume 交易量
@@ -113,7 +115,7 @@ public class OrderBook {
     }
 
     /**
-     * 匹配一批订单
+     * 估算匹配一批订单
      * 针对sellOrder
      * @param orders
      *   price: xx
@@ -179,9 +181,9 @@ public class OrderBook {
      * 匹配吃单
      * @param order
      */
-    public void take(Order order) {
-        // BigDecimal leftVolume = volume;
+    public List<OrderChild> take(Order order) {
         Iterator<BigDecimal> iterator = bucketMap.keySet().iterator();
+        List<OrderChild> childList = new ArrayList<>();
         while (iterator.hasNext()) {
             BigDecimal k = iterator.next();
             if (OrderType.Sell.equals(this.type)) {
@@ -200,14 +202,16 @@ public class OrderBook {
                 break;
             }
             Bucket bucket = bucketMap.get(k);
-            Integer takeCount = bucket.take(order);
-            if (takeCount.compareTo(0) > 0) {
+            List<OrderChild> children = bucket.take(order);
+            if (children.size() > 0) {
                 engine.updateCurrentPrice(k);
             }
             if (bucket.isEmpty()) {
                 iterator.remove();
             }
+            childList.addAll(children);
         }
+        return childList;
     }
 
     public void clearBucketOrder(Order order) {
@@ -217,9 +221,9 @@ public class OrderBook {
             // remove order
             b.removeOrder(order.getOrderId());
             orderMap.remove(order.getOrderId());
-            if (b.isEmpty()) {
-                bucketMap.remove(k);
-            }
+        }
+        if (b.isEmpty()) {
+            bucketMap.remove(k);
         }
         // update bucket
         b.updateVolume();
@@ -261,18 +265,17 @@ public class OrderBook {
         return ret;
     }
 
-    public Order cancelOrder(String userId, String orderId) {
+    public Order cancelOrder(String orderId) {
         Order o = getOrder(orderId);
         if (o == null) {
             return null;
         }
-        if (!o.getOrderId().equals(userId)) {
-            return null;
-        }
         BigDecimal k = o.getEntrustPrice().setScale(scale, BigDecimal.ROUND_DOWN);
         Bucket bucket = bucketMap.get(k);
-        assert bucket != null;
         bucket.removeOrder(orderId);
+        if (bucket.isEmpty()) {
+            bucketMap.remove(k);
+        }
         orderMap.remove(orderId);
         // 更新订单取消
         orderService.updateOrderCancel(orderId);

@@ -14,6 +14,7 @@ eth:
   protocol: http
   domain: 127.0.0.1
   port: 8080
+  gas-price: 30
 
   contract:
     exchange: '0x7d56a317ceda7083172757e88c2ba4576f9530da'

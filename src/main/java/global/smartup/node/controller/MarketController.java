@@ -4,14 +4,12 @@ import global.smartup.node.compoment.IdGenerator;
 import global.smartup.node.constant.BuConstant;
 import global.smartup.node.constant.LangHandle;
 import global.smartup.node.constant.PoConstant;
+import global.smartup.node.eth.EthUtil;
 import global.smartup.node.po.Market;
 import global.smartup.node.service.GlobalService;
 import global.smartup.node.service.MarketService;
 import global.smartup.node.service.UserAccountService;
-import global.smartup.node.util.Checker;
-import global.smartup.node.util.Common;
-import global.smartup.node.util.Pagination;
-import global.smartup.node.util.Wrapper;
+import global.smartup.node.util.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
@@ -103,14 +101,15 @@ public class MarketController extends BaseController {
     }
 
     @ApiOperation(value = "创建/修改 市场", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：marketId, name, symbol, description, detail, photo, cover, ctCount, ctPrice, ctRecyclePrice, \n" +
-                        "closingTime(过期时间，未来的一个时间的时间戳，以秒为单位), gasLimit, gasPrice, sign\n" +
-                        "返回：\n" +
-                        "　如果参数错误，code = 4, 见/api/market/create/check/info\n" +
-                        "　如果创建失败，code = 2, msg = 'xxxx' \n" +
-                        "　如果创建成功, code = 0, obj = { 见/api/market/one }\n" +
-                        "　　market.status = 'creating' 发送交易失败，可以通过marketId，获取市场信息重新发送交易\n" +
-                        "　　market.status = 'locked' 发送交易成功"
+        notes = "参数：marketId, name, symbol, description, detail, photo, cover, ctCount, ctPrice, ctRecyclePrice, \n" +
+            "closingTime(过期时间，未来的一个时间的时间戳，以秒为单位), gasLimit, gasPrice, sign\n" +
+            "返回：\n" +
+            "　code = MarketNotExist, MarketIsCreating, MarketIdError, MarketIdRepeat, GasPriceError, NetWorkError, \n" +
+            "　　GasPriceError, EthNotEnough, SutNotEnough, SignError \n" +
+            "　如果参数错误，code = 4, 见/api/market/create/check/info\n" +
+            "　如果创建成功, code = 0, obj = { 见/api/market/one }\n" +
+            "　　market.status = 'creating' 发送交易失败，可以通过marketId，获取市场信息重新发送交易\n" +
+                "　　market.status = 'locked' 发送交易成功"
     )
     @RequestMapping("/user/market/create")
     public Object create(HttpServletRequest request, String marketId, String name, String symbol, String description,
@@ -122,19 +121,19 @@ public class MarketController extends BaseController {
 
             // check has creating market
             if (!Common.isRightMarketId(marketId)) {
-                return Wrapper.alert(getLocaleMsg(LangHandle.MarketIdFormatError));
+                return Wrapper.error(RespCode.Market.MarketNotExist);
             }
             Market current = marketService.queryCurrentCreating(getLoginUserAddress(request));
             if (current != null) {
                 if (PoConstant.Market.Status.Locked.equals(current.getStatus())) {
-                    return Wrapper.alert(getLocaleMsg(LangHandle.MarketIsCreating));
+                    return Wrapper.error(RespCode.Market.CreateMarket.MarketIsCreating);
                 }
                 if (!current.getMarketId().equals(marketId)) {
-                    return Wrapper.alert(getLocaleMsg(LangHandle.MarketIsCreating));
+                    return Wrapper.error(RespCode.Market.MarketIdError);
                 }
             } else {
                 if (marketService.isIdRepeat(marketId)) {
-                    return Wrapper.alert(getLocaleMsg(LangHandle.MarketIdRepeat));
+                    return Wrapper.error(RespCode.Market.MarketIdRepeat);
                 }
             }
 
@@ -150,7 +149,7 @@ public class MarketController extends BaseController {
 
             // check gas price
             if (!Checker.isGasPriceRight(gasPrice)) {
-                return Wrapper.alert(getLocaleMsg(LangHandle.TransactionGasPriceError));
+                return Wrapper.error(RespCode.Trade.GasPriceError);
             }
 
             // check balance
@@ -161,10 +160,17 @@ public class MarketController extends BaseController {
                 return Wrapper.alert(getLocaleMsg(LangHandle.NetWorkError));
             }
             if (!hasEth){
-                return Wrapper.alert(getLocaleMsg(LangHandle.AccountEthNotEnough));
+                return Wrapper.error(RespCode.Account.EthNotEnough);
             }
             if (!hasSut){
-                return Wrapper.alert(getLocaleMsg(LangHandle.AccountSutNotEnough));
+                return Wrapper.error(RespCode.Account.SutNotEnough);
+            }
+
+            // check sign
+            boolean signRight = EthUtil.checkCrateMarketSign(userAddress, BuConstant.MarketInitSut, marketId, symbol,
+                ctCount, ctPrice, ctRecyclePrice, gasFee, closingTime, sign);
+            if (!signRight) {
+                return Wrapper.error(RespCode.SignError);
             }
 
             // create market
@@ -233,8 +239,9 @@ public class MarketController extends BaseController {
             notes = "参数：marketId\n" +
                     "返回：obj = {\n" +
                     "　marketId, txHash, creatorAddress, marketAddress, name, description, detail, createTime\n" +
-                    "　ctCount, ctPrice, ctRecyclePrice\n" +
+                    "　ctCount, ctPrice, ctRest(市场中剩余的CT), ctRecyclePrice\n" +
                     "　status(creating=编辑, locked=锁定, open=开放, close=关闭, fail=失败)\n" +
+                    "　stage(first / second)" +
                     "　data = { latelyChange, last, latelyVolume, amount, ctAmount, ctTopAmount, count, postCount, userCount } \n" +
                     "　creator = { 见/api/user/current } \n" +
                     "}")
@@ -348,3 +355,4 @@ public class MarketController extends BaseController {
     // }
 
 }
+

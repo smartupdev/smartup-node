@@ -53,6 +53,9 @@ public class Config {
     @Value("${eth.port}")
     public String ethPort;
 
+    @Value("${eth.gas-price}")
+    public Long ethGasPrice;
+
     @Value("${eth.contract.exchange}")
     public String ethExchangeContract;
 

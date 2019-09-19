@@ -104,8 +104,6 @@ public class BlockService {
     }
 
 
-    // TODO 转移下面的fun
-
     // private void handleCreateMarket(Date blockTime, Transaction tx, TransactionReceipt receipt) {
     //     if (transactionService.isTxHashHandled(tx.getHash())) {
     //         return;

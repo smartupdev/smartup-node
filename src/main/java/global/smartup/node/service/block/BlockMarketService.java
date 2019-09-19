@@ -1,5 +1,6 @@
 package global.smartup.node.service.block;
 
+import global.smartup.node.constant.BuConstant;
 import global.smartup.node.eth.EthClient;
 import global.smartup.node.eth.ExchangeClient;
 import global.smartup.node.eth.constract.event.CreateMarketEvent;
@@ -11,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.web3j.crypto.Keys;
 import org.web3j.protocol.core.methods.response.Transaction;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
@@ -53,6 +55,7 @@ public class BlockMarketService {
     private MatchService matchService;
 
 
+    @Transactional
     public void handleMarketCreate(Transaction tx, TransactionReceipt receipt, Date blockTime) {
         if (transactionService.isTxHashNotExistOrHandled(tx.getHash())) {
             return;
@@ -71,16 +74,19 @@ public class BlockMarketService {
         if (ethClient.isTransactionSuccess(receipt)) {
             CreateMarketEvent event = CreateMarketEvent.parse(receipt);
             if (event == null) {
+                log.error("Can not parse create market event");
                 return;
             }
             isSuccess = true;
             marketAddress = event.getCtAddress();
+
             // update account
-            userAccountService.updateSutAndEth(userAddress, event.getSutRemain(), event.getEthRemain());
+            userAccountService.updateSut(userAddress, BuConstant.MarketInitSut.negate());
+            userAccountService.updateEth(userAddress, func.getGasFee().negate());
         }
 
         if (isSuccess) {
-            matchService.addNewMarket(market.getMarketId());
+            matchService.addNewMarket(market.getMarketId(), marketAddress);
         }
 
         // update market

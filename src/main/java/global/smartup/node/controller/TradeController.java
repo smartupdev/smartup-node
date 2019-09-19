@@ -1,5 +1,6 @@
 package global.smartup.node.controller;
 
+import global.smartup.node.Config;
 import global.smartup.node.constant.LangHandle;
 import global.smartup.node.constant.PoConstant;
 import global.smartup.node.eth.EthUtil;
@@ -9,14 +10,19 @@ import global.smartup.node.po.Trade;
 import global.smartup.node.service.MarketService;
 import global.smartup.node.service.TradeService;
 import global.smartup.node.service.UserAccountService;
-import global.smartup.node.util.*;
+import global.smartup.node.util.Checker;
+import global.smartup.node.util.Pagination;
+import global.smartup.node.util.RespCode;
+import global.smartup.node.util.Wrapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.web3j.utils.Convert;
 
 import javax.servlet.http.HttpServletRequest;
@@ -43,12 +49,14 @@ public class TradeController extends BaseController {
     @Autowired
     private MatchService matchService;
 
+    @Autowired
+    private Config config;
 
     @ApiOperation(value = "交易详情", httpMethod = "POST", response = Wrapper.class,
                 notes = "参数：tradeId\n" +
                     "返回：obj = {\n" +
                     "　userAddress, marketId, type, state, entrustVolume, entrustPrice, filledVolume, avgPrice, fee, sign, createTime, updateTime \n" +
-                    "　type(firstStageBuy/buy/sell), state(trading/cancel/cancelPart/done),\n" +
+                    "　type(firstStageBuy/plan/buy/sell), state(trading/cancel/cancelPart/done),\n" +
                     "　　childList = [\n" +
                     "　　　{\n" +
                     "　　　　childId, marketId, txHash, volume, price, createTime\n" +
@@ -89,44 +97,62 @@ public class TradeController extends BaseController {
     }
 
     @ApiOperation(value = "第一阶段买入CT", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：marketAddress, ctCount, gasLimit, gasPrice, timestamp, sign\n" +
-                        "返回：见/api/trade/one")
+        notes = "参数：marketId, ctCount, gasLimit, gasPrice, timestamp, sign, sellPrice, sellSign\n" +
+            "返回：{\n" +
+            "　code = MarketNotExist, MarketCanNotTrade, GasPriceError, NetWorkError, SutNotEnough, EthNotEnough, SignError, SellSignError\n" +
+            "　obj = {见/api/trade/one}\n" +
+            "}")
     @RequestMapping("/user/first/stage/buy")
-    public Object firstStageBuy(HttpServletRequest request, String marketAddress, BigDecimal ctCount,
-                                BigInteger gasLimit, BigInteger gasPrice, String timestamp, String sign) {
+    public Object firstStageBuy(
+        HttpServletRequest request, String marketId, BigDecimal ctCount, BigInteger gasLimit, BigInteger gasPrice,
+        Long timestamp, String sign, BigDecimal sellPrice, String sellSign
+    ) {
         try {
             String userAddress = getLoginUserAddress(request);
 
             // check market
-            Market market = marketService.queryByAddress(marketAddress);
+            Market market = marketService.queryById(marketId);
             if (market == null) {
-                return Wrapper.alert(getLocaleMsg(LangHandle.MarketNotExist));
+                return Wrapper.error(RespCode.Market.MarketNotExist);
             }
+            if (!PoConstant.Market.Status.Open.equals(market.getStatus()) || !PoConstant.Market.Stage.First.equals(market.getStage())) {
+                return Wrapper.error(RespCode.Market.MarketCanNotTrade);
+            }
+            // TODO check market expire
 
             // check gas price
             if (!Checker.isGasPriceRight(gasPrice)) {
-                return Wrapper.alert(getLocaleMsg(LangHandle.TransactionGasPriceError));
+                return Wrapper.error(RespCode.Trade.GasPriceError);
             }
 
             // check balance
-            BigDecimal sut = BigDecimal.ZERO;
-            BigDecimal gasFee = Convert.fromWei(new BigDecimal(gasPrice.multiply(gasLimit)), Convert.Unit.GWEI);
-            Boolean hasEth = userAccountService.hasEnoughEth(userAddress, gasFee);
+            BigDecimal sut = ctCount.multiply(market.getCtPrice());
+            BigDecimal fee = Convert.fromWei(new BigDecimal(gasPrice.multiply(gasLimit)), Convert.Unit.GWEI);
+            Boolean hasEth = userAccountService.hasEnoughEth(userAddress, fee);
             Boolean hasSut = userAccountService.hasEnoughSut(userAddress, sut);
-            if (hasEth == null || hasSut == null) {
-                return Wrapper.alert(getLocaleMsg(LangHandle.NetWorkError));
+            if (!hasEth) {
+                return Wrapper.error(RespCode.Trade.EthNotEnough);
             }
-            if (!hasEth){
-                return Wrapper.alert(getLocaleMsg(LangHandle.AccountEthNotEnough));
-            }
-            if (!hasSut){
-                return Wrapper.alert(getLocaleMsg(LangHandle.AccountSutNotEnough));
+            if (!hasSut) {
+                return Wrapper.error(RespCode.Trade.SutNotEnough);
             }
 
-            Trade trade = tradeService.addFirstStageBuy(userAddress, market.getMarketId(), marketAddress, ctCount,
-                market.getCtPrice(), gasLimit, gasPrice, timestamp, sign);
+            // check sign
+            boolean signRight = EthUtil.checkFistStageBuySign(userAddress, market.getMarketAddress(), ctCount, fee, String.valueOf(timestamp), sign);
+            if (!signRight) {
+                return Wrapper.error(RespCode.Trade.SignError);
+            }
+            boolean sellSignRight = EthUtil.checkSellMakeSign(userAddress, market.getMarketAddress(), config.ethSutContract,
+                ctCount, sellPrice, timestamp, sellSign);
+            if (!sellSignRight) {
+                return Wrapper.error(RespCode.Trade.SellSignError);
+            }
+
+            // save buy order
+            Trade trade = tradeService.addFirstStageBuy(userAddress, market.getMarketId(), market.getMarketAddress(), ctCount,
+                market.getCtPrice(), gasLimit, gasPrice, timestamp, sign, sellPrice, sellSign);
             if (trade == null) {
-                return Wrapper.alert(getLocaleMsg(LangHandle.NetWorkError));
+                return Wrapper.error(RespCode.Trade.NetWorkError);
             }
 
             return Wrapper.success(trade);
@@ -136,13 +162,13 @@ public class TradeController extends BaseController {
         }
     }
 
-    @ApiOperation(value = "估算买入/卖出手续费", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：marketId, type(buy/sell), price, volume\n" +
+    @ApiOperation(value = "估算买入手续费", httpMethod = "POST", response = Wrapper.class,
+                notes = "参数：marketId, type(buy), price, volume\n" +
                     "返回：{\n" +
-                    "　code = EngineNotReady,\n" +
+                    "　code = EngineNotReady\n" +
                     "　obj = {times, limit}\n" +
                     "}")
-    @RequestMapping("/user/trade/test/match")
+    @RequestMapping("/user/trade/add/buy/reckon")
     public Object testMatch(HttpServletRequest request, String marketId, String type, BigDecimal price, BigDecimal volume) {
         try {
             Map<String, Object> map = matchService.queryMatchTime(marketId, type, price, volume);
@@ -159,49 +185,74 @@ public class TradeController extends BaseController {
         }
     }
 
-    @ApiOperation(value = "买入/卖出", httpMethod = "POST", response = Wrapper.class,
-                notes = "参数：marketId, type(buy/sell), price, volume, times, gasPrice, sign\n" +
+    @ApiOperation(value = "添加买单", httpMethod = "POST", response = Wrapper.class,
+                notes = "参数：marketId, price, volume, times, timestamp, makeSign, takeSign, sellPrice, sellSign\n" +
                     "返回：{\n" +
-                    "　code = FeeNotEnough, SignError, MarketNotExist, TypeError, PriceCanNotLessZero, VolumeCanNotLessZero, GasPriceError\n" +
-                    "　obj = {orderId, type, userAddress, entrustPrice, entrustVolume, unfilledVolume},\n" +
+                    "　code = FeeNotEnough, MakeSignError, TakeSignError, SellSignError, MarketNotExist, TypeError, PriceCanNotLessZero, \n" +
+                    "　　VolumeCanNotLessZero, GasPriceError\n" +
+                    "　obj = {见/api/trade/one}\n" +
                     "}")
-    @RequestMapping("/user/trade/add")
-    public Object add(HttpServletRequest request, String marketId, String type, BigDecimal price, BigDecimal volume, Integer times, BigInteger gasPrice, String sign) {
+    @RequestMapping("/user/trade/add/buy")
+    public Object add(HttpServletRequest request, String marketId,BigDecimal price, BigDecimal volume,
+                      Integer times, Long timestamp, String makeSign, String takeSign,
+                      BigDecimal sellPrice, String sellSign) {
         try {
             String userAddress = getLoginUserAddress(request);
-
             Market market = marketService.queryById(marketId);
             if (market == null) {
                 return Wrapper.error(RespCode.Market.MarketNotExist);
             }
-
-            if (!(PoConstant.Trade.Type.Buy.equals(type) || PoConstant.Trade.Type.Sell.equals(type))) {
-                return Wrapper.error(RespCode.Trade.TypeError);
-            }
-
             if (price == null || price.compareTo(BigDecimal.ZERO) < 0) {
                 return Wrapper.error(RespCode.Trade.PriceCanNotLessZero);
             }
-
             if (volume == null || volume.compareTo(BigDecimal.ZERO) < 0) {
                 return Wrapper.error(RespCode.Trade.VolumeCanNotLessZero);
             }
 
-            times = times == null ? 0 : times;
-            BigInteger limit = EthUtil.getTradeGasLimit(times);
-            BigDecimal fee = new BigDecimal(limit.multiply(gasPrice));
+            // TODO check sell price
 
-            if (!Checker.isGasPriceRight(gasPrice)) {
-                return Wrapper.error(RespCode.Trade.GasPriceError);
+            times = times == null ? 0 : times;
+            BigInteger gasLimit = EthUtil.getTradeGasLimit(times);
+            BigInteger gasPrice = BigInteger.valueOf(config.ethGasPrice);
+            BigDecimal fee = Convert.fromWei(new BigDecimal(gasLimit.multiply(gasPrice)), Convert.Unit.GWEI);
+
+            // check sign
+            boolean makeSignOk = EthUtil.checkBuyMakeSign(userAddress, market.getMarketAddress(), config.ethSutContract, volume, price, timestamp, makeSign);
+            if (!makeSignOk) {
+                return Wrapper.error(RespCode.Trade.MakeSignError);
+            }
+            if (times.compareTo(0) > 0) {
+                 boolean takeSignOk = EthUtil.checkBuyTakeSign(price, volume, timestamp, fee, market.getMarketAddress(), config.ethSutContract, userAddress, takeSign);
+                if (!takeSignOk) {
+                    return Wrapper.error(RespCode.Trade.TakeSignError);
+                }
+            }
+            boolean sellSignOk = EthUtil.checkSellMakeSign(userAddress, market.getMarketAddress(), config.ethSutContract, volume, sellPrice, timestamp, sellSign);
+            if (!sellSignOk) {
+                return Wrapper.error(RespCode.Trade.SellSignError);
             }
 
-            // TODO check sign
+            // check balance
+            Boolean hasEth = userAccountService.hasEnoughEth(userAddress, fee);
+            if (hasEth == null) {
+                return Wrapper.alert(getLocaleMsg(LangHandle.NetWorkError));
+            }
+            if (!hasEth){
+                return Wrapper.alert(getLocaleMsg(LangHandle.AccountEthNotEnough));
+            }
+            BigDecimal sut = price.multiply(volume);
+            Boolean hasSut = userAccountService.hasEnoughSut(userAddress, sut);
+            if (!hasSut){
+                return Wrapper.alert(getLocaleMsg(LangHandle.AccountSutNotEnough));
+            }
 
-            Map<String, Object> map = new HashMap<>();
-            if (PoConstant.Trade.Type.Buy.equals(type)) {
-                map = matchService.addBuyOrder(marketId, userAddress, price, volume, times, fee, sign);
-            } else if (PoConstant.Trade.Type.Sell.equals(type)) {
-                map = matchService.addSellOrder(marketId, userAddress, price, volume, times, fee, sign);
+            Map<String, Object> map = matchService.addBuyOrder(marketId, userAddress, price, volume, times,
+                gasPrice.longValue(), gasLimit.longValue(), timestamp, makeSign, takeSign);
+
+            // trade plan
+            if (RespCode.Success.equals(map.get("code"))) {
+                Trade trade = (Trade) map.get("obj");
+                tradeService.addMakePlan(trade.getTradeId(), sellPrice, timestamp, sellSign);
             }
 
             return Wrapper.create(map);
@@ -221,7 +272,7 @@ public class TradeController extends BaseController {
             "　　EngineNotReady, OrderIdNull, OrderCanNotChange, NotYourOrder, VolumeNotMatch \n" +
             "　obj = [ {mark, times, limit} ]\n" +
             "}")
-    @RequestMapping(value = "/user/trade/update/test/match", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    @RequestMapping(value = "/user/trade/update/sell/reckon", consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public Object updateTestMatch(HttpServletRequest request, @RequestBody UpdateOrder order) {
         try {
             String userAddress = getLoginUserAddress(request);
@@ -265,30 +316,29 @@ public class TradeController extends BaseController {
     @ApiOperation(value = "更新卖单", httpMethod = "POST", response = Wrapper.class,
         notes = "参数：该接口参数为json { \n" +
             "　marketId, cancelOrderIds = [], lockOrderIds = [], \n" +
-            "　newOrders = [ {price, volume, times, gasPrice, sign} ], \n" +
+            "　newOrders = [ {price, volume, times, timestamp, makeSign, takeSign} ], \n" +
             "}\n" +
             "返回：{\n" +
-            "　code = MarketNotExist, NewOrderNull, PriceCanNotLessZero, VolumeCanNotLessZero, SignError\n" +
+            "　code = MarketNotExist, NewOrderNull, PriceCanNotLessZero, VolumeCanNotLessZero, MakeSignError, TakeSignError\n" +
             "　　EngineNotReady, OrderIdNull, OrderCanNotChange, NotYourOrder, VolumeNotMatch\n" +
             "　obj = [ {orderId, price, volume} ]\n" +
             "}")
-    @RequestMapping("/user/trade/update")
+    @RequestMapping("/user/trade/update/sell")
     public Object tradeUpdate(HttpServletRequest request, @RequestBody UpdateOrder order) {
         try {
             String userAddress = getLoginUserAddress(request);
-
             Market market = marketService.queryById(order.getMarketId());
             if (market == null) {
                 return Wrapper.error(RespCode.Market.MarketNotExist);
             }
-
             if (order.getCancelOrderIds().size() + order.getLockOrderIds().size() < 0) {
                 return Wrapper.error(RespCode.Trade.UpdateSell.OrderIdNull);
             }
-
             if (order.getNewOrders().size() == 0) {
                 return Wrapper.error(RespCode.Trade.NewOrderNull);
             }
+
+            // TODO check order balance
 
             for (NewOrder newOrder : order.getNewOrders()) {
                 if (newOrder.getPrice() == null || newOrder.getPrice().compareTo(BigDecimal.ZERO) < 0) {
@@ -301,13 +351,25 @@ public class TradeController extends BaseController {
                 if (newOrder.getTimes() == null) {
                     newOrder.setTimes(0);
                 }
-                if (!Checker.isGasPriceRight(newOrder.getGasPrice())) {
-                    return Wrapper.error(RespCode.Trade.GasPriceError);
-                }
+                BigInteger gasPrice = BigInteger.valueOf(config.ethGasPrice);
                 BigInteger gasLimit = EthUtil.getTradeGasLimit(newOrder.getTimes());
-                BigDecimal fee = new BigDecimal(gasLimit.multiply(newOrder.getGasPrice()));
-                newOrder.setFee(fee);
-                // TODO check sign
+                BigDecimal fee = Convert.fromWei(new BigDecimal(gasLimit.multiply(gasPrice)), Convert.Unit.GWEI);
+                newOrder.setGasPrice(gasPrice.longValue());
+                newOrder.setGasLimit(gasLimit.longValue());
+
+                // TODO check timestamp
+
+                // check sign
+                boolean makeSignOk = EthUtil.checkSellMakeSign(userAddress, market.getMarketAddress(), config.ethSutContract,
+                    newOrder.getVolume(), newOrder.getPrice(), newOrder.getTimestamp(), newOrder.getMakeSign());
+                if (!makeSignOk) {
+                    return Wrapper.error(RespCode.Trade.MakeSignError);
+                }
+                boolean takeSignOk = EthUtil.checkSellTakeSign(newOrder.getPrice(), newOrder.getVolume(), newOrder.getTimestamp(), fee,
+                    market.getMarketAddress(), config.ethSutContract, userAddress, newOrder.getTakeSign());
+                if (!takeSignOk) {
+                    return Wrapper.error(RespCode.Trade.TakeSignError);
+                }
             }
 
             List<Map<String, Object>> nos = new ArrayList<>();
@@ -325,15 +387,25 @@ public class TradeController extends BaseController {
     }
 
     @ApiOperation(value = "取消买单", httpMethod = "POST", response = Wrapper.class,
-        notes = "参数：marketId, tradeId\n" +
+        notes = "参数：tradeId\n" +
             "返回：{\n" +
-            "　code = OrderAlreadyDone\n" +
+            "　code = OrderNotExist, OrderCanNotCancel, OrderAlreadyDone\n" +
             "}")
     @RequestMapping("/user/trade/cancel")
-    public Object cancel(HttpServletRequest request, String marketId, String tradeId) {
+    public Object cancel(HttpServletRequest request, String tradeId) {
         try {
             String userAddress = getLoginUserAddress(request);
-            Map<String,Object> map =  matchService.cancelBuyOrder(marketId, userAddress, tradeId);
+            Trade trade = tradeService.queryById(tradeId);
+            if (trade == null) {
+                return Wrapper.error(RespCode.Trade.OrderNotExist);
+            }
+            if (!userAddress.equals(trade.getUserAddress())) {
+                return Wrapper.error(RespCode.Trade.OrderNotExist);
+            }
+            if (!PoConstant.Trade.State.Trading.equals(trade.getState())) {
+                return Wrapper.error(RespCode.Trade.OrderCanNotCancel);
+            }
+            Map<String,Object> map =  matchService.cancelBuyOrder(trade.getMarketId(), tradeId);
             return Wrapper.create(map);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
@@ -344,7 +416,7 @@ public class TradeController extends BaseController {
     @ApiOperation(value = "OrderBook [cached]", httpMethod = "POST", response = Wrapper.class,
         notes = "参数：marketId, topOfBook, topOfOrder\n" +
             "返回：obj = {\n" +
-            "　currentPrice,lastPrice,\n" +
+            "　currentPrice, lastPrice,\n" +
             "　orders = [ {time, price, volume} ]\n" +
             "　sellBook, buyBook = [ {price, volume} ]\n" +
             "}")
@@ -362,7 +434,7 @@ public class TradeController extends BaseController {
     }
 
     // @ApiOperation(value = "市场的交易列表", httpMethod = "POST", response = Wrapper.class,
-    //             notes = "参数：TODO \n" +
+    //             notes = "参数： \n" +
     //                     "返回：")
     // @RequestMapping("/trade/market/list")
     // public Object tradeList(HttpServletRequest request) {
@@ -426,10 +498,47 @@ public class TradeController extends BaseController {
         BigDecimal price;
         BigDecimal volume;
         Integer times;
-        BigDecimal fee;
-        BigInteger gasPrice;
-        String sign;
+        Long gasPrice;
+        Long gasLimit;
+        Long timestamp;
+        String makeSign;
+        String takeSign;
 
+        public Long getGasPrice() {
+            return gasPrice;
+        }
+
+        public NewOrder setGasPrice(Long gasPrice) {
+            this.gasPrice = gasPrice;
+            return this;
+        }
+
+        public Long getGasLimit() {
+            return gasLimit;
+        }
+
+        public NewOrder setGasLimit(Long gasLimit) {
+            this.gasLimit = gasLimit;
+            return this;
+        }
+
+        public Long getTimestamp() {
+            return timestamp;
+        }
+
+        public NewOrder setTimestamp(Long timestamp) {
+            this.timestamp = timestamp;
+            return this;
+        }
+
+        public String getTakeSign() {
+            return takeSign;
+        }
+
+        public NewOrder setTakeSign(String takeSign) {
+            this.takeSign = takeSign;
+            return this;
+        }
 
         public String getMark() {
             return mark;
@@ -437,15 +546,6 @@ public class TradeController extends BaseController {
 
         public NewOrder setMark(String mark) {
             this.mark = mark;
-            return this;
-        }
-
-        public BigInteger getGasPrice() {
-            return gasPrice;
-        }
-
-        public NewOrder setGasPrice(BigInteger gasPrice) {
-            this.gasPrice = gasPrice;
             return this;
         }
 
@@ -458,21 +558,12 @@ public class TradeController extends BaseController {
             return this;
         }
 
-        public BigDecimal getFee() {
-            return fee;
+        public String getMakeSign() {
+            return makeSign;
         }
 
-        public NewOrder setFee(BigDecimal fee) {
-            this.fee = fee;
-            return this;
-        }
-
-        public String getSign() {
-            return sign;
-        }
-
-        public NewOrder setSign(String sign) {
-            this.sign = sign;
+        public NewOrder setMakeSign(String makeSign) {
+            this.makeSign = makeSign;
             return this;
         }
 
@@ -496,8 +587,15 @@ public class TradeController extends BaseController {
 
         public Map<String, Object> toMap() {
             Map<String, Object> map = new HashMap<>();
+            map.put("mark", mark);
             map.put("price", price);
             map.put("volume", volume);
+            map.put("times", times);
+            map.put("gasPrice", gasPrice);
+            map.put("gasLimit", gasLimit);
+            map.put("timestamp", timestamp);
+            map.put("makeSign", makeSign);
+            map.put("takeSign", takeSign);
             return map;
         }
     }
