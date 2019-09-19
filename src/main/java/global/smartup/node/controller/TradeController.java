@@ -321,7 +321,7 @@ public class TradeController extends BaseController {
             "返回：{\n" +
             "　code = MarketNotExist, NewOrderNull, PriceCanNotLessZero, VolumeCanNotLessZero, MakeSignError, TakeSignError\n" +
             "　　EngineNotReady, OrderIdNull, OrderCanNotChange, NotYourOrder, VolumeNotMatch\n" +
-            "　obj = [ {orderId, price, volume} ]\n" +
+            "　obj = [ {见/api/trade/one} ]\n" +
             "}")
     @RequestMapping("/user/trade/update/sell")
     public Object tradeUpdate(HttpServletRequest request, @RequestBody UpdateOrder order) {
