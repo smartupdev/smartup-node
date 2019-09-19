@@ -133,32 +133,6 @@ public class EthClient {
         return !isTransactionFail(receipt);
     }
 
-    public boolean recoverSignature (String address, String message, String signature) {
-        try {
-            if (!Checker.isAddress(address) || signature.length() != 132) {
-                return false;
-            }
-            String prefix = PERSONAL_MESSAGE_PREFIX + message.length();
-            byte[] msgHash = Hash.sha3((prefix + message).getBytes());
-            Sign.SignatureData sd = EthUtil.getSignData(signature);
-            for (int i = 0; i < 4; i++) {
-                BigInteger k = Sign.recoverFromSignature(
-                        (byte) i,
-                        new ECDSASignature(new BigInteger(1, sd.getR()), new BigInteger(1, sd.getS())),
-                        msgHash);
-                if (k != null) {
-                    String pk =  "0x" + Keys.getAddress(k);
-                    if (address.equalsIgnoreCase(pk)) {
-                        return true;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
-        return false;
-    }
-
     public BigInteger getTransactionCount(String publicKey) {
         BigInteger ret = null;
         try {
@@ -196,6 +170,11 @@ public class EthClient {
             log.error(e.getMessage(), e);
         }
         return ret;
+    }
+
+    public BigInteger getNonce(String address) {
+        // TODO get Nonce
+        return null;
     }
 
 }

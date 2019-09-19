@@ -43,6 +43,12 @@ public class ExchangeClickTest {
     }
 
     @Test
+    public void queryCtRest() {
+        BigDecimal balance = exchangeClient.queryCtRest("0x8f27A8B0f1E28999e195C965ef9760C863c3Ea6D");
+        System.out.println(balance.toPlainString());
+    }
+
+    @Test
     public void encodeFun() {
 
         String userAddress = "0x95320Bf4E0997743779e5FD7B03454Bd9958207B";

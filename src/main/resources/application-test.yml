@@ -14,9 +14,10 @@ eth:
   protocol: http
   domain: 54.255.204.122
   port: 80
+  gas-price: 50
 
   contract:
-    exchange: '0xb2397c9171CE9AbC209248eEEf29252634Ce8Be5'
+    exchange: '0xABaed2d6B739cd7B9c54C818300520592344Fd96'
     smartup: '0x184a3dad8912a81ab393b83892f2039ec0297132'
     sut: '0xf1899c6eb6940021c1ae4e9c3a8e29ee93704b03'
     ntt: '0x846ce03199a759a183cccb35146124cd3f120548'

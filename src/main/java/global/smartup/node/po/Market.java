@@ -47,6 +47,12 @@ public class Market {
     @Column(name="status")
     private String status;
 
+    /**
+     * {@link global.smartup.node.constant.PoConstant.Market.Stage}
+     */
+    @Column(name="stage")
+    private String stage;
+
     @Column(name="init_sut")
     private BigDecimal initSut;
 
@@ -58,6 +64,10 @@ public class Market {
 
     @Column(name = "ct_recycle_price")
     private BigDecimal ctRecyclePrice;
+
+    // 市场中剩余的CT
+    @Column(name = "ct_rest")
+    private BigDecimal ctRest;
 
     @Column(name = "closing_time")
     private Date closingTime;
@@ -80,6 +90,25 @@ public class Market {
     private User creator;
 
 
+
+
+    public String getStage() {
+        return stage;
+    }
+
+    public Market setStage(String stage) {
+        this.stage = stage;
+        return this;
+    }
+
+    public BigDecimal getCtRest() {
+        return ctRest;
+    }
+
+    public Market setCtRest(BigDecimal ctRest) {
+        this.ctRest = ctRest;
+        return this;
+    }
 
     public String getDetail() {
         return detail;

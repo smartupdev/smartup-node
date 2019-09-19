@@ -18,6 +18,7 @@ drop table if exists user_account;
 create table user_account (
   user_address varchar(42) primary key ,
   sut decimal(40,20),
+  sut_lock decimal(40,20),
   sut_amount decimal(40,20),
   eth decimal(40,20),
   update_time datetime
@@ -57,10 +58,12 @@ create table market (
   description varchar(2048),
   detail mediumtext,
   status varchar(16),
+  stage varchar(16),
   init_sut decimal(40, 20),
   ct_count decimal(40,20),
   ct_price decimal(40,20),
   ct_recycle_price decimal(40,20),
+  ct_rest decimal(40,20),
   closing_time datetime,
   create_time datetime
 );
@@ -77,6 +80,7 @@ create table trade (
   filled_volume decimal(40,20),
   avg_price decimal(40,20),
   fee decimal(40,20),
+  timestamp bigint,
   sign varchar(512),
   create_time datetime,
   update_time datetime
@@ -86,6 +90,7 @@ drop table if exists trade_child;
 create table trade_child (
   child_id varchar(16) primary key,
   market_id varchar(16),
+  take_plan_id varchar(16),
   tx_hash varchar(66),
   volume decimal(40,20),
   price decimal(40,20),
@@ -97,6 +102,28 @@ create table trade_child_map (
   trade_id varchar(16),
   child_id varchar(16),
   primary key(trade_id, child_id)
+);
+
+drop table if exists make_plan;
+create table make_plan (
+  trade_id varchar(16) primary key,
+  sell_price decimal(40,20),
+  timestamp bigint,
+  sign varchar(512),
+  create_time datetime
+);
+
+drop table if exists take_plan;
+create table take_plan (
+  take_plan_id varchar(16) primary key,
+  take_trade_id varchar(16),
+  times int(11),
+  gas_price bigint,
+  gas_limit bigint,
+  timestamp bigint,
+  sign varchar(256),
+  is_over tinyint(1),
+  create_time datetime
 );
 
 drop table if exists post;
@@ -182,6 +209,7 @@ create table ct_account(
   user_address varchar(42),
   market_address varchar(42),
   amount decimal(40,20),
+  amount_lock decimal(40,20),
   last_update_time datetime,
   primary key(user_address, market_address)
 );

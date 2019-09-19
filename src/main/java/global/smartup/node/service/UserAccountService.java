@@ -48,6 +48,7 @@ public class UserAccountService {
     public void addAccount(String userAddress) {
         UserAccount account = new UserAccount();
         account.setUserAddress(userAddress);
+        account.setSutLock(BigDecimal.ZERO);
         account.setSut(BigDecimal.ZERO);
         account.setEth(BigDecimal.ZERO);
         account.setSutAmount(BigDecimal.ZERO);
@@ -55,57 +56,57 @@ public class UserAccountService {
         userAccountMapper.insert(account);
     }
 
-    public void updateSut(String userAddress, BigDecimal newBalance) {
+    public void updateSut(String userAddress, BigDecimal add) {
         UserAccount account = queryByAddress(userAddress);
-        account.setSut(newBalance);
+        account.setSut(account.getSut().add(add));
         account.setUpdateTime(new Date());
         userAccountMapper.updateByPrimaryKey(account);
     }
 
-    public void updateEth(String userAddress, BigDecimal newBalance) {
+    public void lockSut(String userAddress, BigDecimal lock) {
         UserAccount account = queryByAddress(userAddress);
-        account.setEth(newBalance);
+        account.setSut(account.getSut().subtract(lock));
+        account.setSutLock(account.getSutLock().add(lock));
         account.setUpdateTime(new Date());
         userAccountMapper.updateByPrimaryKey(account);
     }
 
-    public void updateSutAndEth(String userAddress, BigDecimal sut, BigDecimal eth) {
+    public void updateLockSut(String userAddress, BigDecimal add) {
         UserAccount account = queryByAddress(userAddress);
-        account.setSut(sut);
-        account.setEth(eth);
+        account.setSutLock(account.getSutLock().add(add));
+        account.setUpdateTime(new Date());
+        userAccountMapper.updateByPrimaryKey(account);
+    }
+
+    public void updateEth(String userAddress, BigDecimal add) {
+        UserAccount account = queryByAddress(userAddress);
+        account.setEth(account.getEth().add(add));
         account.setUpdateTime(new Date());
         userAccountMapper.updateByPrimaryKey(account);
     }
 
     public Boolean hasEnoughSut(String userAddress, BigDecimal sut) {
-        // query form contract
-        BigDecimal balance = exchangeClient.querySutBalance(userAddress);
-        if (balance == null) {
-            return null;
-        }
-
-        // update account
-        updateSut(userAddress, balance);
-
-        if (balance.compareTo(sut) >= 0) {
+        UserAccount account = userAccountMapper.selectByPrimaryKey(userAddress);
+        assert account != null;
+        if (account.getSut().compareTo(sut) >= 0) {
             return true;
+        } else {
+            return false;
         }
-        return false;
     }
 
     public Boolean hasEnoughEth(String userAddress, BigDecimal eth) {
-        // query form contract
-        BigDecimal balance = exchangeClient.queryEthBalance(userAddress);
-        if (balance == null) {
-            return null;
-        }
-
-        // update account
-        updateSut(userAddress, balance);
-
-        if (balance.compareTo(eth) >= 0) {
+        UserAccount account = userAccountMapper.selectByPrimaryKey(userAddress);
+        assert account != null;
+        if (account.getEth().compareTo(eth) >= 0) {
             return true;
+        } else {
+            return false;
         }
+    }
+
+    public Boolean hasEnoughCt(String marketId, String userAddress, BigDecimal eth) {
+
         return false;
     }
 

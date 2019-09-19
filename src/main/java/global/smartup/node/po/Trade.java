@@ -48,6 +48,9 @@ public class Trade {
     @Column(name="fee")
     private BigDecimal fee;
 
+    @Column(name="timestamp")
+    private Long timestamp;
+
     @Column(name="sign")
     private String sign;
 
@@ -64,6 +67,15 @@ public class Trade {
     @Transient
     private List<TradeChild> childList;
 
+
+    public Long getTimestamp() {
+        return timestamp;
+    }
+
+    public Trade setTimestamp(Long timestamp) {
+        this.timestamp = timestamp;
+        return this;
+    }
 
     public String getSign() {
         return sign;

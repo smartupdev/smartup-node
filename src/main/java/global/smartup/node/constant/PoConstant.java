@@ -61,6 +61,14 @@ public class PoConstant {
 
         }
 
+        public static class Stage {
+
+            public static final String First = "first";
+
+            public static final String Second = "second";
+
+        }
+
     }
 
     public static class Post {
@@ -102,6 +110,8 @@ public class PoConstant {
         }
 
         public static class State {
+
+            public static final String Plan = "plan";
 
             public static final String Trading = "trading";
 

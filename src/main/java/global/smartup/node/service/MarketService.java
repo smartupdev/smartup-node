@@ -8,6 +8,7 @@ import global.smartup.node.constant.BuConstant;
 import global.smartup.node.constant.LangHandle;
 import global.smartup.node.constant.PoConstant;
 import global.smartup.node.constant.RedisKey;
+import global.smartup.node.eth.ExchangeClient;
 import global.smartup.node.eth.info.CTBuyInfo;
 import global.smartup.node.eth.info.CTSellInfo;
 import global.smartup.node.mapper.MarketDataMapper;
@@ -77,6 +78,9 @@ public class MarketService extends BaseService {
 
     @Autowired
     private BlockMarketService blockMarketService;
+
+    @Autowired
+    private ExchangeClient exchangeClient;
 
 
     public Map<String, String> checkMarketInfo(String userAddress, String name, String description, String detail, String photo, String cover) {
@@ -182,6 +186,7 @@ public class MarketService extends BaseService {
             market.setCtCount(ctCount);
             market.setCtPrice(ctPrice);
             market.setCtRecyclePrice(ctRecyclePrice);
+            market.setCtRest(ctCount);
             market.setClosingTime(new Date(closingTime * 1000));
             market.setCreateTime(new Date());
             market.setStatus(PoConstant.Market.Status.Creating);
@@ -197,6 +202,7 @@ public class MarketService extends BaseService {
             market.setCtCount(ctCount);
             market.setCtPrice(ctPrice);
             market.setCtRecyclePrice(ctRecyclePrice);
+            market.setCtRest(ctCount);
             market.setClosingTime(new Date(closingTime * 1000));
             market.setCreateTime(new Date());
             market.setStatus(PoConstant.Market.Status.Creating);
@@ -246,6 +252,7 @@ public class MarketService extends BaseService {
             market.setCtCount(ctCount);
             market.setCtPrice(ctPrice);
             market.setCtRecyclePrice(ctRecyclePrice);
+            market.setStage(PoConstant.Market.Stage.First);
             marketMapper.updateByPrimaryKey(market);
 
             MarketData data = new MarketData();
@@ -395,6 +402,19 @@ public class MarketService extends BaseService {
             data.setLatelyChange(klineNodeService.queryLatelyChange(data.getMarketAddress(), data.getLast(), 24));
             marketDataMapper.updateByPrimaryKey(data);
         }
+    }
+
+    public void updateStage(String marketAddress) {
+        BigDecimal rest = exchangeClient.queryCtRest(marketAddress);
+        if (rest == null) {
+            return;
+        }
+        Market market = queryByAddress(marketAddress);
+        market.setCtRest(rest);
+        if (rest.compareTo(BigDecimal.ZERO) == 0) {
+            market.setStage(PoConstant.Market.Stage.Second);
+        }
+        marketMapper.updateByPrimaryKey(market);
     }
 
     public boolean isNameRepeat(String userAddress, String name) {

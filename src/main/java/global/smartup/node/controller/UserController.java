@@ -5,6 +5,7 @@ import global.smartup.node.compoment.Validator;
 import global.smartup.node.constant.LangHandle;
 import global.smartup.node.constant.RedisKey;
 import global.smartup.node.eth.EthClient;
+import global.smartup.node.eth.EthUtil;
 import global.smartup.node.po.User;
 import global.smartup.node.service.*;
 import global.smartup.node.util.Checker;
@@ -93,7 +94,7 @@ public class UserController extends BaseController {
                 return Wrapper.alert(getLocaleMsg(LangHandle.UserAddressNotExist));
             }
             User user = userService.query(address);
-            boolean isSignOK = ethClient.recoverSignature(address, user.getCode(), signature);
+            boolean isSignOK = EthUtil.recoverSignature(address, user.getCode(), signature);
             if (isSignOK) {
                 // update code
                 userService.updateCode(address);

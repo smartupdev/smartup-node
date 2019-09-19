@@ -18,6 +18,10 @@ public class UserAccount {
     @Column(name="sut")
     private BigDecimal sut;
 
+    // 锁定的sut
+    @Column(name="sut_lock")
+    private BigDecimal sutLock;
+
     // eth余额
     @Column(name = "eth")
     private BigDecimal eth;
@@ -35,6 +39,14 @@ public class UserAccount {
     private User user;
 
 
+    public BigDecimal getSutLock() {
+        return sutLock;
+    }
+
+    public UserAccount setSutLock(BigDecimal sutLock) {
+        this.sutLock = sutLock;
+        return this;
+    }
 
     public BigDecimal getEth() {
         return eth;

@@ -1,8 +1,10 @@
 package global.smartup.node.match.engine;
 
 import global.smartup.node.match.bo.Order;
+import global.smartup.node.match.bo.OrderChild;
 import global.smartup.node.match.common.OrderType;
-import global.smartup.node.match.service.OrderService;
+import global.smartup.node.match.service.MOrderService;
+import global.smartup.node.po.TradeChild;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +19,7 @@ public class Bucket {
 
     private MatchEngine engine;
 
-    private OrderService orderService;
+    private MOrderService orderService;
 
     private String marketId;
 
@@ -123,9 +125,9 @@ public class Bucket {
         volumeCache.clear();
     }
 
-    public Integer take(Order take) {
-        Integer takeCount = 0;
+    public List<OrderChild> take(Order take) {
         Iterator<Order> iterator = orders.iterator();
+        List<OrderChild> children = new ArrayList<>();
         while (iterator.hasNext()) {
             if (take.getUnfilledVolume().compareTo(BigDecimal.ZERO) <= 0) {
                 break;
@@ -150,11 +152,10 @@ public class Bucket {
             updateVolume();
 
             // 更新 take
-            takeCount += 1;
             take.setTimes(take.getTimes() - 1);
             take.setUnfilledVolume(take.getUnfilledVolume().subtract(tradeVol));
 
-            // 更新 bucket volume
+            // 更新 bucket
             this.volume = this.volume.subtract(tradeVol);
 
             // 添加最新成交订单
@@ -169,9 +170,11 @@ public class Bucket {
                 buyId = make.getOrderId();
                 sellId = take.getOrderId();
             }
-            orderService.saveChildAndUpdateParent(marketId, buyId, sellId, price, tradeVol);
+            OrderChild child = new OrderChild();
+            child.setBuyOrderId(buyId).setSellOrderId(sellId).setPrice(price).setVolume(tradeVol);
+            children.add(child);
         }
-        return takeCount;
+        return children;
     }
 
     public Order removeOrder(String orderId) {

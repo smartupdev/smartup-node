@@ -332,3 +332,12 @@ alter table market add column detail mediumtext;
 
 # 2019-08-07
 # 更新了trade表 添加了 trade_child
+
+# 2019-09-12
+alter table market add column stage varchar(16);
+alter table market add column ct_rest decimal(40,20);
+
+alter table ct_account add column amount_lock decimal(40,20);
+alter table user_account add column sut_lock decimal(40,20);
+
+alter table trade add column timestamp bigint;
