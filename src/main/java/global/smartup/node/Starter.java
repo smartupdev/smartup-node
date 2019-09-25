@@ -1,6 +1,7 @@
 package global.smartup.node;
 
 import global.smartup.node.filter.LoginInterceptor;
+import global.smartup.node.util.BigDecimalJsonSerializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -21,6 +22,7 @@ import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 import tk.mybatis.spring.annotation.MapperScan;
 
+import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -46,9 +48,9 @@ public class Starter extends WebMvcConfigurerAdapter {
         StringHttpMessageConverter stringConverter  = new StringHttpMessageConverter(Charset.forName("UTF-8"));
         converters.add(stringConverter);
         Jackson2ObjectMapperBuilder jacksonMapperBuilder = new Jackson2ObjectMapperBuilder();
-        jacksonMapperBuilder
-                .indentOutput(true)
-                .dateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
+        jacksonMapperBuilder.indentOutput(true);
+        jacksonMapperBuilder.dateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
+        jacksonMapperBuilder.serializerByType(BigDecimal.class, new BigDecimalJsonSerializer());
         MappingJackson2HttpMessageConverter jsonConverter = new MappingJackson2HttpMessageConverter(jacksonMapperBuilder.build());
         converters.add(jsonConverter);
         super.configureMessageConverters(converters);
