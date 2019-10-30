@@ -14,6 +14,11 @@ public class TakePlan {
     @Column(name = "take_trade_id")
     private String takeTradeId;
 
+    // 要匹配的子订单数量
+    @Column(name = "child_size")
+    private Integer childSize;
+
+    // take的次数，可能会上浮10%，计算出gas limit
     @Column(name = "times")
     private Integer times;
 
@@ -35,6 +40,15 @@ public class TakePlan {
     @Column(name = "create_time")
     private Date createTime;
 
+
+    public Integer getChildSize() {
+        return childSize;
+    }
+
+    public TakePlan setChildSize(Integer childSize) {
+        this.childSize = childSize;
+        return this;
+    }
 
     public Long getGasPrice() {
         return gasPrice;

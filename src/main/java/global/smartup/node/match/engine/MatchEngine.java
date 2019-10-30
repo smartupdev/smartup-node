@@ -143,12 +143,12 @@ public class MatchEngine {
         String makeSign, String takeSign
     ) {
         Map<String, Object> ret = new HashMap<>();
-        Integer t = sellBook.takeCalculate(price, volume);
+        Integer takeTime = sellBook.takeCalculate(price, volume);
         times = times == null ? 0 : times;
-        if (t.compareTo(times) > 0) {
+        if (takeTime.compareTo(times) > 0) {
             // 返回匹配次数
             ret.put("code", Const.FeeNotEnough);
-            ret.put("obj", MapBuilder.create().put("times", times).build());
+            ret.put("obj", takeTime);
             return ret;
         }
 
@@ -165,13 +165,13 @@ public class MatchEngine {
             .setType(OrderType.Buy);
 
         // add take plan
-        String takePlanId = orderService.addTakePlan(trade.getTradeId(), t, gasPrice, gasLimit, timestamp, takeSign);
+        String takePlanId = orderService.addTakePlan(trade.getTradeId(), takeTime, times, gasPrice, gasLimit, timestamp, takeSign);
 
         // make order
         buyBook.makeOrder(order);
 
         // take order
-        if (t.compareTo(0) > 0) {
+        if (takeTime.compareTo(0) > 0) {
             List<OrderChild> orderChild = sellBook.take(order);
             buyBook.clearBucketOrder(order);
 
@@ -324,7 +324,7 @@ public class MatchEngine {
             tradeList.add(trade);
 
             // save take plan
-            String takePlanId = orderService.addTakePlan(trade.getTradeId(), times, gasPrice, gasLimit, timestamp, takeSign);
+            String takePlanId = orderService.addTakePlan(trade.getTradeId(), takeTimes, times, gasPrice, gasLimit, timestamp, takeSign);
 
             // make order
             Order o = new Order();

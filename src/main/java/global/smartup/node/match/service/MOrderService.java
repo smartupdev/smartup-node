@@ -167,7 +167,7 @@ public class MOrderService {
     }
 
     @Transactional
-    public String addTakePlan(String tradeId, Integer times, Long gasPrice, Long gasLimit, Long timestamp, String sign) {
+    public String addTakePlan(String tradeId, Integer childSize, Integer times, Long gasPrice, Long gasLimit, Long timestamp, String sign) {
         if (times <= 0) {
             return null;
         }
@@ -175,6 +175,7 @@ public class MOrderService {
         TakePlan plan = new TakePlan();
         plan.setTakePlanId(id);
         plan.setTakeTradeId(tradeId);
+        plan.setChildSize(childSize);
         plan.setTimes(times);
         plan.setGasPrice(gasPrice);
         plan.setGasLimit(gasLimit);

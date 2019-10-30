@@ -2,12 +2,11 @@ package global.smartup.node.service.block;
 
 import global.smartup.node.constant.BuConstant;
 import global.smartup.node.eth.EthClient;
+import global.smartup.node.eth.ExchangeClient;
 import global.smartup.node.eth.constract.event.FirstStageBuyEvent;
 import global.smartup.node.eth.constract.func.FirstStageBuyFunc;
 import global.smartup.node.match.service.MatchService;
-import global.smartup.node.po.Market;
-import global.smartup.node.po.Trade;
-import global.smartup.node.po.MakePlan;
+import global.smartup.node.po.*;
 import global.smartup.node.service.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +18,7 @@ import org.web3j.protocol.core.methods.response.TransactionReceipt;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class BlockTradeService {
@@ -27,6 +27,9 @@ public class BlockTradeService {
 
     @Autowired
     private EthClient ethClient;
+
+    @Autowired
+    private ExchangeClient exchangeClient;
 
     @Autowired
     private TradeService tradeService;
@@ -48,6 +51,9 @@ public class BlockTradeService {
 
     @Autowired
     private MatchService matchService;
+
+    @Autowired
+    private TradeScanService tradeScanService;
 
 
     @Transactional
@@ -104,6 +110,24 @@ public class BlockTradeService {
 
     @Transactional
     public void handleTrade(Transaction tx, TransactionReceipt receipt, Date blockTime) {
+
+    }
+
+    public void scanTakePlan() {
+        TakePlan plan = tradeScanService.queryTopTakePlan();
+        if (plan == null) {
+            return;
+        }
+        List<TradeChild> children = tradeScanService.queryChild(plan.getTakePlanId());
+        if (plan.getTimes().compareTo(children.size()) != 0) {
+            return;
+        }
+        Trade takeOrder = tradeService.queryById(plan.getTakeTradeId());
+
+    }
+
+
+    public void sendTrade() {
 
     }
 

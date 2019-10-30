@@ -341,3 +341,7 @@ alter table ct_account add column amount_lock decimal(40,20);
 alter table user_account add column sut_lock decimal(40,20);
 
 alter table trade add column timestamp bigint;
+
+
+# 2019-09-24
+alter table take_plan add column child_size int(11);

@@ -198,7 +198,7 @@ public class MatchService {
 
     private boolean isNotReady(MatchEngine engine) {
         if (engine == null) {
-            return false;
+            return true;
         }
         return !engine.isReady();
     }

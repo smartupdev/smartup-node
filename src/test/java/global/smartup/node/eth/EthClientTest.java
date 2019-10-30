@@ -54,7 +54,8 @@ public class EthClientTest {
 
     @Test
     public void getTx() {
-        ethClient.getTx("0xa13d9bf332e4f2de35f50618517d3718195c222b633b602057a6d8b86ba18e41");
+        Transaction tx = ethClient.getTx("0xa13d9bf332e4f2de35f50618517d3718195c222b633b602057a6d8b86ba18e41");
+        System.out.println("1");
     }
 
     @Test

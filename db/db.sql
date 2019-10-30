@@ -117,6 +117,7 @@ drop table if exists take_plan;
 create table take_plan (
   take_plan_id varchar(16) primary key,
   take_trade_id varchar(16),
+  child_size int(11),
   times int(11),
   gas_price bigint,
   gas_limit bigint,
